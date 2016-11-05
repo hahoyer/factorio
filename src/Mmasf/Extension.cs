@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.Script.Serialization;
 using hw.Helper;
 using IniParser;
 using IniParser.Model;
+using Newtonsoft.Json;
 
 namespace ManageModsAndSavefiles
 {
@@ -18,53 +18,11 @@ namespace ManageModsAndSavefiles
                 .GetFolderPath(Environment.SpecialFolder.ApplicationData)
                 .PathCombine("Factorio");
 
-        public static IEnumerable<File> RecursiveItems(this File root)
-        {
-            if(!root.IsDirectory)
-            {
-                yield return root;
-
-                yield break;
-            }
-
-            IEnumerable<File> files = new[] {root};
-            while(true)
-            {
-                var newList = new List<File>();
-                foreach(var item in files.SelectMany(GuardedItems))
-                {
-                    yield return item;
-
-                    if(item.IsDirectory)
-                        newList.Add(item);
-                }
-
-                if(!newList.Any())
-                    yield break;
-
-                files = newList;
-            }
-        }
-
-        static File[] GuardedItems(this File item)
-        {
-            try
-            {
-                if(item.IsDirectory)
-                    return item.Items;
-            }
-            catch {}
-
-            return new File[0];
-        }
-
-        internal static IEnumerable<File> Find(this File p, string target)
-            => p
-                .RecursiveItems()
+        internal static IEnumerable<File> FindFilesThatEndsWith(this File root, string target)
+            => root.RecursiveItems()
                 .Where(item => item.FullName.EndsWith(target));
 
         static readonly FileIniDataParser IniParserInstance = CreateFileIniDataParser();
-        static readonly JavaScriptSerializer JavaScriptSerializer = new JavaScriptSerializer();
 
         static FileIniDataParser CreateFileIniDataParser()
         {
@@ -79,10 +37,10 @@ namespace ManageModsAndSavefiles
             => IniParserInstance.WriteFile(name, data);
 
         internal static T FromJson<T>(this string jsonText)
-            => JavaScriptSerializer.Deserialize<T>(jsonText);
+            => JsonConvert.DeserializeObject<T>(jsonText);
 
         internal static string ToJson<T>(this T o)
-            => JavaScriptSerializer.Serialize(o);
+            => JsonConvert.SerializeObject(o, Formatting.Indented);
 
         internal static T FromJsonFile<T>(this string jsonFileName)
             where T : class

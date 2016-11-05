@@ -7,17 +7,7 @@ namespace ManageModsAndSavefiles
 {
     sealed class SystemConfiguration
     {
-        const string FileNameEnd = "\\Factorio\\config-path.cfg";
         const string ConfigPathTag = "config-path";
-
-        static readonly string SystemReadDataDir
-            = Environment
-                .GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-
-        internal static readonly string ResultSystemPath
-            = SystemReadDataDir.FileHandle()
-                .Find(FileNameEnd).First()
-                .FullName;
 
         internal static readonly SystemConfiguration Instance = Create();
 
@@ -30,5 +20,21 @@ namespace ManageModsAndSavefiles
 
         internal string CurrentConfigurationPath =>
             File.Global[ConfigPathTag].PathFromFactorioStyle();
+    }
+
+    // When incorporating this class into SystemConfiguration, strange instantiation occurs
+    static class SystemConfigurationStatics
+    {
+        const string FileNameEnd = "Factorio\\config-path.cfg";
+
+        static readonly string SystemReadDataDir
+            = Environment
+                .GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+
+        internal static string Path
+            => SystemReadDataDir
+                .FileHandle()
+                .FindFilesThatEndsWith(FileNameEnd).First()
+                .FullName;
     }
 }

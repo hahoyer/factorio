@@ -9,17 +9,12 @@ namespace ManageModsAndSavefiles
     sealed class UserConfiguration : DumpableObject
     {
         const string ConfigurationIniFileName = "config.ini";
-        const string ConfigurationDirectoryName = "config";
+        internal const string ConfigurationDirectoryName = "config";
         const string SaveDirectoryName = "saves";
         const string ModDirectoryName = "mods";
         const string PathSectionName = "path";
         const string ReadDataTag = "read-data";
         const string WriteDataTag = "write-data";
-
-        internal static readonly string OriginalUserPath
-            = Extension.SystemWriteDataDir.PathCombine(ConfigurationDirectoryName)
-                .FileHandle()
-                .FullName;
 
         public static readonly UserConfiguration Original =
             Create(Configuration.Instance.OriginalUserPath);

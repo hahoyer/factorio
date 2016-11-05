@@ -7,11 +7,17 @@ namespace ManageModsAndSavefiles
 {
     public sealed class Configuration
     {
-        const string FileNameEnd = "factorioMmasf\\config.json";
+        const string FileNameEnd = "FactorioMmasf\\config.json";
         static readonly string Path
             = Environment
                 .GetFolderPath(Environment.SpecialFolder.ApplicationData)
                 .PathCombine(FileNameEnd);
+
+        static string GetOriginalUserPath()
+            => Extension.SystemWriteDataDir
+                .PathCombine(UserConfiguration.ConfigurationDirectoryName)
+                .FileHandle()
+                .FullName;
 
         internal static readonly Configuration Instance = Create();
 
@@ -21,10 +27,10 @@ namespace ManageModsAndSavefiles
                 ?? new Configuration();
 
             if(result.OriginalUserPath == null)
-                result.OriginalUserPath = UserConfiguration.OriginalUserPath;
+                result.OriginalUserPath = GetOriginalUserPath();
 
             if(result.SystemPath == null)
-                result.SystemPath = SystemConfiguration.ResultSystemPath;
+                result.SystemPath = SystemConfigurationStatics.Path;
 
             result.Persist();
             return result;
@@ -33,7 +39,10 @@ namespace ManageModsAndSavefiles
         public string SystemPath;
         public string OriginalUserPath;
 
-        void Persist() => Path.ToJsonFile(this);
-
+        void Persist()
+        {
+            Path.FileHandle().EnsureDirectoryOfFileExists();
+            Path.ToJsonFile(this);
+        }
     }
 }
