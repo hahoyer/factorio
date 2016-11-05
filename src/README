@@ -1,0 +1,12 @@
+Compiler for programming language "Reni"
+
+It is implemented as a VisualStudio 2010 solution
+The solution file is located in subdirectory "src" and is is called reni2.sln
+The compiler itself is located in project "src/reni2/reni2.csproj". This is a DLL.
+The project "src/ReniTest/ReniTest.csproj" an executable, that executes the tests, that are contained in reni2.dll. When ReniTest.exe is executed whithout debugger, then all tests are executed in batch mode. The test results are written to file "Test.HWconfig". It a debugger is attached, the "Test.HWconfig" file is read and the tests that are flagged with "error" are executed in the order found in "Test.HWconfig".
+The Project "src/ReniTest/ReniExe.csproj" an executable, that proides a way to compile and execute a text file that contains source code in reni programming language
+The Project "src/WebSite/ReniExe.csproj" is an ASP.Net web site, the provides a way to compile and execute source code in reni programming language.
+
+
+
+

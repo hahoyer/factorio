@@ -1,0 +1,23 @@
+﻿<#@ template debug="true" hostSpecific="true" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#
+    var title = "Executable";
+    var product = "Factorio loader";
+    var company = "HoyerWare";
+    var major = DateTime.Today.ToString("yy");
+    var minor = 1;
+    var build = 1;
+    var revision = 0;
+    var versionString = major + "." + minor + "." + build + "." + revision;
+    #>
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+[assembly: AssemblyVersion("<#=versionString #>")]
+[assembly: AssemblyFileVersion("<#=versionString #>")]
+[assembly: AssemblyTitle("<#=product #>: <#=title #>")]
+[assembly: AssemblyCompany("<#=company #>")]
+[assembly: AssemblyProduct("<#=product #>")]
+[assembly: AssemblyCopyright("Copyright © Harald Hoyer <#=DateTime.Today.ToString("yyyy") #>")]

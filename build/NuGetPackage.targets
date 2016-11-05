@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <Import Project="CSharp.Library.targets" />
+
+    <PropertyGroup>
+        <CleanDependsOn>
+            $(CleanDependsOn);
+            CleanPackages
+        </CleanDependsOn>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageSpecsIntermediate>$(IntermediateOutputPath)nuspec\</PackageSpecsIntermediate>
+    </PropertyGroup>
+
+    <Target Name="CleanPackages">
+        <ItemGroup>
+            <Temps Include="$(PackageSpecsIntermediate)\*.nuspec" />
+            <Temps Include="$(PackageOutputDir)\*.nupkg" />
+        </ItemGroup>
+
+        <Delete Files="@(Temps)"/>
+
+    </Target>
+
+    <Target Name="AfterBuild" DependsOnTargets="DeployPackage" />
+
+    <Target Name="DeployPackage" DependsOnTargets="BuildPackage">
+        <ItemGroup>
+            <PackageFiles Include="$(PackageOutputDir)\$(TargetName).*.nupkg" Exclude="$(PackageOutputDir)\*.symbols.nupkg" />
+        </ItemGroup>
+
+        <Exec
+            Condition="'$(Configuration)' == 'Release'"
+            Command="$(NuGetCommand) setApiKey a5f7f807-2780-44f4-8346-648338424192"
+            />
+
+        <Exec
+            Condition="'$(Configuration)' == 'Release'"
+            Command="$(NuGetCommand) push &quot;%(PackageFiles.Identity)&quot;"
+            IgnoreExitCode="true"
+            ConsoleToMSBuild="true"
+            >
+            <Output TaskParameter="ExitCode" PropertyName="ExitCode" />
+            <Output TaskParameter="ConsoleOutput" PropertyName="ConsoleOutput" />
+        </Exec>
+
+        <Error
+            Condition="$(ExitCode) != 0 And '$(Configuration)' == 'Release'"
+            Text="$(ConsoleOutput)"
+            File="%(PackageSpecs.Identity)"
+            />
+
+    </Target>
+
+</Project>

@@ -1,0 +1,10 @@
+/intermediate/
+/out/
+/src/packages/
+/oem
+_ReSharper.*
+*.suo
+*.user
+obj/
+/src/*/bin
+/src/**/.vs/
