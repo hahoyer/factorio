@@ -3,7 +3,7 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#
     var title = "Executable";
-    var product = "Factorio loader";
+    var product = "Manage mods and savefile for factorio";
     var company = "HoyerWare";
     var major = DateTime.Today.ToString("yy");
     var minor = 1;
