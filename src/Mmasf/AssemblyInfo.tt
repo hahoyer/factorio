@@ -1,19 +1,8 @@
 ﻿<#@ template debug="true" hostSpecific="true" #>
 <#@ output extension=".cs" #>
 <#@ import namespace="System.Collections.Generic" #>
-<#
-    var title = "Executable";
-    var product = "Manage mods and savefile for factorio";
-    var company = "HoyerWare";
-    var major = DateTime.Today.ToString("yy");
-    var minor = 1;
-    var build = 1;
-    var revision = 0;
-    var versionString = major + "." + minor + "." + build + "." + revision;
-    #>
+<#@ include file="Version.tt" #>
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 [assembly: AssemblyVersion("<#=versionString #>")]
 [assembly: AssemblyFileVersion("<#=versionString #>")]
