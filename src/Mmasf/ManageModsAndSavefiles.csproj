@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="12.0">
   <PropertyGroup>
     <ProjectGuid>{EBB73C84-6622-4183-A28F-B0DFF606006B}</ProjectGuid>
@@ -12,7 +12,6 @@
       <DependentUpon>AssemblyInfo.tt</DependentUpon>
     </Compile>
     <Compile Include="Configuration.cs" />
-    <Compile Include="Constants.cs" />
     <Compile Include="Extension.cs" />
     <Compile Include="Formatter.cs" />
     <Compile Include="hw\DebugFormatter\Configuration.cs" />

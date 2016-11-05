@@ -2,14 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Script.Serialization;
+using hw.Helper;
 using IniParser;
 using IniParser.Model;
-using hw.Helper;
 
 namespace ManageModsAndSavefiles
 {
     public static class Extension
     {
+        const string SystemWriteDataPlaceholder = "__PATH__system-write-data__";
+        internal const string SystemReadDataPlaceholder = "__PATH__system-read-data__";
+
+        internal static readonly string SystemWriteDataDir
+            = Environment
+                .GetFolderPath(Environment.SpecialFolder.ApplicationData)
+                .PathCombine("Factorio");
+
         public static IEnumerable<File> RecursiveItems(this File root)
         {
             if(!root.IsDirectory)
@@ -85,13 +93,11 @@ namespace ManageModsAndSavefiles
         => jsonFileName.FileHandle().String = o.ToJson();
 
         internal static string PathToFactorioStyle(this string name) =>
-            name
-                .Replace(Constants.SystemWriteData, Constants.SystemWriteDataPlaceholder)
+            name.Replace(SystemWriteDataDir, SystemWriteDataPlaceholder)
                 .Replace("\\", "/");
 
         internal static string PathFromFactorioStyle(this string name) =>
-            name
-                .Replace(Constants.SystemWriteDataPlaceholder, Constants.SystemWriteData)
+            name.Replace(SystemWriteDataPlaceholder, SystemWriteDataDir)
                 .Replace("/", "\\");
     }
 }

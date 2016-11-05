@@ -1,12 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using hw.Helper;
 
 namespace ManageModsAndSavefiles
 {
     sealed class SystemConfiguration
     {
+        const string FileNameEnd = "\\Factorio\\config-path.cfg";
         const string ConfigPathTag = "config-path";
+
+        static readonly string SystemReadDataDir
+            = Environment
+                .GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+
+        internal static readonly string ResultSystemPath
+            = SystemReadDataDir.FileHandle()
+                .Find(FileNameEnd).First()
+                .FullName;
 
         internal static readonly SystemConfiguration Instance = Create();
 

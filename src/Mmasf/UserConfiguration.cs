@@ -8,10 +8,18 @@ namespace ManageModsAndSavefiles
 {
     sealed class UserConfiguration : DumpableObject
     {
-        const string ConfigIniFileName = "config.ini";
+        const string ConfigurationIniFileName = "config.ini";
+        const string ConfigurationDirectoryName = "config";
+        const string SaveDirectoryName = "saves";
+        const string ModDirectoryName = "mods";
         const string PathSectionName = "path";
         const string ReadDataTag = "read-data";
         const string WriteDataTag = "write-data";
+
+        internal static readonly string OriginalUserPath
+            = Extension.SystemWriteDataDir.PathCombine(ConfigurationDirectoryName)
+                .FileHandle()
+                .FullName;
 
         public static readonly UserConfiguration Original =
             Create(Configuration.Instance.OriginalUserPath);
@@ -21,7 +29,7 @@ namespace ManageModsAndSavefiles
 
         static UserConfiguration Create(string path)
         {
-            var iniFile = new IniFile(path.PathCombine(ConfigIniFileName));
+            var iniFile = new IniFile(path.PathCombine(ConfigurationIniFileName));
             return new UserConfiguration(iniFile);
         }
 
@@ -42,7 +50,7 @@ namespace ManageModsAndSavefiles
                 .PathCombine(item);
 
         SaveFile[] GetSaveFiles()
-            => FilesPath("saves")
+            => FilesPath(SaveDirectoryName)
                 .FileHandle()
                 .Items
                 .Where(item => !item.IsDirectory && item.Extension.ToLower() == ".zip")
@@ -50,7 +58,7 @@ namespace ManageModsAndSavefiles
                 .ToArray();
 
         ModFile[] GetModFiles()
-            => FilesPath("mods")
+            => FilesPath(ModDirectoryName)
                 .FileHandle()
                 .Items
                 .Where(item => item.IsDirectory || item.Extension.ToLower() == ".zip")
@@ -64,8 +72,8 @@ namespace ManageModsAndSavefiles
         {
             IniFile.UpdateFrom(source.IniFile);
             CorrectPaths();
-            Synchronize(SaveFiles, source.SaveFiles, "saves", source);
-            Synchronize(ModFiles, source.ModFiles, "mods", source);
+            Synchronize(SaveFiles, source.SaveFiles, SaveDirectoryName, source);
+            Synchronize(ModFiles, source.ModFiles, ModDirectoryName, source);
         }
 
         void Synchronize<T>
@@ -122,7 +130,7 @@ namespace ManageModsAndSavefiles
         void CorrectPaths()
         {
             var pathSection = IniFile[PathSectionName];
-            pathSection[ReadDataTag] = Constants.SystemReadDataPlaceholder;
+            pathSection[ReadDataTag] = Extension.SystemReadDataPlaceholder;
             pathSection[WriteDataTag] = IniFile
                 .Path
                 .FileHandle()

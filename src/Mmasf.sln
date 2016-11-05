@@ -7,7 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManageModsAndSavefiles", "M
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CAC0A8EB-5914-4F0C-9471-1F4BD126069A}"
 	ProjectSection(SolutionItems) = preProject
-		.travis.yml = .travis.yml
 		LICENSE = LICENSE
 		README = README
 		sys.targets = sys.targets
