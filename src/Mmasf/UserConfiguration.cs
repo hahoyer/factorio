@@ -12,6 +12,7 @@ namespace ManageModsAndSavefiles
         internal const string ConfigurationDirectoryName = "config";
         const string SaveDirectoryName = "saves";
         const string ModDirectoryName = "mods";
+        const string PlayerDataFileName = "player-data.json";
         const string PathSectionName = "path";
         const string ReadDataTag = "read-data";
         const string WriteDataTag = "write-data";
@@ -75,6 +76,7 @@ namespace ManageModsAndSavefiles
 
         public void InitializeFrom(UserConfiguration source)
         {
+            source.FilesPath(PlayerDataFileName).FileHandle().CopyTo(FilesPath(PlayerDataFileName));
             IniFile.UpdateFrom(source.IniFile);
             CorrectPaths();
             Synchronize(SaveFiles, source.SaveFiles, SaveDirectoryName, source);
