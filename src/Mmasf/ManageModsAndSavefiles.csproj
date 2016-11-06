@@ -95,7 +95,7 @@
     <Reference Include="System.IO.Compression" />
   </ItemGroup>
   <Import Project="sys.targets" />
-  <PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Setup|AnyCPU' ">
     <PostBuildEvent>echo "$(ProgramFiles)\Inno Setup 5\ISCC.exe" /DConfiguration=$(ConfigurationName) /O$(OutDir) $(ProjectDir)Setup.iss
 "$(ProgramFiles)\Inno Setup 5\ISCC.exe" /DConfiguration=$(ConfigurationName) /O$(OutDir) $(ProjectDir)Setup.iss</PostBuildEvent>
   </PropertyGroup>
