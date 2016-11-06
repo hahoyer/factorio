@@ -27,7 +27,10 @@ namespace ManageModsAndSavefiles
             var destinationFile = Path.FileHandle();
             var sourceFile = source.Path.FileHandle();
             if(!destinationFile.Exists || destinationFile.ModifiedDate < sourceFile.ModifiedDate)
+            {
+                destinationFile.EnsureDirectoryOfFileExists();
                 destinationFile.String = sourceFile.String;
+            }
 
             Data.IsValid = false;
         }

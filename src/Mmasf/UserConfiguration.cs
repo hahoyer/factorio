@@ -45,20 +45,30 @@ namespace ManageModsAndSavefiles
                 .PathCombine(item);
 
         SaveFile[] GetSaveFiles()
-            => FilesPath(SaveDirectoryName)
-                .FileHandle()
+        {
+            var fileHandle = FilesPath(SaveDirectoryName).FileHandle();
+            if (!fileHandle.Exists)
+                return new SaveFile[0];
+
+            return fileHandle
                 .Items
                 .Where(item => !item.IsDirectory && item.Extension.ToLower() == ".zip")
                 .Select(item => new SaveFile(item.FullName))
                 .ToArray();
+        }
 
         ModFile[] GetModFiles()
-            => FilesPath(ModDirectoryName)
-                .FileHandle()
+        {
+            var fileHandle = FilesPath(ModDirectoryName).FileHandle();
+            if (!fileHandle.Exists)
+                return new ModFile[0];
+
+            return fileHandle
                 .Items
                 .Where(item => item.IsDirectory || item.Extension.ToLower() == ".zip")
                 .Select(item => new ModFile(item.FullName))
                 .ToArray();
+        }
 
         IEnumerable<ModFile> ModFiles => ModFilesCache.Value;
         IEnumerable<SaveFile> SaveFiles => SaveFilesCache.Value;
@@ -90,6 +100,8 @@ namespace ManageModsAndSavefiles
                 .Where(item => item.Item2 == null && item.Item3 != null)
                 .Select(item => item.Item1)
                 .ToArray();
+
+            pathOfCurrent.FileHandle().EnsureIsExistentDirectory();
 
             foreach(var fileName in fileNamesToGet)
             {
