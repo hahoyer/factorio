@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<log4net>
+  <appender name="RollingFileAppender" type="log4net.Appender.RollingFileAppender">
+    <file value="log" />
+    <appendToFile value="true" />
+    <rollingStyle value="Composite" />
+    <datePattern value="yyyyMMdd" />
+    <maximumFileSize value="50MB" />
+    <maxSizeRollBackups value="-1" />
+    <staticLogFileName value="false" />
+    <countDirection value="1" />
+    <layout type="log4net.Layout.PatternLayout">
+      <conversionPattern value="%date [%thread] %level %logger - %message%newline" />
+    </layout>
+  </appender>
+
+  <root>
+    <level value="INFO" />
+    <appender-ref ref="RollingFileAppender" />
+  </root>
+</log4net>
