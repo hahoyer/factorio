@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using log4net;
+using log4net.Config;
 
-[assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.xml", Watch = true)]
+[assembly: XmlConfigurator(ConfigFile = "log4net.xml", Watch = true)]
 
 namespace ManageModsAndSavefiles
 {
-    class Program
+    static class Program
     {
-        static readonly ILog Log = LogManager.GetLogger
-            (MethodBase.GetCurrentMethod().DeclaringType);
+        static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         static void Main(string[] args)
         {
             Log.Info("Start");
-            UserConfiguration.Current.InitializeFrom(UserConfiguration.Original);
+            var i = Context.Instance.DataConfiguration.Path;
             Log.Info("End");
         }
     }

@@ -9,39 +9,32 @@ namespace ManageModsAndSavefiles
 {
     public sealed class Configuration
     {
-        static readonly ILog Log = LogManager.GetLogger
-            (MethodBase.GetCurrentMethod().DeclaringType);
+        static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         const string FileNameEnd = "FactorioMmasf\\config.json";
+
         static readonly string Path
             = Environment
                 .GetFolderPath(Environment.SpecialFolder.ApplicationData)
                 .PathCombine(FileNameEnd);
 
-        static string GetOriginalUserPath()
-            => Extension.SystemWriteDataDir
-                .PathCombine(UserConfiguration.ConfigurationDirectoryName)
-                .FileHandle()
-                .FullName;
-
-        internal static readonly Configuration Instance = Create();
-
-        static Configuration Create()
+        internal static Configuration Create()
         {
             var result = Path.FromJsonFile<Configuration>()
                 ?? new Configuration();
 
-            if(result.OriginalUserPath == null)
-                result.OriginalUserPath = GetOriginalUserPath();
+            if (result.SystemPath == null)
+                result.SystemPath = SystemConfiguration.Path;
 
-            if(result.SystemPath == null)
-                result.SystemPath = SystemConfigurationStatics.Path;
+            if (result.UserConfigurationPaths == null)
+                result.UserConfigurationPaths = UserConfiguration.Paths;
 
             result.Persist();
             return result;
         }
 
         public string SystemPath;
-        public string OriginalUserPath;
+        public string[] UserConfigurationPaths;
 
         void Persist()
         {

@@ -1,54 +1,61 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using hw.DebugFormatter;
 using hw.Helper;
+using log4net;
 
 namespace ManageModsAndSavefiles
 {
     sealed class UserConfiguration : DumpableObject
     {
-        const string ConfigurationIniFileName = "config.ini";
-        internal const string ConfigurationDirectoryName = "config";
+        static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         const string SaveDirectoryName = "saves";
         const string ModDirectoryName = "mods";
         const string PlayerDataFileName = "player-data.json";
-        const string PathSectionName = "path";
         const string ReadDataTag = "read-data";
-        const string WriteDataTag = "write-data";
 
-        public static readonly UserConfiguration Original =
-            Create(Configuration.Instance.OriginalUserPath);
+        internal static string[] Paths
+            => Extension
+                .SystemWriteDataDir
+                .FileHandle()
+                .RecursiveItems()
+                .Where(IsRelevantPathCandidate)
+                .Select(item => item.FullName)
+                .ToArray();
 
-        public static readonly UserConfiguration Current =
-            Create(SystemConfiguration.Instance.CurrentConfigurationPath);
+        static bool IsRelevantPathCandidate(File item)
+            =>
+            item.IsDirectory
+            && IsExistent(item, PlayerDataFileName, false)
+            && IsExistent(item, SaveDirectoryName, true)
+            && IsExistent(item, ModDirectoryName, true);
 
-        static UserConfiguration Create(string path)
+        static bool IsExistent(File item, string fileName, bool isDictionary)
         {
-            var iniFile = new IniFile(path.PathCombine(ConfigurationIniFileName));
-            return new UserConfiguration(iniFile);
+            var fileHandle = item.FullName.PathCombine(fileName).FileHandle();
+            return fileHandle.Exists && fileHandle.IsDirectory == isDictionary;
         }
 
-        readonly IniFile IniFile;
+        readonly string Path;
         readonly ValueCache<SaveFile[]> SaveFilesCache;
         readonly ValueCache<ModFile[]> ModFilesCache;
 
-        UserConfiguration(IniFile iniFile)
+        UserConfiguration(string path)
         {
-            IniFile = iniFile;
+            Path = path;
             ModFilesCache = new ValueCache<ModFile[]>(GetModFiles);
             SaveFilesCache = new ValueCache<SaveFile[]>(GetSaveFiles);
         }
 
-        string FilesPath(string item)
-            => IniFile[PathSectionName][WriteDataTag]
-                .PathFromFactorioStyle()
-                .PathCombine(item);
+        string FilesPath(string item) => Path.PathCombine(item);
 
         SaveFile[] GetSaveFiles()
         {
             var fileHandle = FilesPath(SaveDirectoryName).FileHandle();
-            if (!fileHandle.Exists)
+            if(!fileHandle.Exists)
                 return new SaveFile[0];
 
             return fileHandle
@@ -61,7 +68,7 @@ namespace ManageModsAndSavefiles
         ModFile[] GetModFiles()
         {
             var fileHandle = FilesPath(ModDirectoryName).FileHandle();
-            if (!fileHandle.Exists)
+            if(!fileHandle.Exists)
                 return new ModFile[0];
 
             return fileHandle
@@ -76,9 +83,8 @@ namespace ManageModsAndSavefiles
 
         public void InitializeFrom(UserConfiguration source)
         {
+            Log.Debug("InitializeFrom");
             source.FilesPath(PlayerDataFileName).FileHandle().CopyTo(FilesPath(PlayerDataFileName));
-            IniFile.UpdateFrom(source.IniFile);
-            CorrectPaths();
             Synchronize(SaveFiles, source.SaveFiles, SaveDirectoryName, source);
             Synchronize(ModFiles, source.ModFiles, ModDirectoryName, source);
         }
@@ -134,20 +140,6 @@ namespace ManageModsAndSavefiles
         internal interface INameProvider
         {
             string Name { get; }
-        }
-
-        void CorrectPaths()
-        {
-            var pathSection = IniFile[PathSectionName];
-            pathSection[ReadDataTag] = Extension.SystemReadDataPlaceholder;
-            pathSection[WriteDataTag] = IniFile
-                .Path
-                .FileHandle()
-                .DirectoryName
-                .FileHandle()
-                .DirectoryName
-                .PathToFactorioStyle();
-            IniFile.Persist();
         }
     }
 }

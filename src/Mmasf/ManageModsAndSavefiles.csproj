@@ -12,6 +12,8 @@
       <DependentUpon>AssemblyInfo.tt</DependentUpon>
     </Compile>
     <Compile Include="Configuration.cs" />
+    <Compile Include="Context.cs" />
+    <Compile Include="DataConfiguration.cs" />
     <Compile Include="Extension.cs" />
     <Compile Include="Formatter.cs" />
     <Compile Include="hw\DebugFormatter\Configuration.cs" />

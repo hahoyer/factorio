@@ -4,6 +4,7 @@ using System.Linq;
 using hw.Helper;
 using IniParser;
 using IniParser.Model;
+using log4net;
 using Newtonsoft.Json;
 
 namespace ManageModsAndSavefiles
@@ -57,5 +58,13 @@ namespace ManageModsAndSavefiles
         internal static string PathFromFactorioStyle(this string name) =>
             name.Replace(SystemWriteDataPlaceholder, SystemWriteDataDir)
                 .Replace("/", "\\");
+
+        public static T Value<T>(this ILog log, string tag, Func<T> func)
+        {
+            log.Debug("Starting " + tag);
+            var result = func();
+            log.Debug("End " + tag + "result= " + result);
+            return result;
+        }
     }
 }
