@@ -52,6 +52,7 @@
     <Compile Include="hw\Helper\ValueCacheExtension.cs" />
     <Compile Include="IniFile.cs" />
     <Compile Include="ModFile.cs" />
+    <Compile Include="ModMatrix.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="SaveFile.cs" />
     <Compile Include="SystemConfiguration.cs" />

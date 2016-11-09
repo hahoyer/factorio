@@ -13,7 +13,7 @@ namespace ManageModsAndSavefiles
         static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         const string SaveDirectoryName = "saves";
-        const string ModDirectoryName = "mods";
+        internal const string ModDirectoryName = "mods";
         const string PlayerDataFileName = "player-data.json";
         const string ReadDataTag = "read-data";
 
@@ -38,6 +38,8 @@ namespace ManageModsAndSavefiles
             var fileHandle = item.FullName.PathCombine(fileName).FileHandle();
             return fileHandle.Exists && fileHandle.IsDirectory == isDictionary;
         }
+
+        internal static UserConfiguration Create(string item) => new UserConfiguration(item);
 
         readonly string Path;
         readonly ValueCache<SaveFile[]> SaveFilesCache;
@@ -74,7 +76,7 @@ namespace ManageModsAndSavefiles
             return fileHandle
                 .Items
                 .Where(item => item.IsDirectory || item.Extension.ToLower() == ".zip")
-                .Select(item => new ModFile(item.FullName))
+                .Select(item => ModFile.Create(item.FullName, null))
                 .ToArray();
         }
 
