@@ -1,17 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using System.Runtime.Serialization;
 using hw.DebugFormatter;
 using hw.Helper;
+
 
 namespace ManageModsAndSavefiles
 {
     sealed class ModFile : DumpableObject, UserConfiguration.INameProvider
     {
-        internal readonly string ModName;
-        internal readonly string Version;
         internal readonly int ConfigIndex;
         readonly File File;
+        internal readonly string ModName;
+        internal readonly string Version;
+
+        ModFile(string path, int configIndex)
+        {
+            File = path.FileHandle();
+            ModName = GetModNameFromFileName();
+            Version = GetVersionFromFile();
+            ConfigIndex = configIndex;
+        }
+
+        string UserConfiguration.INameProvider.Name => ModName;
 
         public static ModFile Create(string path, string[] paths)
         {
@@ -28,14 +38,6 @@ namespace ManageModsAndSavefiles
             return new ModFile(path, index);
         }
 
-        ModFile(string path, int configIndex)
-        {
-            File = path.FileHandle();
-            ModName = GetModNameFromFileName();
-            Version = GetVersionFromFile();
-            ConfigIndex = configIndex;
-        }
-
         string GetVersionFromFileName()
         {
             var nameParts = File.Name.Split('_');
@@ -50,7 +52,7 @@ namespace ManageModsAndSavefiles
             var text =
                 File.IsDirectory ? GetInfoJSonFromDirectory() : GetInfoJSonFromZipFile();
             var info = text.FromJson<ModInfo>();
-            return null;
+            return info.Version;
         }
 
         string GetInfoJSonFromZipFile()
@@ -70,23 +72,31 @@ namespace ManageModsAndSavefiles
 
         string GetModNameFromFileName() => File.Name.Split('_')[0];
 
-        string UserConfiguration.INameProvider.Name => ModName;
-
         public override string ToString()
             => ConfigIndex + ":" +
-            ModName + " " +
-            Version;
+               ModName + " " +
+               Version;
     }
 
     class ModInfo
     {
-        public string name;
-        public string version;
-        public string factorio_version;
-        public string title;
-        public string author;
-        public string contact;
-        public string homepage;
-        public string description;
+        [DataMember(Name = "author")]
+        public string Author;
+        [DataMember(Name = "contact")]
+        public string Contact;
+        [DataMember(Name = "dependencies")]
+        public string[] Dependencies;
+        [DataMember(Name = "description")]
+        public string Description;
+        [DataMember(Name = "factorio_version")]
+        public string FactorioVersion;
+        [DataMember(Name = "homepage")]
+        public string Homepage;
+        [DataMember(Name = "name")]
+        public string Name;
+        [DataMember(Name = "title")]
+        public string Title;
+        [DataMember(Name = "version")]
+        public string Version;
     }
 }
