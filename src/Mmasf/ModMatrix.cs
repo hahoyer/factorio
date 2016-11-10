@@ -9,17 +9,12 @@ namespace ManageModsAndSavefiles
     sealed class ModMatrix : DumpableObject
     {
         readonly string[] Paths;
-        readonly ValueCache<string[]> PrefixesCache;
 
         internal ModMatrix(string[] paths)
         {
             Paths = paths;
-            PrefixesCache = new ValueCache<string[]>(GetPrefixes);
-
             Test();
         }
-
-        string[] Prefixes => PrefixesCache.Value;
 
         string[] GetPrefixes() => Paths
             .Select(item => item.FileHandle().DirectoryName)
@@ -30,7 +25,6 @@ namespace ManageModsAndSavefiles
 
         void Test()
         {
-            var ppp = Prefixes;
             var v = Paths
                 .SelectMany
                 (
@@ -39,10 +33,29 @@ namespace ManageModsAndSavefiles
                         .FileHandle()
                         .Items
                         .Where(item => item.IsDirectory || item.Extension.ToLower() == ".zip")
-                        .Select(item => ModFile.Create(item.FullName, Prefixes))
+                        .Select(item => ModFile.Create(item.FullName, Paths))
                 )
                 .GroupBy(item => item.ModName)
+                .Select(GetModLine)
                 .ToArray();
         }
+
+        static ModLine GetModLine(IGrouping<string, ModFile> arg)
+            => ModLine.Create(arg);
+    }
+
+    sealed class ModLine : DumpableObject
+    {
+        internal static ModLine Create(IGrouping<string, ModFile> arg)
+        {
+            var modFiles = arg.OrderBy(item => item.ConfigIndex).ToArray();
+            return new ModLine(arg.Key, modFiles);
+        }
+
+        ModLine(string modName, ModFile[] modFiles)
+        {
+            NotImplementedMethod(modName, modFiles.Stringify(","));
+        }
+
     }
 }

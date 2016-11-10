@@ -1,54 +1,92 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using hw.DebugFormatter;
 using hw.Helper;
 
 namespace ManageModsAndSavefiles
 {
-    sealed class ModFile : UserConfiguration.INameProvider
+    sealed class ModFile : DumpableObject, UserConfiguration.INameProvider
     {
         internal readonly string ModName;
-        readonly string Version;
-        readonly int ConfigGroupIndex;
-        readonly string ConfigName;
+        internal readonly string Version;
+        internal readonly int ConfigIndex;
+        readonly File File;
 
-        public static ModFile Create(string path, string[] prefixes)
+        public static ModFile Create(string path, string[] paths)
         {
-            var name = path.FileHandle().Name;
-            var nameParts = name.Split('_');
-            var modName = nameParts[0];
-            var version = nameParts.Length > 1 ? name.Substring(modName.Length + 1) : "<unknown>";
-
             var dictionary = path
                 .FileHandle().DirectoryName
                 .FileHandle().DirectoryName;
-            var configGroupDirectoryCandidate = dictionary
-                .FileHandle().DirectoryName;
 
-            var index = prefixes.IndexWhere(configGroupDirectoryCandidate.StartsWith).AssertValue();
-            var configName = dictionary.Substring(prefixes[index].Length + 1);
+            var index = paths
+                .OrderByDescending(item => item.Split('\\').Length)
+                .ThenBy(item => item)
+                .IndexWhere(dictionary.StartsWith)
+                .AssertValue();
 
-
-            return new ModFile(modName, version, index, configName);
+            return new ModFile(path, index);
         }
 
-        ModFile(string modName, string version, int configGroupIndex, string configName)
+        ModFile(string path, int configIndex)
         {
-            ModName = modName;
-            Version = version;
-            ConfigGroupIndex = configGroupIndex;
-            ConfigName = configName;
+            File = path.FileHandle();
+            ModName = GetModNameFromFileName();
+            Version = GetVersionFromFile();
+            ConfigIndex = configIndex;
         }
+
+        string GetVersionFromFileName()
+        {
+            var nameParts = File.Name.Split('_');
+            if(nameParts.Length == 1)
+                return "<unknown>";
+
+            return File.Name.Substring(nameParts[0].Length + 1);
+        }
+
+        string GetVersionFromFile()
+        {
+            var text =
+                File.IsDirectory ? GetInfoJSonFromDirectory() : GetInfoJSonFromZipFile();
+            var info = text.FromJson<ModInfo>();
+            return null;
+        }
+
+        string GetInfoJSonFromZipFile()
+        {
+            var headerDir = File.Name.Substring(0, File.Name.Length - 4);
+            return File
+                .FullName
+                .ZipFileHandle()
+                .GetItem(headerDir + "/info.json")
+                .String;
+        }
+
+        string GetInfoJSonFromDirectory()
+            => File.FullName.PathCombine("info.json")
+                .FileHandle()
+                .String;
+
+        string GetModNameFromFileName() => File.Name.Split('_')[0];
 
         string UserConfiguration.INameProvider.Name => ModName;
 
         public override string ToString()
-            => ConfigGroupIndex +
-            "." +
-            ConfigName +
-            ":" +
-            ModName +
-            " " +
+            => ConfigIndex + ":" +
+            ModName + " " +
             Version;
+    }
+
+    class ModInfo
+    {
+        public string name;
+        public string version;
+        public string factorio_version;
+        public string title;
+        public string author;
+        public string contact;
+        public string homepage;
+        public string description;
     }
 }

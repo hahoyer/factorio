@@ -57,6 +57,7 @@
     <Compile Include="SaveFile.cs" />
     <Compile Include="SystemConfiguration.cs" />
     <Compile Include="UserConfiguration.cs" />
+    <Compile Include="ZipFileHandle.cs" />
     <Content Include="Setup.iss">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -103,6 +104,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
   </ItemGroup>
   <Import Project="sys.targets" />
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Setup|AnyCPU' ">

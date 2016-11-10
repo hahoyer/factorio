@@ -66,5 +66,7 @@ namespace ManageModsAndSavefiles
             log.Debug("End " + tag + "result= " + result);
             return result;
         }
+
+        public static ZipFileHandle ZipFileHandle(this string name) => new ZipFileHandle(name, null);
     }
 }
