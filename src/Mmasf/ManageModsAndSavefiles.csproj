@@ -11,6 +11,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AssemblyInfo.tt</DependentUpon>
     </Compile>
+    <Compile Include="BooleanJsonConverter.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Context.cs" />
     <Compile Include="DataConfiguration.cs" />
@@ -51,7 +52,9 @@
     <Compile Include="hw\Helper\ValueCache.cs" />
     <Compile Include="hw\Helper\ValueCacheExtension.cs" />
     <Compile Include="IniFile.cs" />
+    <Compile Include="ModConfiguration.cs" />
     <Compile Include="ModFile.cs" />
+    <Compile Include="ModInfo.cs" />
     <Compile Include="ModMatrix.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="SaveFile.cs" />

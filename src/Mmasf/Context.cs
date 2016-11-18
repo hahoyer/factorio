@@ -17,13 +17,16 @@ namespace ManageModsAndSavefiles
         Context()
         {
             Configuration = Configuration.Create();
+
+            Configuration.RenewUserConfigurationPaths();
+
             SystemConfiguration = new SystemConfiguration(Configuration.SystemPath);
             DataConfiguration = new DataConfiguration(SystemConfiguration.ConfigurationPath);
             UserConfigurations = Configuration
                 .UserConfigurationPaths
-                .Select(UserConfiguration.Create)
+                .Select(item => UserConfiguration.Create(item, Configuration.UserConfigurationPaths))
                 .ToArray();
-            ModMatrix = new ModMatrix(Configuration.UserConfigurationPaths);
+            ModMatrix = new ModMatrix(UserConfigurations);
         }
     }
 }

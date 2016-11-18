@@ -8,54 +8,62 @@ namespace ManageModsAndSavefiles
 {
     sealed class ModMatrix : DumpableObject
     {
-        readonly string[] Paths;
+        readonly UserConfiguration[] UserConfigurations;
 
-        internal ModMatrix(string[] paths)
+        internal ModMatrix(UserConfiguration[] userConfigurations)
         {
-            Paths = paths;
+            UserConfigurations = userConfigurations;
             Test();
         }
 
-        string[] GetPrefixes() => Paths
-            .Select(item => item.FileHandle().DirectoryName)
-            .Distinct()
-            .OrderByDescending(item => item.Split('\\').Length)
-            .ThenBy(item => item)
-            .ToArray();
-
         void Test()
         {
-            var v = Paths
-                .SelectMany
-                (
-                    p => p
-                        .PathCombine(UserConfiguration.ModDirectoryName)
-                        .FileHandle()
-                        .Items
-                        .Where(item => item.IsDirectory || item.Extension.ToLower() == ".zip")
-                        .Select(item => ModFile.Create(item.FullName, Paths))
-                )
+            var v = UserConfigurations
+                .SelectMany(p => p.ModFiles)
                 .GroupBy(item => item.ModName)
-                .Select(GetModLine)
+                .Select(files => GetModLine(UserConfigurations.Length, files))
                 .ToArray();
         }
 
-        static ModLine GetModLine(IGrouping<string, ModFile> arg)
-            => ModLine.Create(arg);
+        static ModLine GetModLine(int userConfigurations, IGrouping<string, ModFile> arg)
+            => ModLine.Create(userConfigurations, arg);
     }
 
     sealed class ModLine : DumpableObject
     {
-        internal static ModLine Create(IGrouping<string, ModFile> arg)
+        readonly string ModName;
+
+        internal sealed class Cell : DumpableObject
         {
-            var modFiles = arg.OrderBy(item => item.ConfigIndex).ToArray();
+            internal readonly string Version;
+            internal readonly bool IsEnabled;
+
+            Cell(string version, bool isEnabled)
+            {
+                Version = version;
+                IsEnabled = isEnabled;
+            }
+
+            Cell() { }
+
+            public static Cell Create(ModFile arg)
+                => arg == null ? new Cell() : new Cell(arg.Version, arg.IsEnabled);
+        }
+
+        internal static ModLine Create(int userConfigurations, IGrouping<string, ModFile> arg)
+        {
+            var modFiles = userConfigurations
+                .Select(index => arg.SingleOrDefault(item => item.ConfigIndex == index))
+                .ToArray();
             return new ModLine(arg.Key, modFiles);
         }
 
+        Cell[] Cells;
+
         ModLine(string modName, ModFile[] modFiles)
         {
-            NotImplementedMethod(modName, modFiles.Stringify(","));
+            ModName = modName;
+            Cells = modFiles.Select(Cell.Create).ToArray();
         }
-
     }
 }

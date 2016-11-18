@@ -16,6 +16,7 @@ namespace ManageModsAndSavefiles
         internal const string ModDirectoryName = "mods";
         const string PlayerDataFileName = "player-data.json";
         const string ReadDataTag = "read-data";
+        const string ModConfigurationFileName = "mod-list.json";
 
         internal static string[] Paths
             => Extension
@@ -39,15 +40,20 @@ namespace ManageModsAndSavefiles
             return fileHandle.Exists && fileHandle.IsDirectory == isDictionary;
         }
 
-        internal static UserConfiguration Create(string item) => new UserConfiguration(item);
+        internal static UserConfiguration Create(string item, string[] allPaths)
+            => new UserConfiguration(item, allPaths);
 
         readonly string Path;
+        readonly string[] AllPaths;
         readonly ValueCache<SaveFile[]> SaveFilesCache;
         readonly ValueCache<ModFile[]> ModFilesCache;
+        readonly ValueCache<IDictionary<string,bool>> ModConfigurationCache;
 
-        UserConfiguration(string path)
+        UserConfiguration(string path, string[] allPaths)
         {
             Path = path;
+            AllPaths = allPaths;
+            ModConfigurationCache = new ValueCache<IDictionary<string, bool>>(GetModConfiguration);
             ModFilesCache = new ValueCache<ModFile[]>(GetModFiles);
             SaveFilesCache = new ValueCache<SaveFile[]>(GetSaveFiles);
         }
@@ -76,12 +82,28 @@ namespace ManageModsAndSavefiles
             return fileHandle
                 .Items
                 .Where(item => item.IsDirectory || item.Extension.ToLower() == ".zip")
-                .Select(item => ModFile.Create(item.FullName, null))
+                .Select(item => ModFile.Create(item.FullName, AllPaths, ModConfiguration[item.Name]))
                 .ToArray();
         }
 
-        IEnumerable<ModFile> ModFiles => ModFilesCache.Value;
+        IDictionary<string, bool> GetModConfiguration()
+        {
+            var fileHandle = FilesPath(ModDirectoryName)
+                .PathCombine(ModConfigurationFileName)
+                .FileHandle();
+
+            if(!fileHandle.Exists)
+                return new Dictionary<string, bool>();
+
+            var text = fileHandle.String;
+            var result = text.FromJson<ModConfiguration>();
+            var modConfigurationCells = result.Cells;
+            return modConfigurationCells.ToDictionary(item=>item.Name, item=>item.IsEnabled);
+        }
+
+        internal IEnumerable<ModFile> ModFiles => ModFilesCache.Value;
         IEnumerable<SaveFile> SaveFiles => SaveFilesCache.Value;
+        IDictionary<string, bool> ModConfiguration => ModConfigurationCache.Value;
 
         public void InitializeFrom(UserConfiguration source)
         {
@@ -143,5 +165,7 @@ namespace ManageModsAndSavefiles
         {
             string Name { get; }
         }
+
+        protected override string GetNodeDump() => Path.FileHandle().Name;
     }
 }

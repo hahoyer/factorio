@@ -1,29 +1,32 @@
-﻿using System.Linq;
-using System.Runtime.Serialization;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
-
 
 namespace ManageModsAndSavefiles
 {
     sealed class ModFile : DumpableObject, UserConfiguration.INameProvider
     {
+        const string FileNameInfoJson = "info.json";
         internal readonly int ConfigIndex;
         readonly File File;
         internal readonly string ModName;
         internal readonly string Version;
+        internal readonly bool IsEnabled;
 
-        ModFile(string path, int configIndex)
+        ModFile(string path, int configIndex, bool isEnabled)
         {
             File = path.FileHandle();
             ModName = GetModNameFromFileName();
             Version = GetVersionFromFile();
             ConfigIndex = configIndex;
+            IsEnabled = isEnabled;
         }
 
         string UserConfiguration.INameProvider.Name => ModName;
 
-        public static ModFile Create(string path, string[] paths)
+        public static ModFile Create(string path, IEnumerable<string> paths, bool isEnabled)
         {
             var dictionary = path
                 .FileHandle().DirectoryName
@@ -35,7 +38,7 @@ namespace ManageModsAndSavefiles
                 .IndexWhere(dictionary.StartsWith)
                 .AssertValue();
 
-            return new ModFile(path, index);
+            return new ModFile(path, index, isEnabled);
         }
 
         string GetVersionFromFileName()
@@ -51,6 +54,9 @@ namespace ManageModsAndSavefiles
         {
             var text =
                 File.IsDirectory ? GetInfoJSonFromDirectory() : GetInfoJSonFromZipFile();
+            if(text == null)
+                return "<unknown>";
+
             var info = text.FromJson<ModInfo>();
             return info.Version;
         }
@@ -61,12 +67,12 @@ namespace ManageModsAndSavefiles
             return File
                 .FullName
                 .ZipFileHandle()
-                .GetItem(headerDir + "/info.json")
+                .GetItem(headerDir + "/" + FileNameInfoJson)
                 .String;
         }
 
         string GetInfoJSonFromDirectory()
-            => File.FullName.PathCombine("info.json")
+            => File.FullName.PathCombine(FileNameInfoJson)
                 .FileHandle()
                 .String;
 
@@ -74,29 +80,7 @@ namespace ManageModsAndSavefiles
 
         public override string ToString()
             => ConfigIndex + ":" +
-               ModName + " " +
-               Version;
-    }
-
-    class ModInfo
-    {
-        [DataMember(Name = "author")]
-        public string Author;
-        [DataMember(Name = "contact")]
-        public string Contact;
-        [DataMember(Name = "dependencies")]
-        public string[] Dependencies;
-        [DataMember(Name = "description")]
-        public string Description;
-        [DataMember(Name = "factorio_version")]
-        public string FactorioVersion;
-        [DataMember(Name = "homepage")]
-        public string Homepage;
-        [DataMember(Name = "name")]
-        public string Name;
-        [DataMember(Name = "title")]
-        public string Title;
-        [DataMember(Name = "version")]
-        public string Version;
+            ModName + " " +
+            Version;
     }
 }

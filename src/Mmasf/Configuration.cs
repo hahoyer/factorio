@@ -41,5 +41,11 @@ namespace ManageModsAndSavefiles
             Path.FileHandle().EnsureDirectoryOfFileExists();
             Path.ToJsonFile(this);
         }
+
+        internal void RenewUserConfigurationPaths()
+        {
+            UserConfigurationPaths = UserConfiguration.Paths;
+            Persist();
+        }
     }
 }
