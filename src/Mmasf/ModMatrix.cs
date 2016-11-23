@@ -6,19 +6,15 @@ using hw.Helper;
 
 namespace ManageModsAndSavefiles
 {
-    sealed class ModMatrix : DumpableObject
+    public sealed class ModMatrix : DumpableObject
     {
         readonly UserConfiguration[] UserConfigurations;
+        public readonly ModLine[] ModLines;
 
         internal ModMatrix(UserConfiguration[] userConfigurations)
         {
             UserConfigurations = userConfigurations;
-            Test();
-        }
-
-        void Test()
-        {
-            var v = UserConfigurations
+            ModLines = UserConfigurations
                 .SelectMany(p => p.ModFiles)
                 .GroupBy(item => item.ModName)
                 .Select(files => GetModLine(UserConfigurations.Length, files))
@@ -29,16 +25,16 @@ namespace ManageModsAndSavefiles
             => ModLine.Create(userConfigurations, arg);
     }
 
-    sealed class ModLine : DumpableObject
+    public sealed class ModLine : DumpableObject
     {
         readonly string ModName;
 
         internal sealed class Cell : DumpableObject
         {
             internal readonly string Version;
-            internal readonly bool IsEnabled;
+            internal readonly bool? IsEnabled;
 
-            Cell(string version, bool isEnabled)
+            Cell(string version, bool? isEnabled)
             {
                 Version = version;
                 IsEnabled = isEnabled;

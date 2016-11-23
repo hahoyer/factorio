@@ -8,7 +8,7 @@ using log4net;
 
 namespace ManageModsAndSavefiles
 {
-    sealed class UserConfiguration : DumpableObject
+    public sealed class UserConfiguration : DumpableObject
     {
         static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -82,7 +82,7 @@ namespace ManageModsAndSavefiles
             return fileHandle
                 .Items
                 .Where(item => item.IsDirectory || item.Extension.ToLower() == ".zip")
-                .Select(item => ModFile.Create(item.FullName, AllPaths, ModConfiguration[item.Name]))
+                .Select(item => ModFile.Create(item.FullName, AllPaths, ModConfiguration))
                 .ToArray();
         }
 
@@ -109,56 +109,6 @@ namespace ManageModsAndSavefiles
         {
             Log.Debug("InitializeFrom");
             source.FilesPath(PlayerDataFileName).FileHandle().CopyTo(FilesPath(PlayerDataFileName));
-            Synchronize(SaveFiles, source.SaveFiles, SaveDirectoryName, source);
-            Synchronize(ModFiles, source.ModFiles, ModDirectoryName, source);
-        }
-
-        void Synchronize<T>
-        (
-            IEnumerable<T> currentFiles,
-            IEnumerable<T> masterFiles,
-            string itemName,
-            UserConfiguration master
-        )
-            where T : class, INameProvider
-        {
-            var pathOfCurrent = FilesPath(itemName);
-            var pathOfMaster = master.FilesPath(itemName);
-            var merge = currentFiles
-                .Merge(masterFiles, item => item.Name)
-                .ToArray();
-
-            var fileNamesToGet = merge
-                .Where(item => item.Item2 == null && item.Item3 != null)
-                .Select(item => item.Item1)
-                .ToArray();
-
-            pathOfCurrent.FileHandle().EnsureIsExistentDirectory();
-
-            foreach(var fileName in fileNamesToGet)
-            {
-                var sourceFileName = pathOfMaster.PathCombine(fileName);
-                var destFileName = pathOfCurrent.PathCombine(fileName);
-
-                Tracer.LinePart("Copying " + sourceFileName + " to " + destFileName + " ... ");
-                sourceFileName.FileHandle().CopyTo(destFileName);
-                Tracer.Line("complete");
-            }
-
-            var fileNamesToPut = merge
-                .Where(item => item.Item2 != null && item.Item3 == null)
-                .Select(item => item.Item1)
-                .ToArray();
-
-            foreach(var fileName in fileNamesToPut)
-            {
-                var sourceFileName = pathOfCurrent.PathCombine(fileName);
-                var destFileName = pathOfMaster.PathCombine(fileName);
-
-                Tracer.LinePart("Copying " + sourceFileName + " to " + destFileName + " ... ");
-                sourceFileName.FileHandle().CopyTo(destFileName);
-                Tracer.Line("complete");
-            }
         }
 
         internal interface INameProvider

@@ -1,12 +1,12 @@
 ﻿<#@ template debug="true" hostSpecific="true" #>
 <#@ output extension=".cs" #>
 <#@ import namespace="System.Collections.Generic" #>
-<#@ include file="Version.tt" #>
+<#@ include file="..\Version.tt" #>
 using System.Reflection;
 
 [assembly: AssemblyVersion("<#=versionString #>")]
 [assembly: AssemblyFileVersion("<#=versionString #>")]
-[assembly: AssemblyTitle("<#=product #>: <#=title #>")]
+[assembly: AssemblyTitle("<#=product #>: Worker")]
 [assembly: AssemblyCompany("<#=company #>")]
 [assembly: AssemblyProduct("<#=product #>")]
 [assembly: AssemblyCopyright("Copyright © Harald Hoyer <#=DateTime.Today.ToString("yyyy") #>")]

@@ -13,20 +13,25 @@ namespace ManageModsAndSavefiles
         readonly File File;
         internal readonly string ModName;
         internal readonly string Version;
-        internal readonly bool IsEnabled;
+        internal readonly bool? IsEnabled;
 
-        ModFile(string path, int configIndex, bool isEnabled)
+        ModFile(File fileHandle, string modName, string version, bool? isEnabled, int configIndex)
         {
-            File = path.FileHandle();
-            ModName = GetModNameFromFileName();
-            Version = GetVersionFromFile();
+            File = fileHandle;
+            ModName = modName;
+            Version = version;
             ConfigIndex = configIndex;
             IsEnabled = isEnabled;
         }
 
         string UserConfiguration.INameProvider.Name => ModName;
 
-        public static ModFile Create(string path, IEnumerable<string> paths, bool isEnabled)
+        public static ModFile Create
+        (
+            string path,
+            IEnumerable<string> paths,
+            IDictionary<string, bool> knownMods
+        )
         {
             var dictionary = path
                 .FileHandle().DirectoryName
@@ -38,22 +43,24 @@ namespace ManageModsAndSavefiles
                 .IndexWhere(dictionary.StartsWith)
                 .AssertValue();
 
-            return new ModFile(path, index, isEnabled);
+            var fileHandle = path.FileHandle();
+            var modName = GetModNameFromFile(fileHandle);
+            var isEnabled = knownMods.GetValueOrNull(modName);
+
+            return new ModFile
+            (
+                fileHandle,
+                modName,
+                GetVersionFromFile(fileHandle),
+                isEnabled,
+                index
+            );
         }
 
-        string GetVersionFromFileName()
-        {
-            var nameParts = File.Name.Split('_');
-            if(nameParts.Length == 1)
-                return "<unknown>";
-
-            return File.Name.Substring(nameParts[0].Length + 1);
-        }
-
-        string GetVersionFromFile()
+        static string GetVersionFromFile(File file)
         {
             var text =
-                File.IsDirectory ? GetInfoJSonFromDirectory() : GetInfoJSonFromZipFile();
+                file.IsDirectory ? GetInfoJSonFromDirectory(file) : GetInfoJSonFromZipFile(file);
             if(text == null)
                 return "<unknown>";
 
@@ -61,22 +68,31 @@ namespace ManageModsAndSavefiles
             return info.Version;
         }
 
-        string GetInfoJSonFromZipFile()
+        static string GetModNameFromFile(File file)
         {
-            var headerDir = File.Name.Substring(0, File.Name.Length - 4);
-            return File
+            var text =
+                file.IsDirectory ? GetInfoJSonFromDirectory(file) : GetInfoJSonFromZipFile(file);
+            if (text == null)
+                return "<unknown>";
+
+            var info = text.FromJson<ModInfo>();
+            return info.Name;
+        }
+
+        static string GetInfoJSonFromZipFile(File modFileFile)
+        {
+            var headerDir = modFileFile.Name.Substring(0, modFileFile.Name.Length - 4);
+            return modFileFile
                 .FullName
                 .ZipFileHandle()
                 .GetItem(headerDir + "/" + FileNameInfoJson)
                 .String;
         }
 
-        string GetInfoJSonFromDirectory()
-            => File.FullName.PathCombine(FileNameInfoJson)
+        static string GetInfoJSonFromDirectory(File file)
+            => file.FullName.PathCombine(FileNameInfoJson)
                 .FileHandle()
                 .String;
-
-        string GetModNameFromFileName() => File.Name.Split('_')[0];
 
         public override string ToString()
             => ConfigIndex + ":" +

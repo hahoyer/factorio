@@ -3,7 +3,26 @@
   <PropertyGroup>
     <ProjectGuid>{EBB73C84-6622-4183-A28F-B0DFF606006B}</ProjectGuid>
     <AssemblyName>ManageModsAndSavefiles</AssemblyName>
-    <TargetTypeEx>CSharp.Exe</TargetTypeEx>
+    <TargetTypeEx>CSharp.Library</TargetTypeEx>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>ManageModsAndSavefiles</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>649</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs">
@@ -13,7 +32,7 @@
     </Compile>
     <Compile Include="BooleanJsonConverter.cs" />
     <Compile Include="Configuration.cs" />
-    <Compile Include="Context.cs" />
+    <Compile Include="MmasfContext.cs" />
     <Compile Include="DataConfiguration.cs" />
     <Compile Include="Extension.cs" />
     <Compile Include="Formatter.cs" />
@@ -56,26 +75,10 @@
     <Compile Include="ModFile.cs" />
     <Compile Include="ModInfo.cs" />
     <Compile Include="ModMatrix.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="SaveFile.cs" />
     <Compile Include="SystemConfiguration.cs" />
     <Compile Include="UserConfiguration.cs" />
     <Compile Include="ZipFileHandle.cs" />
-    <Content Include="Setup.iss">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Setup.tt</DependentUpon>
-    </Content>
-    <Content Include="Setup.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Setup.iss</LastGenOutput>
-    </Content>
-    <None Include="log4net.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Version.tt">
-      <LastGenOutput>Version.txt</LastGenOutput>
-    </None>
     <None Include="packages.config" />
     <None Include="sys.targets" />
     <Content Include="AssemblyInfo.tt">
@@ -99,20 +102,18 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
-      <Private>True</Private>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Training\log4net.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Training\json\Bin\Net35\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="sys.targets" />
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Setup|AnyCPU' ">
-    <PostBuildEvent>echo "$(ProgramFiles)\Inno Setup 5\ISCC.exe" /DConfiguration=$(ConfigurationName) /O$(OutDir) $(ProjectDir)Setup.iss
-"$(ProgramFiles)\Inno Setup 5\ISCC.exe" /DConfiguration=$(ConfigurationName) /O$(OutDir) $(ProjectDir)Setup.iss</PostBuildEvent>
-  </PropertyGroup>
 </Project>

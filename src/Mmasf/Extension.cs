@@ -68,5 +68,28 @@ namespace ManageModsAndSavefiles
         }
 
         public static ZipFileHandle ZipFileHandle(this string name) => new ZipFileHandle(name, null);
+
+
+        public static TValue? GetValueOrNull<TKey, TValue>
+            (this IDictionary<TKey, TValue> dictionary, TKey target)
+            where TValue: struct
+        {
+            TValue result;
+            if(dictionary.TryGetValue(target, out result))
+                return result;
+
+            return null;
+        }
+
+        public static TValue GetValueOrDefault<TKey, TValue>
+            (this IDictionary<TKey, TValue> dictionary, TKey target)
+        {
+            TValue result;
+            if (dictionary.TryGetValue(target, out result))
+                return result;
+
+            return default(TValue);
+        }
+
     }
 }

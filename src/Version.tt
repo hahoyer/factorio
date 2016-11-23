@@ -1,17 +1,10 @@
 ﻿<#
-        var title = "Executable";
         var product = "Manage mods and savefile for factorio";
         var appName = "Mmasf";
         var company = "HoyerWare";
         var major = DateTime.Today.ToString("yy");
-        var minor = 1;
+        var minor = 2;
         var build = 0;
         var revision = 0;
         var versionString = major + "." + minor + "." + build + "." + revision;
-        var assemblies = new[]
-        {
-            "INIFileParser.dll",
-            "Newtonsoft.Json.dll",
-            "JetBrains.Annotations.dll"
-        };
 #>

@@ -7,7 +7,7 @@ using log4net;
 
 namespace ManageModsAndSavefiles
 {
-    sealed class SystemConfiguration
+    public sealed class SystemConfiguration
     {
         static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -28,10 +28,14 @@ namespace ManageModsAndSavefiles
                     .FullName
             );
 
+        internal static SystemConfiguration Create(string fileName)
+            => new SystemConfiguration(fileName);
+
         readonly IniFile File;
 
-        internal SystemConfiguration(string fileName) { File = new IniFile(fileName); }
+        SystemConfiguration(string fileName) { File = new IniFile(fileName); }
 
         internal string ConfigurationPath => File.Global[ConfigPathTag].PathFromFactorioStyle();
+
     }
 }

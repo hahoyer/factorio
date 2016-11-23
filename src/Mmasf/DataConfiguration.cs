@@ -5,7 +5,7 @@ using hw.Helper;
 
 namespace ManageModsAndSavefiles
 {
-    sealed class DataConfiguration
+    public sealed class DataConfiguration
     {
         const string PathSectionName = "path";
         const string WriteDataTag = "write-data";

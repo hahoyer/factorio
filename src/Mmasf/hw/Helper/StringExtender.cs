@@ -112,7 +112,11 @@ namespace hw.Helper
         }
 
         public static File FileHandle(this string name) { return File.Create(name); }
-        public static string PathCombine(this string head, params string[] tail) { return Path.Combine(head, Path.Combine(tail)); }
+
+        public static string PathCombine(this string head, params string[] tail)
+        {
+            return tail.Aggregate(head , Path.Combine);
+        }
 
         public static string UnderScoreToCamelCase(this string name) { return name.Split('_').Select(ToLowerFirstUpper).Stringify(""); }
 
