@@ -25,7 +25,8 @@ namespace hw.Helper
 
         void Ensure()
         {
-            Tracer.Assert(!IsBusy, "Recursive attemt to get value.");
+            if(IsBusy)
+                throw new BusyException("Recursive attempt to get value.");
             if (_isValid)
                 return;
 
@@ -41,9 +42,15 @@ namespace hw.Helper
             }
         }
 
+        sealed class BusyException : Exception
+        {
+            public BusyException(string message) :base(message){  }
+        }
+
         void Reset()
         {
-            Tracer.Assert(!IsBusy, "Attempt to reset value during getting value.");
+            if (IsBusy)
+                throw new BusyException("Attempt to reset value during getting value.");
             if (!_isValid)
                 return;
 
