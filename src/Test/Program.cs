@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using hw.DebugFormatter;
 using hw.Helper;
 using ManageModsAndSavefiles;
 
-namespace Net2Assembly
+namespace Test
 {
     class Program
     {

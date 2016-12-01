@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="12.0">
+  <PropertyGroup>
+    <ProjectGuid>{E6986DBC-5120-46F5-A727-7DD6696252ED}</ProjectGuid>
+    <AssemblyName>Test</AssemblyName>
+    <TargetTypeEx>CSharp.Exe</TargetTypeEx>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AssemblyInfo.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <None Include="sys.targets" />
+    <Content Include="AssemblyInfo.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>AssemblyInfo.cs</LastGenOutput>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Mmasf\ManageModsAndSavefiles.csproj">
+      <Project>{ebb73c84-6622-4183-a28f-b0dff606006b}</Project>
+      <Name>ManageModsAndSavefiles</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="sys.targets" />
+</Project>
