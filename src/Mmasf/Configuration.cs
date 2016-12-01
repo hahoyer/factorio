@@ -3,14 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using hw.Helper;
-using log4net;
 
 namespace ManageModsAndSavefiles
 {
     public sealed class Configuration
     {
-        static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
         const string FileNameEnd = "FactorioMmasf\\config.json";
 
         static readonly string Path

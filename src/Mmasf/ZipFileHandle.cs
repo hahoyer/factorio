@@ -57,8 +57,8 @@ namespace ManageModsAndSavefiles
 
         public static Stream OpenStream(string path, ZipArchiveMode mode, string entryName)
         {
-            var t = typeof(System.IO.Packaging.Package).Assembly
-                .GetType("MS.Internal.IO.Zip.ZipArchive");
+            //var t = typeof(System.IO.Packaging.Package).Assembly
+            //    .GetType("MS.Internal.IO.Zip.ZipArchive");
             return null;
         }
     }

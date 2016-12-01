@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using hw.DebugFormatter;
 using hw.Helper;
-using log4net;
 
 namespace ManageModsAndSavefiles
 {
     public sealed class UserConfiguration : DumpableObject
     {
-        static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
         const string SaveDirectoryName = "saves";
         internal const string ModDirectoryName = "mods";
         const string PlayerDataFileName = "player-data.json";
@@ -43,11 +39,11 @@ namespace ManageModsAndSavefiles
         internal static UserConfiguration Create(string item, string[] allPaths)
             => new UserConfiguration(item, allPaths);
 
-        readonly string Path;
+        public readonly string Path;
         readonly string[] AllPaths;
         readonly ValueCache<SaveFile[]> SaveFilesCache;
         readonly ValueCache<ModFile[]> ModFilesCache;
-        readonly ValueCache<IDictionary<string,bool>> ModConfigurationCache;
+        readonly ValueCache<IDictionary<string, bool>> ModConfigurationCache;
 
         UserConfiguration(string path, string[] allPaths)
         {
@@ -98,7 +94,7 @@ namespace ManageModsAndSavefiles
             var text = fileHandle.String;
             var result = text.FromJson<ModConfiguration>();
             var modConfigurationCells = result.Cells;
-            return modConfigurationCells.ToDictionary(item=>item.Name, item=>item.IsEnabled);
+            return modConfigurationCells.ToDictionary(item => item.Name, item => item.IsEnabled);
         }
 
         internal IEnumerable<ModFile> ModFiles => ModFilesCache.Value;
@@ -106,10 +102,8 @@ namespace ManageModsAndSavefiles
         IDictionary<string, bool> ModConfiguration => ModConfigurationCache.Value;
 
         public void InitializeFrom(UserConfiguration source)
-        {
-            Log.Debug("InitializeFrom");
+            =>
             source.FilesPath(PlayerDataFileName).FileHandle().CopyTo(FilesPath(PlayerDataFileName));
-        }
 
         internal interface INameProvider
         {

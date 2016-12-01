@@ -4,20 +4,16 @@ using System.Linq;
 using System.Reflection;
 using IniParser.Model;
 using hw.Helper;
-using log4net;
 
 namespace ManageModsAndSavefiles
 {
     sealed class IniFile
     {
-        static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
         readonly ValueCache<IniData> Data;
         internal readonly string Path;
 
         internal IniFile(string path)
         {
-            Log.Info("IniFile(" + path + ")");
             Path = path;
             Data = new ValueCache<IniData>(() => Path.FromIni());
         }

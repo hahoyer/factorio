@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using hw.DebugFormatter;
+using hw.Helper;
 using ManageModsAndSavefiles;
 
 namespace Net2Assembly
@@ -11,10 +13,10 @@ namespace Net2Assembly
     {
         public static void Main(string[] args)
         {
-            //var client = IpcClient.Instance;
-            //var info = client.GetObject<IContext>().Information;
-            var info = MmasfContext.Instance.FactorioInformation;
-            Debug.WriteLine(info);
+            var context = MmasfContext.Instance;
+            Tracer.Line(context.FactorioInformation);
+            Tracer.Line(context.SystemConfiguration.ConfigurationPath);
+            Tracer.Line(context.UserConfigurations.Select(item => item.Path).Stringify("\n"));
         }
     }
 }

@@ -17,6 +17,8 @@
         <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace Condition=" '$(RootNamespace)' == '' ">$(AssemblyName)</RootNamespace>
+        <NoWarn>649</NoWarn>
+        <PlatformTarget>x86</PlatformTarget>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

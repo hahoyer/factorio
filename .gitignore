@@ -8,3 +8,7 @@ _ReSharper.*
 obj/
 /src/*/bin
 /src/**/.vs/
+/setup/Output
+/unity/Mmasf/Library/
+/unity/Mmasf/Temp/
+/unity/Mmasf/Obj/
