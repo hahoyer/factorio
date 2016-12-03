@@ -3,24 +3,43 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public sealed class CapsuleController : MonoBehaviour
+namespace Mmasf
 {
-    public float Speed = 10.0f;
-
-    void Start() { Cursor.lockState = CursorLockMode.Locked; }
-
-    void Update()
+    public sealed class CapsuleController : MonoBehaviour
     {
-        var commandVector = new Vector3
-        (
-            Input.GetAxis("Horizontal"),
-            0,
-            Input.GetAxis("Vertical")
-        );
+        public float Speed = 10.0f;
+        public bool IsCursorLocked = true;
 
-        transform.Translate(commandVector * Speed * Time.deltaTime);
+        void Update()
+        {
+            ApplyMove();
+            UpdateLockState();
+        }
 
-        if(Input.GetKeyDown("escape"))
-            Cursor.lockState = CursorLockMode.None;
+        void UpdateLockState()
+        {
+            if(!IsCursorLocked && Input.GetMouseButtonDown(0))
+                IsCursorLocked = true;
+
+            if(IsCursorLocked && Input.GetKeyDown("escape"))
+                IsCursorLocked = false;
+
+            Cursor.lockState = IsCursorLocked ? CursorLockMode.Locked : CursorLockMode.None;
+        }
+
+        void ApplyMove()
+        {
+            if(!IsCursorLocked)
+                return;
+
+            var commandVector = new Vector3
+            (
+                Input.GetAxis("Horizontal"),
+                0,
+                Input.GetAxis("Vertical")
+            );
+
+            transform.Translate(commandVector * Speed * Time.deltaTime);
+        }
     }
 }

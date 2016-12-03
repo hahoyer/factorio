@@ -15,7 +15,6 @@
         <TargetFrameworkProfile>
         </TargetFrameworkProfile>
         <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-        <TargetFrameworkProfile>Unity Full v3.5</TargetFrameworkProfile>
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace Condition=" '$(RootNamespace)' == '' ">$(AssemblyName)</RootNamespace>
         <NoWarn>649</NoWarn>

@@ -5,39 +5,44 @@ using ManageModsAndSavefiles;
 using UnityEngine;
 using UnityEngine.UI;
 
-public sealed class VersionInformationToWall : MonoBehaviour
+namespace Mmasf
 {
-    void Start() { GetComponent<Text>().text = "Factorio !!!"; }
-
-    void Update() { GetComponent<Text>().text = Information; }
-
-    static string Information
+    public sealed class VersionInformationToWall : MonoBehaviour
     {
-        get
+        void Start() { GetComponent<Text>().text = "Factorio !!!"; }
+
+        void Update() { GetComponent<Text>().text = Information; }
+
+        static string Information
         {
-            try
+            get
             {
-                return MmasfContext.Instance.FactorioInformation;
-            }
-            catch(Exception e)
-            {
-                return ExceptionDump(e);
+                try
+                {
+                    return MmasfContext.Instance.FactorioInformation;
+                }
+                catch(Exception e)
+                {
+                    return ExceptionDump(e);
+                }
             }
         }
-    }
 
-    static string ExceptionDump(Exception exception)
-    {
-        return exception.GetType().Name + ": " + 
-            exception.Message + 
-            ExceptionDumpTail(exception);
-    }
+        static string ExceptionDump(Exception exception)
+        {
+            var head = exception.GetType().Name + ": " + exception.Message;
+            var stack = "stack: " + exception.StackTrace;
+            return head + "\n" +
+                stack +
+                ExceptionDumpTail(exception);
+        }
 
-    static string ExceptionDumpTail(Exception exception)
-    {
-        if(exception.InnerException == null)
-            return "";
+        static string ExceptionDumpTail(Exception exception)
+        {
+            if(exception.InnerException == null)
+                return "";
 
-        return "\n" + ExceptionDump(exception.InnerException);
+            return "\n" + ExceptionDump(exception.InnerException);
+        }
     }
 }
