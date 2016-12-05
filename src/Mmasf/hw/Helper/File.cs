@@ -349,5 +349,16 @@ namespace hw.Helper
             public EnsureIsExistentDirectoryException(string message)
                 : base(message) { }
         }
+
+        public byte[] GetBytes(long start, int count)
+        {
+            using(var reader = Reader)
+            {
+                var result = new byte[count];
+                reader.Seek(start, SeekOrigin.Begin);
+                reader.Read(result, 0, count);
+                return result;
+            }
+        }
     }
 }

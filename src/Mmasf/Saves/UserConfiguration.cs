@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
+using ManageModsAndSavefiles.Mods;
+using ManageModsAndSavefiles.Saves;
 
 namespace ManageModsAndSavefiles
 {
@@ -36,49 +38,56 @@ namespace ManageModsAndSavefiles
             return fileHandle.Exists && fileHandle.IsDirectory == isDictionary;
         }
 
-        internal static UserConfiguration Create(string item, string[] allPaths)
-            => new UserConfiguration(item, allPaths);
+        internal static UserConfiguration Create
+            (string item, string[] allPaths, MmasfContext parent)
+            => new UserConfiguration(item, allPaths, parent);
 
         public readonly string Path;
         readonly string[] AllPaths;
-        readonly ValueCache<SaveFile[]> SaveFilesCache;
-        readonly ValueCache<ModFile[]> ModFilesCache;
+        readonly ValueCache<Saves.FileCluster[]> SaveFilesCache;
+        readonly ValueCache<Mods.FileCluster[]> ModFilesCache;
         readonly ValueCache<IDictionary<string, bool>> ModConfigurationCache;
+        readonly MmasfContext Parent;
 
-        UserConfiguration(string path, string[] allPaths)
+        public string Name => Path.Split('\\').Last();
+
+        UserConfiguration(string path, string[] allPaths, MmasfContext parent)
         {
             Path = path;
             AllPaths = allPaths;
+            Parent = parent;
             ModConfigurationCache = new ValueCache<IDictionary<string, bool>>(GetModConfiguration);
-            ModFilesCache = new ValueCache<ModFile[]>(GetModFiles);
-            SaveFilesCache = new ValueCache<SaveFile[]>(GetSaveFiles);
+            ModFilesCache = new ValueCache<Mods.FileCluster[]>(GetModFiles);
+            SaveFilesCache = new ValueCache<Saves.FileCluster[]>(GetSaveFiles);
         }
 
         string FilesPath(string item) => Path.PathCombine(item);
 
-        SaveFile[] GetSaveFiles()
+        Saves.FileCluster[] GetSaveFiles()
         {
             var fileHandle = FilesPath(SaveDirectoryName).FileHandle();
             if(!fileHandle.Exists)
-                return new SaveFile[0];
+                return new Saves.FileCluster[0];
 
             return fileHandle
                 .Items
                 .Where(item => !item.IsDirectory && item.Extension.ToLower() == ".zip")
-                .Select(item => new SaveFile(item.FullName))
+                .Select(item => new Saves.FileCluster(item.FullName, Parent))
                 .ToArray();
         }
 
-        ModFile[] GetModFiles()
+        Mods.FileCluster[] GetModFiles()
         {
             var fileHandle = FilesPath(ModDirectoryName).FileHandle();
             if(!fileHandle.Exists)
-                return new ModFile[0];
+                return new Mods.FileCluster[0];
 
             return fileHandle
                 .Items
                 .Where(item => item.IsDirectory || item.Extension.ToLower() == ".zip")
-                .Select(item => ModFile.Create(item.FullName, AllPaths, ModConfiguration))
+                .Select
+                (item => Mods.FileCluster.Create(item.FullName, AllPaths, ModConfiguration, Parent))
+                .Where(item => item != null)
                 .ToArray();
         }
 
@@ -92,23 +101,28 @@ namespace ManageModsAndSavefiles
                 return new Dictionary<string, bool>();
 
             var text = fileHandle.String;
-            var result = text.FromJson<ModConfiguration>();
+            var result = text.FromJson<ModListJSon>();
             var modConfigurationCells = result.Cells;
             return modConfigurationCells.ToDictionary(item => item.Name, item => item.IsEnabled);
         }
 
-        internal IEnumerable<ModFile> ModFiles => ModFilesCache.Value;
-        IEnumerable<SaveFile> SaveFiles => SaveFilesCache.Value;
+        public IEnumerable<Mods.FileCluster> ModFiles => ModFilesCache.Value;
+        public IEnumerable<Saves.FileCluster> SaveFiles => SaveFilesCache.Value;
         IDictionary<string, bool> ModConfiguration => ModConfigurationCache.Value;
+
+        public IEnumerable<ModConflict> SaveFileConflicts 
+            => SaveFiles
+            .SelectMany(GetConflicts);
+
+        IEnumerable<ModConflict> GetConflicts(Saves.FileCluster save)
+            => save
+                .Mods
+                .Merge(ModFiles, arg => arg.Name, arg => arg.Description.Name)
+                .SelectMany(item => save.GetConflict(item.Item2, item.Item3).NullableToArray());
 
         public void InitializeFrom(UserConfiguration source)
             =>
             source.FilesPath(PlayerDataFileName).FileHandle().CopyTo(FilesPath(PlayerDataFileName));
-
-        internal interface INameProvider
-        {
-            string Name { get; }
-        }
 
         protected override string GetNodeDump() => Path.FileHandle().Name;
     }

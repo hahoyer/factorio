@@ -4,56 +4,70 @@ using System.Diagnostics;
 using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
+using ManageModsAndSavefiles.Mods;
 
 namespace ManageModsAndSavefiles
 {
-    public sealed class MmasfContext
+    public sealed class MmasfContext : DumpableObject
     {
         public static readonly MmasfContext Instance = new MmasfContext();
 
-        readonly CacheInNet<Configuration> ConfigurationCache;
-        readonly CacheInNet<SystemConfiguration> SystemConfigurationCache;
-        readonly CacheInNet<DataConfiguration> DataConfigurationCache;
-        readonly CacheInNet<UserConfiguration[]> UserConfigurationsCache;
-        readonly CacheInNet<ModMatrix> ModMatrixCache;
+        readonly CompoundCache<Configuration> ConfigurationCache;
+        readonly CompoundCache<SystemConfiguration> SystemConfigurationCache;
+        readonly CompoundCache<DataConfiguration> DataConfigurationCache;
+        readonly CompoundCache<UserConfiguration[]> UserConfigurationsCache;
+        readonly CompoundCache<ModMatrix> ModMatrixCache;
+        public readonly FunctionCache<string, FunctionCache<Version, ModDescription>> ModDictionary;
 
         MmasfContext()
         {
-            ConfigurationCache = new CacheInNet<Configuration>(Configuration.Create);
+            ConfigurationCache = new CompoundCache<Configuration>(Configuration.Create);
 
-            SystemConfigurationCache = new CacheInNet<SystemConfiguration>
+            ModDictionary = new FunctionCache<string, FunctionCache<Version, ModDescription>>
+                (GetMod);
+
+            SystemConfigurationCache = new CompoundCache<SystemConfiguration>
             (
                 () => SystemConfiguration.Create(Configuration.SystemPath),
                 ConfigurationCache
             );
 
-            DataConfigurationCache = new CacheInNet<DataConfiguration>
+            DataConfigurationCache = new CompoundCache<DataConfiguration>
             (
                 () =>
                     new DataConfiguration(SystemConfiguration.ConfigurationPath),
                 SystemConfigurationCache
             );
 
-            UserConfigurationsCache = new CacheInNet<UserConfiguration[]>
+            UserConfigurationsCache = new CompoundCache<UserConfiguration[]>
             (
                 () => Configuration
                     .UserConfigurationPaths
                     .Select
-                    (item => UserConfiguration.Create(item, Configuration.UserConfigurationPaths))
+                    (
+                        item =>
+                            UserConfiguration.Create
+                                (item, Configuration.UserConfigurationPaths, this))
                     .ToArray(),
                 UserConfigurationsCache
             );
 
-            ModMatrixCache = new CacheInNet<ModMatrix>
+            ModMatrixCache = new CompoundCache<ModMatrix>
                 (() => new ModMatrix(UserConfigurations), UserConfigurationsCache);
         }
 
+        [DisableDump]
         public Configuration Configuration => ConfigurationCache.Value;
+        [DisableDump]
         public SystemConfiguration SystemConfiguration => SystemConfigurationCache.Value;
+        [DisableDump]
         public DataConfiguration DataConfiguration => DataConfigurationCache.Value;
+        [DisableDump]
         public UserConfiguration[] UserConfigurations => UserConfigurationsCache.Value;
+        [DisableDump]
         public ModMatrix ModMatrix => ModMatrixCache.Value;
 
+        [DisableDump]
         public string FactorioInformation
         {
             get
@@ -74,57 +88,32 @@ namespace ManageModsAndSavefiles
             }
         }
 
+        static FunctionCache<Version, ModDescription> GetMod(string name)
+            => new FunctionCache<Version, ModDescription>(version => GetMod(name, version));
+
+        static ModDescription GetMod(string name, Version version) => new ModDescription(name, version);
+
         public void RenewUserConfigurationPaths()
         {
             Configuration.RenewUserConfigurationPaths();
             ConfigurationCache.Invalidate();
         }
-    }
 
-    abstract class CacheInNet : DumpableObject
-    {
-        readonly CacheInNet[] DependsOn;
-
-        protected CacheInNet(CacheInNet[] dependsOn) { DependsOn = dependsOn; }
-
-        protected CacheInNet[] AllDependers
+        public ModDescription CreateModReferenceBefore0_14(int i, BinaryRead reader)
         {
-            get
-            {
-                var result = DependsOn;
-                while(true)
-                {
-                    var newResult = result
-                        .SelectMany(item => item.DependsOn)
-                        .Concat(result)
-                        .Distinct()
-                        .ToArray();
-                    if(result.Length == newResult.Length)
-                        return newResult;
-
-                    result = newResult;
-                }
-            }
+            var name = reader.GetNextString<int>();
+            var version = new Version
+                (reader.GetNext<short>(), reader.GetNext<short>(), reader.GetNext<short>());
+            return ModDictionary[name][version];
         }
 
-        public abstract void Invalidate();
-    }
-
-    sealed class CacheInNet<TValue> : CacheInNet
-    {
-        readonly ValueCache<TValue> Cache;
-
-        public CacheInNet(Func<TValue> getValue, params CacheInNet[] dependsOn)
-            : base(dependsOn) { Cache = new ValueCache<TValue>(getValue); }
-
-        public TValue Value => Cache.Value;
-
-        public void OnChange()
+        public ModDescription CreateModReference(int i, BinaryRead reader)
         {
-            foreach(var item in AllDependers)
-                item.Invalidate();
+            var name = reader.GetNextString<byte>();
+            var lookAhead = reader.GetBytes(150);
+            var version = new Version
+                (reader.GetNext<byte>(), reader.GetNext<byte>(), reader.GetNext<byte>());
+            return ModDictionary[name][version];
         }
-
-        public override void Invalidate() { Cache.IsValid = false; }
     }
 }

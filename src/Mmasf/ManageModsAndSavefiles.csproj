@@ -11,7 +11,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AssemblyInfo.tt</DependentUpon>
     </Compile>
+    <Compile Include="BinaryRead.cs" />
     <Compile Include="BooleanJsonConverter.cs" />
+    <Compile Include="CompoundCache.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="MmasfContext.cs" />
     <Compile Include="DataConfiguration.cs" />
@@ -52,13 +54,15 @@
     <Compile Include="hw\Helper\ValueCache.cs" />
     <Compile Include="hw\Helper\ValueCacheExtension.cs" />
     <Compile Include="IniFile.cs" />
-    <Compile Include="ModConfiguration.cs" />
-    <Compile Include="ModFile.cs" />
-    <Compile Include="ModInfo.cs" />
-    <Compile Include="ModMatrix.cs" />
-    <Compile Include="SaveFile.cs" />
+    <Compile Include="Mods\ModDescription.cs" />
+    <Compile Include="Mods\ModListJSon.cs" />
+    <Compile Include="Mods\FileCluster.cs" />
+    <Compile Include="Mods\InfoJSon.cs" />
+    <Compile Include="Mods\ModMatrix.cs" />
+    <Compile Include="Saves\Saves\FileCluster.cs" />
+    <Compile Include="Saves\Saves\ModConflict.cs" />
     <Compile Include="SystemConfiguration.cs" />
-    <Compile Include="UserConfiguration.cs" />
+    <Compile Include="Saves\UserConfiguration.cs" />
     <Compile Include="ZipFileHandle.cs" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
@@ -70,6 +74,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="DotNetZip, Version=1.10.1.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetZip.1.10.1\lib\net20\DotNetZip.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="INIFileParser, Version=2.3.0.0, Culture=neutral, PublicKeyToken=79af7b307b65cf3c, processorArchitecture=MSIL">
       <HintPath>..\packages\ini-parser.2.3.0\lib\net20\INIFileParser.dll</HintPath>
       <Private>True</Private>
@@ -81,6 +89,7 @@
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

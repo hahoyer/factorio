@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using hw.DebugFormatter;
 using hw.Helper;
 using IniParser;
 using IniParser.Model;
@@ -18,7 +21,8 @@ namespace ManageModsAndSavefiles
                 .GetFolderPath(Environment.SpecialFolder.ApplicationData)
                 .PathCombine("Factorio");
 
-        internal static IEnumerable<File> FindFilesThatEndsWith(this File root, string target)
+        internal static IEnumerable<hw.Helper.File> FindFilesThatEndsWith
+            (this hw.Helper.File root, string target)
             => root.RecursiveItems()
                 .Where(item => item.FullName.EndsWith(target));
 
@@ -63,7 +67,7 @@ namespace ManageModsAndSavefiles
 
         public static TValue? GetValueOrNull<TKey, TValue>
             (this IDictionary<TKey, TValue> dictionary, TKey target)
-            where TValue: struct
+            where TValue : struct
         {
             TValue result;
             if(dictionary.TryGetValue(target, out result))
@@ -76,7 +80,7 @@ namespace ManageModsAndSavefiles
             (this IDictionary<TKey, TValue> dictionary, TKey target)
         {
             TValue result;
-            if (dictionary.TryGetValue(target, out result))
+            if(dictionary.TryGetValue(target, out result))
                 return result;
 
             return default(TValue);

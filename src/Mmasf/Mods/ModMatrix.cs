@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
 
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSavefiles.Mods
 {
     public sealed class ModMatrix : DumpableObject
     {
@@ -16,12 +14,12 @@ namespace ManageModsAndSavefiles
             UserConfigurations = userConfigurations;
             ModLines = UserConfigurations
                 .SelectMany(p => p.ModFiles)
-                .GroupBy(item => item.ModName)
+                .GroupBy(item => item.Description.Name)
                 .Select(files => GetModLine(UserConfigurations.Length, files))
                 .ToArray();
         }
 
-        static ModLine GetModLine(int userConfigurations, IGrouping<string, ModFile> arg)
+        static ModLine GetModLine(int userConfigurations, IGrouping<string, FileCluster> arg)
             => ModLine.Create(userConfigurations, arg);
     }
 
@@ -42,11 +40,11 @@ namespace ManageModsAndSavefiles
 
             Cell() { }
 
-            public static Cell Create(ModFile arg)
-                => arg == null ? new Cell() : new Cell(arg.Version, arg.IsEnabled);
+            public static Cell Create(FileCluster modFile)
+                => modFile == null ? new Cell() : new Cell(modFile.Description.Name, modFile.IsEnabled);
         }
 
-        internal static ModLine Create(int userConfigurations, IGrouping<string, ModFile> arg)
+        internal static ModLine Create(int userConfigurations, IGrouping<string, FileCluster> arg)
         {
             var modFiles = userConfigurations
                 .Select(index => arg.SingleOrDefault(item => item.ConfigIndex == index))
@@ -56,7 +54,7 @@ namespace ManageModsAndSavefiles
 
         Cell[] Cells;
 
-        ModLine(string modName, ModFile[] modFiles)
+        ModLine(string modName, FileCluster[] modFiles)
         {
             ModName = modName;
             Cells = modFiles.Select(Cell.Create).ToArray();

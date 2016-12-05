@@ -2,18 +2,20 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using hw.DebugFormatter;
 using hw.Helper;
+using Ionic.Zip;
 
 namespace ManageModsAndSavefiles
 {
     public sealed class ZipFileHandle : DumpableObject
     {
-        const int MaxLength = 1024 * 1024;
-
         readonly string ArchivePath;
         readonly string ItemPath;
+
+        public string ItemName => ItemPath.Split('/').Last();
 
         public ZipFileHandle(string archivePath, string itemPath = null)
         {
@@ -21,75 +23,49 @@ namespace ManageModsAndSavefiles
             ItemPath = itemPath;
         }
 
+        [DisableDump]
         public string String
         {
             get
             {
                 Tracer.Assert(!string.IsNullOrEmpty(ItemPath));
 
-                var zipArchive = ZipFile
-                    .Open(ArchivePath, ZipArchiveMode.Read);
-                var entry = zipArchive.GetEntry(ItemPath);
-
-                using(var s = entry.Open())
+                using(var zipFile = ZipFile.Read(ArchivePath))
                 {
-                    var buffer = new byte[MaxLength];
-                    var actualLength = s.Read(buffer, 0, MaxLength);
-                    Tracer.Assert(actualLength < MaxLength);
-                    return Encoding.UTF8.GetString(buffer, 0, actualLength);
+                    var length = (int) zipFile.Entries.Single(item => item.FileName == ItemPath).UncompressedSize;
+                    return BinaryReader.GetNextString(length);
                 }
             }
         }
 
         public ZipFileHandle GetItem(string itemPath)
             => new ZipFileHandle(ArchivePath, ItemPath?.PathCombine(itemPath) ?? itemPath);
-    }
 
-    public enum ZipArchiveMode
-    {
-        Read
-    }
-
-    public static class ZipFile
-    {
-        public static ZipArchive Open(string path, ZipArchiveMode mode)
-            => new ZipArchive(path, mode);
-
-        public static Stream OpenStream(string path, ZipArchiveMode mode, string entryName)
+        public IEnumerable<ZipFileHandle> Items
         {
-            //var t = typeof(System.IO.Packaging.Package).Assembly
-            //    .GetType("MS.Internal.IO.Zip.ZipArchive");
-            return null;
-        }
-    }
-
-    public sealed class ZipArchive
-    {
-        readonly string Path;
-        readonly ZipArchiveMode Mode;
-
-        public ZipArchive(string path, ZipArchiveMode mode)
-        {
-            Path = path;
-            Mode = mode;
+            get
+            {
+                using(var zipFile = ZipFile.Read(ArchivePath))
+                    return zipFile
+                        .Entries
+                        .Select(item => new ZipFileHandle(ArchivePath, item.FileName));
+            }
         }
 
-        public ZipArchiveEntry GetEntry(string entryName) => new ZipArchiveEntry(this, entryName);
-
-        public Stream OpenStream(string entryName) => ZipFile.OpenStream(Path, Mode, entryName);
-    }
-
-    public sealed class ZipArchiveEntry
-    {
-        readonly ZipArchive Parent;
-        readonly string EntryName;
-
-        public ZipArchiveEntry(ZipArchive parent, string entryName)
+        public Stream Reader
         {
-            Parent = parent;
-            EntryName = entryName;
+            get
+            {
+                using(var zipFile = ZipFile.Read(ArchivePath))
+                {
+                    var zipEntry = zipFile.Entries.Single(item => item.FileName == ItemPath);
+                    var result = new MemoryStream();
+                    zipEntry.Extract(result);
+                    return result;
+                }
+            }
         }
 
-        public Stream Open() => Parent.OpenStream(EntryName);
+        public BinaryRead BinaryReader => new BinaryRead(Reader);
     }
 }
