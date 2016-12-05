@@ -11,10 +11,16 @@ namespace ManageModsAndSavefiles
     public sealed class BinaryRead : DumpableObject
     {
         readonly Stream Reader;
+        public readonly long Length;
         public long Position;
 
-        public BinaryRead(Stream reader) { Reader = reader; }
+        public BinaryRead(Stream reader, long length)
+        {
+            Reader = reader;
+            Length = length;
+        }
 
+        public bool IsEnd => Position >= Length;
         public byte[] GetNextBytes(int count)
         {
             var result = GetBytes(count);
@@ -64,4 +70,4 @@ namespace ManageModsAndSavefiles
 
         public string GetNextString(int length) => Encoding.UTF8.GetString(GetNextBytes(length));
     }
-}
+}                             

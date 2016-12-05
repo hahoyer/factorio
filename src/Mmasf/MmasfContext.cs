@@ -91,7 +91,8 @@ namespace ManageModsAndSavefiles
         static FunctionCache<Version, ModDescription> GetMod(string name)
             => new FunctionCache<Version, ModDescription>(version => GetMod(name, version));
 
-        static ModDescription GetMod(string name, Version version) => new ModDescription(name, version);
+        static ModDescription GetMod(string name, Version version)
+            => new ModDescription(name, version);
 
         public void RenewUserConfigurationPaths()
         {
@@ -99,7 +100,7 @@ namespace ManageModsAndSavefiles
             ConfigurationCache.Invalidate();
         }
 
-        public ModDescription CreateModReferenceBefore0_14(int i, BinaryRead reader)
+        internal ModDescription CreateModReferenceBefore0_14(int i, BinaryRead reader)
         {
             var name = reader.GetNextString<int>();
             var version = new Version
@@ -107,8 +108,11 @@ namespace ManageModsAndSavefiles
             return ModDictionary[name][version];
         }
 
-        public ModDescription CreateModReference(int i, BinaryRead reader)
+        public ModDescription CreateModReference(int i, BinaryRead reader, bool isBefore01414)
         {
+            if(isBefore01414)
+                return CreateModReferenceBefore0_14(i, reader);
+
             var name = reader.GetNextString<byte>();
             var lookAhead = reader.GetBytes(150);
             var version = new Version

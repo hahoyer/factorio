@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using hw.DebugFormatter;
 using hw.Helper;
 using Ionic.Zip;
@@ -29,12 +27,18 @@ namespace ManageModsAndSavefiles
             get
             {
                 Tracer.Assert(!string.IsNullOrEmpty(ItemPath));
+                return BinaryReader.GetNextString((int) Length);
+            }
+        }
 
-                using(var zipFile = ZipFile.Read(ArchivePath))
-                {
-                    var length = (int) zipFile.Entries.Single(item => item.FileName == ItemPath).UncompressedSize;
-                    return BinaryReader.GetNextString(length);
-                }
+        long Length
+        {
+            get
+            {
+                return
+                    ZipFile.Read(ArchivePath)
+                        .Entries.Single(item => item.FileName == ItemPath)
+                        .UncompressedSize;
             }
         }
 
@@ -66,6 +70,6 @@ namespace ManageModsAndSavefiles
             }
         }
 
-        public BinaryRead BinaryReader => new BinaryRead(Reader);
+        public BinaryRead BinaryReader => new BinaryRead(Reader, Length);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
@@ -10,15 +11,20 @@ namespace ManageModsAndSavefiles.Saves
     public sealed class FileCluster : DumpableObject
     {
         const string LevelInitDat = "level-init.dat";
+        const string LevelDat = "level.dat";
+        const int DurationPosition = 346;
+        const double TicksPerSecond = 60.0;
 
         readonly string Path;
         readonly MmasfContext Parent;
 
         Version VersionValue;
         ModDescription[] ModsValue;
-        string GameType;
+        string MapName;
         string ScenarioName;
-        string GameKind;
+        string CampaignName;
+        TimeSpan? DurationValue;
+        public Item[] SomeItems;
 
         public FileCluster(string path, MmasfContext parent)
         {
@@ -28,7 +34,13 @@ namespace ManageModsAndSavefiles.Saves
 
         public string Name => Path.FileHandle().Name;
         protected override string GetNodeDump() => Name;
-        public override string ToString() => Name.Quote();
+
+        public override string ToString()
+            => Name.Quote() + "  " +
+            Version + "  " +
+            MapName.Quote() + "  " +
+            ScenarioName.Quote() + "  " +
+            CampaignName.Quote() + "  ";
 
         public Version Version
         {
@@ -38,6 +50,23 @@ namespace ManageModsAndSavefiles.Saves
                     ReadLevelInitDatFile();
                 return VersionValue;
             }
+        }
+
+        public TimeSpan Duration
+        {
+            get
+            {
+                if(DurationValue == null)
+                    ReadLevelDatFile();
+                return DurationValue.AssertValue();
+            }
+        }
+
+        void ReadLevelDatFile()
+        {
+            var reader = LevelInitDatReader;
+            reader.Position = DurationPosition;
+            DurationValue = TimeSpan.FromSeconds(reader.GetNext<int>() / TicksPerSecond);
         }
 
         public ModDescription[] Mods
@@ -52,7 +81,7 @@ namespace ManageModsAndSavefiles.Saves
 
         void ReadLevelInitDatFile()
         {
-            var reader = GetFile(LevelInitDat).BinaryReader;
+            var reader = LevelInitDatReader;
             var version = new Version
             (
                 reader.GetNext<short>(),
@@ -62,49 +91,87 @@ namespace ManageModsAndSavefiles.Saves
             );
 
             VersionValue = version;
-
-            var lookAhead2 = reader.GetBytes(150);
-            var gameKind = reader.GetNextString<int>();
-            GameKind = gameKind;
-            var gameType = reader.GetNextString<int>();
-            GameType = gameType;
+            var campaignName = reader.GetNextString<int>();
+            CampaignName = campaignName;
+            var mapName = reader.GetNextString<int>();
+            MapName = mapName;
             var scenarioName = reader.GetNextString<int>();
             ScenarioName = scenarioName;
 
-            var version1 = new Version(0, 14, 14);
-            var unknownSize =
-                Version < new Version(0, 13)
-                    ? 23
-                    : Version < version1
-                        ? 19
-                        : 16;
+            var isBefore0_13 = Version < new Version(0, 13);
+            var isBefore0_14_9_1 = Version < new Version(0, 14, 9, 1);
+            var isBefore0_14_14 = Version < new Version(0, 14, 14);
 
+            var someBytes = reader.GetNextBytes(10);
+            var exactVersion =
+                isBefore0_14_14
+                    ? new Version
+                    (
+                        reader.GetNext<short>(),
+                        reader.GetNext<short>(),
+                        reader.GetNext<short>(),
+                        reader.GetNext<short>()
+                    )
+                    : new Version
+                    (
+                        reader.GetNext<byte>(),
+                        reader.GetNext<byte>(),
+                        reader.GetNext<byte>(),
+                        reader.GetNext<short>()
+                    );
 
-            var unknown = reader.GetNextBytes(unknownSize);
-            var lookAhead1 = reader.GetBytes(150);
+            var someBytes2 = reader.GetNextBytes(isBefore0_13 ? 5 : 1);
+
             var modCount = reader.GetNext<int>();
-            var lookAhead = reader.GetBytes(150);
             Tracer.Assert(modCount < 100);
-
-            if(Version < version1)
-            {
-                ModsValue =
-                    modCount
-                        .Select(i => Parent.CreateModReferenceBefore0_14(i, reader))
-                        .ToArray();
-                return;
-            }
 
             ModsValue =
                 modCount
-                    .Select(i => Parent.CreateModReference(i, reader))
+                    .Select(i => Parent.CreateModReference(i, reader, isBefore0_14_14))
+                    .ToArray();
+
+            var someBytes3 = reader.GetNextBytes(isBefore0_13 ? 6 : isBefore0_14_9_1 ? 10 : 14);
+            var lookAhead = reader.GetBytes(150);
+
+            var count = reader.GetNext<int>();
+            Tracer.Assert(count < 100);
+
+            SomeItems =
+                count
+                    .Select(i => GetNextItem(reader))
                     .ToArray();
         }
 
-        ZipFileHandle GetFile(string name)
+        [DisableDump]
+        public BinaryRead LevelInitDatReader => GetFile(LevelInitDat).BinaryReader;
+        [DisableDump]
+        public BinaryRead LevelDatReader => GetFile(LevelDat).BinaryReader;
+
+        public sealed class Item
         {
-            return Path.ZipFileHandle().Items.Single(item => item.ItemName == name);
+            public string Text;
+            public byte[] Number;
+
+            public override string ToString() => Text.Quote() + "(" + Number.Stringify(",") + ")";
         }
+
+        static Item GetNextItem(BinaryRead reader)
+            => new Item
+            {
+                Text = reader.GetNextString<int>(),
+                Number = new[]
+                {
+                    reader.GetNext<byte>(),
+                    reader.GetNext<byte>(),
+                    reader.GetNext<byte>()
+                }
+            };
+
+        ZipFileHandle GetFile(string name)
+            => Path
+                .ZipFileHandle()
+                .Items
+                .Single(item => item.ItemName == name);
 
         public ModConflict GetConflict(ModDescription saveMod, Mods.FileCluster mod)
         {
