@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
@@ -12,7 +11,6 @@ namespace ManageModsAndSavefiles.Saves
     {
         const string LevelInitDat = "level-init.dat";
         const string LevelDat = "level.dat";
-        const int DurationPosition = 346;
         const double TicksPerSecond = 60.0;
 
         readonly string Path;
@@ -24,7 +22,9 @@ namespace ManageModsAndSavefiles.Saves
         string ScenarioName;
         string CampaignName;
         TimeSpan? DurationValue;
-        public Item[] SomeItems;
+        public Resource[] Resources;
+        public byte[] BeforeMods;
+        public SomeStruct[] Structs;
 
         public FileCluster(string path, MmasfContext parent)
         {
@@ -40,14 +40,15 @@ namespace ManageModsAndSavefiles.Saves
             Version + "  " +
             MapName.Quote() + "  " +
             ScenarioName.Quote() + "  " +
-            CampaignName.Quote() + "  ";
+            CampaignName.Quote() + "  " + 
+            Duration.Format3Digits();
 
         public Version Version
         {
             get
             {
                 if(VersionValue == null)
-                    ReadLevelInitDatFile();
+                    ReadLevelDatFile();
                 return VersionValue;
             }
         }
@@ -62,27 +63,21 @@ namespace ManageModsAndSavefiles.Saves
             }
         }
 
-        void ReadLevelDatFile()
-        {
-            var reader = LevelInitDatReader;
-            reader.Position = DurationPosition;
-            DurationValue = TimeSpan.FromSeconds(reader.GetNext<int>() / TicksPerSecond);
-        }
-
         public ModDescription[] Mods
         {
             get
             {
                 if(ModsValue == null)
-                    ReadLevelInitDatFile();
+                    ReadLevelDatFile();
                 return ModsValue;
             }
         }
 
-        void ReadLevelInitDatFile()
+        void ReadLevelDatFile()
         {
-            var reader = LevelInitDatReader;
-            var version = new Version
+            var reader = LevelDatReader;
+
+            VersionValue = new Version
             (
                 reader.GetNext<short>(),
                 reader.GetNext<short>(),
@@ -90,17 +85,14 @@ namespace ManageModsAndSavefiles.Saves
                 reader.GetNext<short>()
             );
 
-            VersionValue = version;
-            var campaignName = reader.GetNextString<int>();
-            CampaignName = campaignName;
-            var mapName = reader.GetNextString<int>();
-            MapName = mapName;
-            var scenarioName = reader.GetNextString<int>();
-            ScenarioName = scenarioName;
-
             var isBefore0_13 = Version < new Version(0, 13);
+            var is0_13_9_2 = Version == new Version(0, 13, 9, 2);
             var isBefore0_14_9_1 = Version < new Version(0, 14, 9, 1);
             var isBefore0_14_14 = Version < new Version(0, 14, 14);
+
+            ScenarioName = reader.GetNextString<int>();
+            CampaignName = reader.GetNextString<int>();
+            MapName = reader.GetNextString<int>();
 
             var someBytes = reader.GetNextBytes(10);
             var exactVersion =
@@ -120,7 +112,13 @@ namespace ManageModsAndSavefiles.Saves
                         reader.GetNext<short>()
                     );
 
-            var someBytes2 = reader.GetNextBytes(isBefore0_13 ? 5 : 1);
+            var byte1 = reader.GetNext<byte>();
+            if(isBefore0_13)
+            {
+                var structCount = reader.GetNext<int>();
+                Tracer.Assert(structCount < 100);
+                Structs = structCount.Select(i => GetStruct(reader)).ToArray();
+            }
 
             var modCount = reader.GetNext<int>();
             Tracer.Assert(modCount < 100);
@@ -130,24 +128,67 @@ namespace ManageModsAndSavefiles.Saves
                     .Select(i => Parent.CreateModReference(i, reader, isBefore0_14_14))
                     .ToArray();
 
-            var someBytes3 = reader.GetNextBytes(isBefore0_13 ? 6 : isBefore0_14_9_1 ? 10 : 14);
-            var lookAhead = reader.GetBytes(150);
+            var lookAhead = reader.GetBytes(100);
+            string someText, someText2;
+            if (!isBefore0_13)
+                someText = reader.GetNextString<int>();
+            if (!isBefore0_14_9_1)
+                someText2 = reader.GetNextString<int>();
+
+            DurationValue = TimeSpan.FromSeconds(reader.GetNext<int>() / TicksPerSecond);
+            var someBytes3 = reader.GetNextBytes(2);
 
             var count = reader.GetNext<int>();
             Tracer.Assert(count < 100);
 
-            SomeItems =
+            Resources =
                 count
-                    .Select(i => GetNextItem(reader))
+                    .Select(i => GetNextRecource(reader))
                     .ToArray();
         }
+
+
+        static SomeStruct GetStruct(BinaryRead reader)
+        {
+            var result = new SomeStruct
+            {
+                Bytes =
+                    reader.GetNextBytes(9)
+            };
+
+            var count = reader.GetNext<int>();
+            Tracer.Assert(count < 100);
+            result.SomeBytes = count.Select
+                (
+                    i => new SomeStruct.Sub
+                    {
+                        ShortNumber = reader.GetNext<short>(),
+                        Number = reader.GetNext<int>()
+                    })
+                .ToArray();
+            return result;
+        }
+
 
         [DisableDump]
         public BinaryRead LevelInitDatReader => GetFile(LevelInitDat).BinaryReader;
         [DisableDump]
         public BinaryRead LevelDatReader => GetFile(LevelDat).BinaryReader;
 
-        public sealed class Item
+        public sealed class SomeStruct
+        {
+            public class Sub
+            {
+                public short ShortNumber;
+                public int Number;
+            }
+
+            public byte[] Bytes;
+
+            public Sub[] SomeBytes;
+        }
+
+        public sealed class Resource
         {
             public string Text;
             public byte[] Number;
@@ -155,8 +196,8 @@ namespace ManageModsAndSavefiles.Saves
             public override string ToString() => Text.Quote() + "(" + Number.Stringify(",") + ")";
         }
 
-        static Item GetNextItem(BinaryRead reader)
-            => new Item
+        static Resource GetNextRecource(BinaryRead reader)
+            => new Resource
             {
                 Text = reader.GetNextString<int>(),
                 Number = new[]

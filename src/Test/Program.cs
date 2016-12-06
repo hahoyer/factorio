@@ -24,22 +24,15 @@ namespace Test
             var saveFiles =
                 userConfiguration
                     .SaveFiles
-                    .Where(item => item.Name.StartsWith("161125."))
-                    .ToArray();
+                    //.Where(item => item.Name.StartsWith("161125."))
+                    //.ToArray()
+                    ;
 
-            Tracer.Line(saveFiles.Select(Dump).Stringify("\n").Format(100.StringAligner()));
+            Tracer.Line(saveFiles.Select(i=>i.ToString()).Stringify("\n").Format(100.StringAligner()));
 
             var conflicts = userConfiguration.SaveFileConflicts.ToArray();
 
             Tracer.Line(userConfiguration.Path);
-        }
-
-        static string Dump(FileCluster item)
-        {
-            var r = item.LevelDatReader;
-            r.Position = 346;
-            var intValue = r.GetNext<int>();
-            return item.Name + "  " + TimeSpan.FromSeconds(intValue/60.0) ;
         }
 
         static void FindDifference(FileCluster[] saveFiles)

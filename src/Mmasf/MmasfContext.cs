@@ -103,6 +103,7 @@ namespace ManageModsAndSavefiles
         internal ModDescription CreateModReferenceBefore0_14(int i, BinaryRead reader)
         {
             var name = reader.GetNextString<int>();
+
             var version = new Version
                 (reader.GetNext<short>(), reader.GetNext<short>(), reader.GetNext<short>());
             return ModDictionary[name][version];
