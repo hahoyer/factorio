@@ -37,7 +37,6 @@ namespace ManageModsAndSavefiles
             return result;
         }
 
-
         public T GetNext<T>()
         {
             if(typeof(T) == typeof(byte))

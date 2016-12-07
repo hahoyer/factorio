@@ -25,6 +25,7 @@ namespace ManageModsAndSavefiles.Saves
         public Resource[] Resources;
         public byte[] BeforeMods;
         public SomeStruct[] Structs;
+        byte Difficulty;
 
         public FileCluster(string path, MmasfContext parent)
         {
@@ -41,6 +42,7 @@ namespace ManageModsAndSavefiles.Saves
             MapName.Quote() + "  " +
             ScenarioName.Quote() + "  " +
             CampaignName.Quote() + "  " + 
+            Difficulty + "  " +
             Duration.Format3Digits();
 
         public Version Version
@@ -76,6 +78,7 @@ namespace ManageModsAndSavefiles.Saves
         void ReadLevelDatFile()
         {
             var reader = LevelDatReader;
+            var lookAhead = reader.GetBytes(100);
 
             VersionValue = new Version
             (
@@ -93,8 +96,8 @@ namespace ManageModsAndSavefiles.Saves
             ScenarioName = reader.GetNextString<int>();
             CampaignName = reader.GetNextString<int>();
             MapName = reader.GetNextString<int>();
-
-            var someBytes = reader.GetNextBytes(10);
+            Difficulty = reader.GetNext<byte>();
+            var someBytes = reader.GetNextBytes(9);
             var exactVersion =
                 isBefore0_14_14
                     ? new Version
@@ -128,7 +131,6 @@ namespace ManageModsAndSavefiles.Saves
                     .Select(i => Parent.CreateModReference(i, reader, isBefore0_14_14))
                     .ToArray();
 
-            var lookAhead = reader.GetBytes(100);
             string someText, someText2;
             if (!isBefore0_13)
                 someText = reader.GetNextString<int>();

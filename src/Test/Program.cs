@@ -22,20 +22,23 @@ namespace Test
                 .Single(item => item.Name == "HardCrafting");
 
             var saveFiles =
-                userConfiguration
-                    .SaveFiles
-                    //.Where(item => item.Name.StartsWith("161125."))
-                    //.ToArray()
-                    ;
+                    userConfiguration
+                        .SaveFiles
+                //          .Where(item => item.Name.StartsWith("Campaign"))
+                //.ToArray()
+                ;
 
-            Tracer.Line(saveFiles.Select(i=>i.ToString()).Stringify("\n").Format(100.StringAligner()));
+            Tracer.Line
+                (saveFiles.Select(i => i.ToString()).Stringify("\n").Format(100.StringAligner()));
+
+            //FindDifference(saveFiles);
 
             var conflicts = userConfiguration.SaveFileConflicts.ToArray();
 
             Tracer.Line(userConfiguration.Path);
         }
 
-        static void FindDifference(FileCluster[] saveFiles)
+        static void FindDifference(IEnumerable<FileCluster> saveFiles)
         {
             var r = saveFiles.Select(item => item.LevelDatReader).ToArray();
             var differs = false;
