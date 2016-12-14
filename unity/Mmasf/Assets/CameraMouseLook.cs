@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace Mmasf
+namespace Mmasf.Assets
 {
     public sealed class CameraMouseLook : MonoBehaviour
     {
@@ -19,6 +19,7 @@ namespace Mmasf
         {
             if(!Character.GetComponent<CapsuleController>().IsCursorLocked)
                 return;
+
             SmoothVector = GetNewSmoothVector();
             Direction += SmoothVector;
             Apply();

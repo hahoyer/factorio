@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 
 namespace hw.Helper
@@ -251,6 +252,34 @@ namespace hw.Helper
                 if(onError != null)
                     onError(exception);
             }
+        }
+
+        public static Task<T> STAStart<T>(Func<T> func)
+        {
+            var tcs = new TaskCompletionSource<T>();
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    tcs.SetResult(func());
+                }
+                catch(Exception e)
+                {
+                    tcs.SetException(e);
+                }
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            return tcs.Task;
+        }
+
+        public static Task STAStart(Action func)
+        {
+            var result = new Task(func);
+            var thread = new Thread(result.Start);
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            return result;
         }
 
         public static object InvokeValue(this object x, MemberInfo info)

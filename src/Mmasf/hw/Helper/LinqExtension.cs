@@ -14,7 +14,6 @@ namespace hw.Helper
         {
             return InternalAddDistinct(a, b, isEqual);
         }
-
         public static bool AddDistinct<T>(this IList<T> a, IEnumerable<T> b, Func<T, T, T> combine)
             where T : class
         {
@@ -28,7 +27,6 @@ namespace hw.Helper
             foreach(var bi in b)
                 if(AddDistinct(a, bi, isEqual))
                     result = true;
-
             return result;
         }
 
@@ -39,7 +37,6 @@ namespace hw.Helper
             foreach(var bi in b)
                 if(AddDistinct(a, bi, combine))
                     result = true;
-
             return result;
         }
 
@@ -47,7 +44,6 @@ namespace hw.Helper
         {
             if(a.Any(ai => isEqual(ai, bi)))
                 return false;
-
             a.Add(bi);
             return true;
         }
@@ -63,7 +59,6 @@ namespace hw.Helper
                     return false;
                 }
             }
-
             a.Add(bi);
             return true;
         }
@@ -79,10 +74,8 @@ namespace hw.Helper
                     if(subResult.Count > 0)
                     {
                         yield return subResult.ToArray();
-
                         subResult = new List<T>();
                     }
-
                 subResult.Add(xx);
             }
 
@@ -96,11 +89,9 @@ namespace hw.Helper
             var xx = x.ToArray();
             if(!xx.Any())
                 return null;
-
             var result = xx[0];
             for(var i = 1; i < xx.Length; i++)
                 result = result.Aggregate(xx[i]);
-
             return result;
         }
 
@@ -134,7 +125,6 @@ namespace hw.Helper
                 result.Append(element);
                 i++;
             }
-
             return result.ToString();
         }
 
@@ -142,6 +132,49 @@ namespace hw.Helper
         {
             var result = new TimeSpan();
             return x.Aggregate(result, (current, element) => current + selector(element));
+        }
+
+        /// <summary>
+        ///     Returns index list of all elements, that have no other element, with "isInRelation(element, other)" is true
+        ///     For example if relation is "element ;&less; other" will return the maximal element
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
+        /// <param name="isInRelation"></param>
+        /// <returns></returns>
+        public static IEnumerable<int> FrameIndexList<T>
+            (this IEnumerable<T> list, Func<T, T, bool> isInRelation)
+        {
+            var listArray = list.ToArray();
+            return
+                listArray.Select((item, index) => new Tuple<T, int>(item, index))
+                    .Where(element => !listArray.Any(other => isInRelation(element.Item1, other)))
+                    .Select(element => element.Item2);
+        }
+        /// <summary>
+        ///     Returns list of all elements, that have no other element, with "isInRelation(element, other)" is true
+        ///     For example if relation is "element ;&less; other" will return the maximal element
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
+        /// <param name="isInRelation"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> FrameElementList<T>
+            (this IEnumerable<T> list, Func<T, T, bool> isInRelation)
+        {
+            var listArray = list.ToArray();
+            return listArray.FrameIndexList(isInRelation).Select(index => listArray[index]);
+        }
+
+        public static IEnumerable<int> MaxIndexList<T>(this IEnumerable<T> list)
+            where T : IComparable<T>
+        {
+            return list.FrameIndexList((a, b) => a.CompareTo(b) < 0);
+        }
+        public static IEnumerable<int> MinIndexList<T>(this IEnumerable<T> list)
+            where T : IComparable<T>
+        {
+            return list.FrameIndexList((a, b) => a.CompareTo(b) > 0);
         }
 
         /// <summary>
@@ -155,7 +188,6 @@ namespace hw.Helper
         {
             if(x.Count < y.Count)
                 return false;
-
             return !y.Where((t, i) => !Equals(x[i], t)).Any();
         }
 
@@ -170,7 +202,6 @@ namespace hw.Helper
         {
             if(x.Count == y.Count)
                 return false;
-
             return x.StartsWith(y);
         }
 
@@ -230,63 +261,49 @@ namespace hw.Helper
                 yield return getValue(i);
         }
 
-        public static IEnumerable<Tuple<TKey, TLeft, TRight>>
-            Merge<TKey, TLeft, TRight>
+        public static IEnumerable<Tuple<TKey, TLeft, TRight>> Merge<TKey, TLeft, TRight>
             (
-                this IEnumerable<TLeft> left,
-                IEnumerable<TRight> right,
-                Func<TLeft, TKey> getLeftKey,
-                Func<TRight, TKey> getRightKey
-            )
-            where TLeft : class
-            where TRight : class
+            this IEnumerable<TLeft> left,
+            IEnumerable<TRight> right,
+            Func<TLeft, TKey> getLeftKey,
+            Func<TRight, TKey> getRightKey) where TLeft : class where TRight : class
         {
-            var leftCommon = left.
-                Select(l => new Tuple<TKey, TLeft, TRight>(getLeftKey(l), l, null));
-
-            var rightCommon = right
-                .Select(r => new Tuple<TKey, TLeft, TRight>(getRightKey(r), null, r));
-
+            var leftCommon = left.Select
+                (l => new Tuple<TKey, TLeft, TRight>(getLeftKey(l), l, null));
+            var rightCommon = right.Select
+                (r => new Tuple<TKey, TLeft, TRight>(getRightKey(r), null, r));
             return
                 leftCommon.Union(rightCommon)
                     .GroupBy(t => t.Item1)
-                    .Select(Merge);
+                    .Select<IGrouping<TKey, Tuple<TKey, TLeft, TRight>>, Tuple<TKey, TLeft, TRight>>
+                    (Merge);
         }
 
-        public static IEnumerable<Tuple<TKey, T, T>>
-            Merge<TKey, T>
-            (
-                this IEnumerable<T> left,
-                IEnumerable<T> right,
-                Func<T, TKey> getKey
-            )
+        public static IEnumerable<Tuple<TKey, T, T>> Merge<TKey, T>
+            (this IEnumerable<T> left, IEnumerable<T> right, Func<T, TKey> getKey)
             where T : class
-            => Merge(left, right, getKey, getKey);
+        {
+            return Merge(left, right, getKey, getKey);
+        }
 
-        public static Tuple<TKey, TLeft, TRight>
-            Merge<TKey, TLeft, TRight>
-            (
-                IGrouping<TKey, Tuple<TKey, TLeft, TRight>> grouping
-            )
-            where TLeft : class
-            where TRight : class
+        public static Tuple<TKey, TLeft, TRight> Merge<TKey, TLeft, TRight>
+            (IGrouping<TKey, Tuple<TKey, TLeft, TRight>> grouping)
+            where TLeft : class where TRight : class
         {
             var list = grouping.ToArray();
             switch(list.Length)
             {
-            case 1:
-                return list[0];
-            case 2:
-                if(list[0].Item2 == null && list[1].Item3 == null)
-                    return new Tuple<TKey, TLeft, TRight>
-                        (grouping.Key, list[1].Item2, list[0].Item3);
-                if(list[1].Item2 == null && list[0].Item3 == null)
-                    return new Tuple<TKey, TLeft, TRight>
-                        (grouping.Key, list[0].Item2, list[1].Item3);
-
-                break;
+                case 1:
+                    return list[0];
+                case 2:
+                    if(list[0].Item2 == null && list[1].Item3 == null)
+                        return new Tuple<TKey, TLeft, TRight>
+                            (grouping.Key, list[1].Item2, list[0].Item3);
+                    if(list[1].Item2 == null && list[0].Item3 == null)
+                        return new Tuple<TKey, TLeft, TRight>
+                            (grouping.Key, list[0].Item2, list[1].Item3);
+                    break;
             }
-
             throw new DuplicateKeyException();
         }
 
@@ -298,7 +315,7 @@ namespace hw.Helper
         }
 
         public static void AddRange<TKey, TValue>
-        (
+            (
             this IDictionary<TKey, TValue> target,
             IEnumerable<KeyValuePair<TKey, TValue>> newEntries)
         {
@@ -328,10 +345,8 @@ namespace hw.Helper
             {
                 if(predicate(item))
                     return result;
-
                 result++;
             }
-
             return null;
         }
 
@@ -341,7 +356,6 @@ namespace hw.Helper
             while(current != null)
             {
                 yield return current;
-
                 current = getNext(current);
             }
         }
@@ -352,7 +366,6 @@ namespace hw.Helper
             (this T root, Func<T, IEnumerable<T>> getChildren)
         {
             yield return root;
-
             foreach(var item in getChildren(root).SelectMany(i => i.SelectHierachical(getChildren)))
                 yield return item;
         }
@@ -375,7 +388,6 @@ namespace hw.Helper
                 targets = targets.SelectMany(immediateParents).Except(types).ToArray();
                 if(!targets.Any())
                     return types;
-
                 types = types.Union(targets).ToArray();
             }
         }
@@ -385,7 +397,6 @@ namespace hw.Helper
         {
             return immediateParents(x).Closure(immediateParents).All(xx => !xx.Equals(x));
         }
-
         public static bool IsCircuidFree<TType>
             (this IEnumerable<TType> x, Func<TType, IEnumerable<TType>> immediateParents)
         {
@@ -425,7 +436,6 @@ namespace hw.Helper
             {
                 if(splitter(enumerator.Current))
                     yield break;
-
                 yield return enumerator.Current;
             } while(enumerator.MoveNext());
         }
@@ -437,21 +447,4 @@ namespace hw.Helper
     }
 
     sealed class DuplicateKeyException : Exception {}
-}
-
-namespace System
-{
-    public sealed class Tuple<T1, T2, T3>
-    {
-        public T1 Item1 { get; }
-        public T2 Item2 { get; }
-        public T3 Item3 { get; }
-
-        public Tuple(T1 item1, T2 item2, T3 item3)
-        {
-            Item1 = item1;
-            Item2 = item2;
-            Item3 = item3;
-        }
-    }
 }

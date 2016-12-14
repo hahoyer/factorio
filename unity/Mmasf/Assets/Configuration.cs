@@ -4,8 +4,19 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Configuration : MonoBehaviour
+namespace Mmasf.Assets
 {
-    public Text PortalName;
-    void Start() { PortalName.text = "This portal!!!"; }
+    public sealed class Configuration : MonoBehaviour
+    {
+        Text PortalText;
+        public string Name;
+
+        void Start()
+        {
+            var find = GameObject.Find("PortalText");
+            PortalText = find.GetComponent<Text>();
+        }
+
+        void Update() { PortalText.text = Name; }
+    }
 }

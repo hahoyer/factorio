@@ -41,7 +41,7 @@ namespace ManageModsAndSavefiles.Saves
             Version + "  " +
             MapName.Quote() + "  " +
             ScenarioName.Quote() + "  " +
-            CampaignName.Quote() + "  " + 
+            CampaignName.Quote() + "  " +
             Difficulty + "  " +
             Duration.Format3Digits();
 
@@ -117,11 +117,7 @@ namespace ManageModsAndSavefiles.Saves
 
             var byte1 = reader.GetNext<byte>();
             if(isBefore0_13)
-            {
-                var structCount = reader.GetNext<int>();
-                Tracer.Assert(structCount < 100);
-                Structs = structCount.Select(i => GetStruct(reader)).ToArray();
-            }
+                Structs = reader.GetNextArray<int, SomeStruct>(100);
 
             var modCount = reader.GetNext<int>();
             Tracer.Assert(modCount < 100);
@@ -132,45 +128,16 @@ namespace ManageModsAndSavefiles.Saves
                     .ToArray();
 
             string someText, someText2;
-            if (!isBefore0_13)
+            if(!isBefore0_13)
                 someText = reader.GetNextString<int>();
-            if (!isBefore0_14_9_1)
+            if(!isBefore0_14_9_1)
                 someText2 = reader.GetNextString<int>();
 
             DurationValue = TimeSpan.FromSeconds(reader.GetNext<int>() / TicksPerSecond);
             var someBytes3 = reader.GetNextBytes(2);
 
-            var count = reader.GetNext<int>();
-            Tracer.Assert(count < 100);
-
-            Resources =
-                count
-                    .Select(i => GetNextRecource(reader))
-                    .ToArray();
+            Resources = reader.GetNextArray<int, Resource>(100);
         }
-
-
-        static SomeStruct GetStruct(BinaryRead reader)
-        {
-            var result = new SomeStruct
-            {
-                Bytes =
-                    reader.GetNextBytes(9)
-            };
-
-            var count = reader.GetNext<int>();
-            Tracer.Assert(count < 100);
-            result.SomeBytes = count.Select
-                (
-                    i => new SomeStruct.Sub
-                    {
-                        ShortNumber = reader.GetNext<short>(),
-                        Number = reader.GetNext<int>()
-                    })
-                .ToArray();
-            return result;
-        }
-
 
         [DisableDump]
         public BinaryRead LevelInitDatReader => GetFile(LevelInitDat).BinaryReader;
@@ -179,36 +146,34 @@ namespace ManageModsAndSavefiles.Saves
 
         public sealed class SomeStruct
         {
-            public class Sub
+            public sealed class Sub
             {
+                [BinaryRead.Data]
                 public short ShortNumber;
+                [BinaryRead.Data]
                 public int Number;
             }
 
+            [BinaryRead.Data]
+            [BinaryRead.ArraySetup(9)]
             public byte[] Bytes;
 
+            [BinaryRead.Data]
+            [BinaryRead.ArraySetup(typeof(int), MaxCount = 100)]
             public Sub[] SomeBytes;
         }
 
         public sealed class Resource
         {
+            [BinaryRead.Data]
+            [BinaryRead.ArraySetup(typeof(int), MaxCount = 100)]
             public string Text;
+            [BinaryRead.Data]
+            [BinaryRead.ArraySetup(9)]
             public byte[] Number;
 
             public override string ToString() => Text.Quote() + "(" + Number.Stringify(",") + ")";
         }
-
-        static Resource GetNextRecource(BinaryRead reader)
-            => new Resource
-            {
-                Text = reader.GetNextString<int>(),
-                Number = new[]
-                {
-                    reader.GetNext<byte>(),
-                    reader.GetNext<byte>(),
-                    reader.GetNext<byte>()
-                }
-            };
 
         ZipFileHandle GetFile(string name)
             => Path

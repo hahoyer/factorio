@@ -30,7 +30,7 @@ namespace hw.Helper
     }
 
     /// <summary>
-    ///     InfoJSon of a floating column
+    ///     Description of a floating column
     /// </summary>
     public abstract class FloatingColumn : Dumpable
     {

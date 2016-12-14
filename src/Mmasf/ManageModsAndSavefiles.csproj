@@ -15,10 +15,6 @@
     <Compile Include="BooleanJsonConverter.cs" />
     <Compile Include="CompoundCache.cs" />
     <Compile Include="Configuration.cs" />
-    <Compile Include="MmasfContext.cs" />
-    <Compile Include="DataConfiguration.cs" />
-    <Compile Include="Extension.cs" />
-    <Compile Include="Formatter.cs" />
     <Compile Include="hw\DebugFormatter\Configuration.cs" />
     <Compile Include="hw\DebugFormatter\DebugTextWriter.cs" />
     <Compile Include="hw\DebugFormatter\DisableDumpAttribute.cs" />
@@ -53,6 +49,10 @@
     <Compile Include="hw\Helper\TypeNameExtender.cs" />
     <Compile Include="hw\Helper\ValueCache.cs" />
     <Compile Include="hw\Helper\ValueCacheExtension.cs" />
+    <Compile Include="MmasfContext.cs" />
+    <Compile Include="DataConfiguration.cs" />
+    <Compile Include="Extension.cs" />
+    <Compile Include="Formatter.cs" />
     <Compile Include="IniFile.cs" />
     <Compile Include="Mods\ModDescription.cs" />
     <Compile Include="Mods\ModListJSon.cs" />
@@ -89,6 +89,7 @@
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>

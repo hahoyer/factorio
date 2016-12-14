@@ -71,17 +71,13 @@ namespace hw.Helper
 
         public void EnsureIsExistentDirectory()
         {
-            if(!Exists)
+            if(Exists)
+                Tracer.Assert(IsDirectory);
+            else
             {
                 EnsureDirectoryOfFileExists();
                 Directory.CreateDirectory(FullName);
-                return;
             }
-
-            if(IsDirectory)
-                return;
-
-            throw new EnsureIsExistentDirectoryException("\"" + FullName+ "\" is not a directory."  );
         }
 
         string StringFromHTTP
@@ -319,8 +315,7 @@ namespace hw.Helper
         public IEnumerable<File> RecursiveItems()
         {
             yield return this;
-
-            if(!IsDirectory)
+            if (!IsDirectory)
                 yield break;
 
             Tracer.Line(FullName);
@@ -341,23 +336,6 @@ namespace hw.Helper
                     yield break;
 
                 filePaths = newList;
-            }
-        }
-
-        sealed class EnsureIsExistentDirectoryException : Exception
-        {
-            public EnsureIsExistentDirectoryException(string message)
-                : base(message) { }
-        }
-
-        public byte[] GetBytes(long start, int count)
-        {
-            using(var reader = Reader)
-            {
-                var result = new byte[count];
-                reader.Seek(start, SeekOrigin.Begin);
-                reader.Read(result, 0, count);
-                return result;
             }
         }
     }

@@ -87,6 +87,7 @@
     <Compile Include="Assets\CameraMouseLook.cs" />
     <Compile Include="Assets\CapsuleController.cs" />
     <Compile Include="Assets\Configuration.cs" />
+    <Compile Include="Assets\UserConfigurations.cs" />
     <Compile Include="Assets\VersionInformationToWall.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
