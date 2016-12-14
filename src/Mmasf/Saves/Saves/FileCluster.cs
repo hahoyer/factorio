@@ -38,12 +38,12 @@ namespace ManageModsAndSavefiles.Saves
 
         public override string ToString()
             => Name.Quote() + "  " +
-            Version + "  " +
-            MapName.Quote() + "  " +
-            ScenarioName.Quote() + "  " +
-            CampaignName.Quote() + "  " +
-            Difficulty + "  " +
-            Duration.Format3Digits();
+               Version + "  " +
+               MapName.Quote() + "  " +
+               ScenarioName.Quote() + "  " +
+               CampaignName.Quote() + "  " +
+               Difficulty + "  " +
+               Duration.Format3Digits();
 
         public Version Version
         {
@@ -78,7 +78,6 @@ namespace ManageModsAndSavefiles.Saves
         void ReadLevelDatFile()
         {
             var reader = LevelDatReader;
-            var lookAhead = reader.GetBytes(100);
 
             VersionValue = new Version
             (
@@ -136,13 +135,17 @@ namespace ManageModsAndSavefiles.Saves
             DurationValue = TimeSpan.FromSeconds(reader.GetNext<int>() / TicksPerSecond);
             var someBytes3 = reader.GetNextBytes(2);
 
+            var lookAhead = reader.GetBytes(100);
             Resources = reader.GetNextArray<int, Resource>(100);
         }
 
         [DisableDump]
-        public BinaryRead LevelInitDatReader => GetFile(LevelInitDat).BinaryReader;
+        public BinaryRead LevelInitDatReader => BinaryRead(LevelInitDat);
+
+        BinaryRead BinaryRead(string fileName) { return new BinaryRead(GetFile(fileName).Reader); }
+
         [DisableDump]
-        public BinaryRead LevelDatReader => GetFile(LevelDat).BinaryReader;
+        public BinaryRead LevelDatReader => BinaryRead(LevelDat);
 
         public sealed class SomeStruct
         {
@@ -169,10 +172,10 @@ namespace ManageModsAndSavefiles.Saves
             [BinaryRead.ArraySetup(typeof(int), MaxCount = 100)]
             public string Text;
             [BinaryRead.Data]
-            [BinaryRead.ArraySetup(9)]
-            public byte[] Number;
+            [BinaryRead.ArraySetup(3)]
+            public byte[] Numbers;
 
-            public override string ToString() => Text.Quote() + "(" + Number.Stringify(",") + ")";
+            public override string ToString() => Text.Quote() + "(" + Numbers.Stringify(",") + ")";
         }
 
         ZipFileHandle GetFile(string name)

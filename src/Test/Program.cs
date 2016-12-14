@@ -19,7 +19,7 @@ namespace Test
 
             var userConfiguration = context
                 .UserConfigurations
-                .Single(item => item.Name == "HardCrafting");
+                .Single(item => item.Name == "Factorio");
 
             var saveFiles =
                     userConfiguration

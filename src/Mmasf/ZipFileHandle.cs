@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
-using Ionic.Zip;
 
 namespace ManageModsAndSavefiles
 {
@@ -27,7 +27,7 @@ namespace ManageModsAndSavefiles
             get
             {
                 Tracer.Assert(!string.IsNullOrEmpty(ItemPath));
-                return BinaryReader.GetNextString((int) Length);
+                return new BinaryRead(Reader).GetNextString((int) Length);
             }
         }
 
@@ -36,9 +36,9 @@ namespace ManageModsAndSavefiles
             get
             {
                 return
-                    ZipFile.Read(ArchivePath)
-                        .Entries.Single(item => item.FileName == ItemPath)
-                        .UncompressedSize;
+                    ZipFile.OpenRead(ArchivePath)
+                        .Entries.Single(item => item.Name == ItemPath)
+                        .Length;
             }
         }
 
@@ -49,10 +49,12 @@ namespace ManageModsAndSavefiles
         {
             get
             {
-                using(var zipFile = ZipFile.Read(ArchivePath))
-                    return zipFile
-                        .Entries
-                        .Select(item => new ZipFileHandle(ArchivePath, item.FileName));
+                using(var zipFile = ZipFile.OpenRead(ArchivePath))
+                {
+                    var readOnlyCollection = zipFile.Entries;
+                    return readOnlyCollection
+                        .Select(item => new ZipFileHandle(ArchivePath, item.Name));
+                }
             }
         }
 
@@ -60,16 +62,13 @@ namespace ManageModsAndSavefiles
         {
             get
             {
-                using(var zipFile = ZipFile.Read(ArchivePath))
-                {
-                    var zipEntry = zipFile.Entries.Single(item => item.FileName == ItemPath);
-                    var result = new MemoryStream();
-                    zipEntry.Extract(result);
-                    return result;
-                }
+                var zipArchive = ZipFile.OpenRead(ArchivePath);
+                var zipEntry = zipArchive.Entries.Single(item => item.Name == ItemPath);
+                var zipReader = zipEntry.Open();
+                var reader = new SeekableReader(zipReader, Length);
+
+                return new StreamWithCleanupList(reader, reader, zipReader, zipArchive);
             }
         }
-
-        public BinaryRead BinaryReader => new BinaryRead(Reader, Length);
     }
 }

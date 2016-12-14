@@ -14,16 +14,11 @@ namespace ManageModsAndSavefiles
     public sealed class BinaryRead : DumpableObject
     {
         readonly Stream Reader;
-        public readonly long Length;
         public long Position;
 
-        public BinaryRead(Stream reader, long length)
-        {
-            Reader = reader;
-            Length = length;
-        }
+        public BinaryRead(Stream reader) { Reader = reader; }
 
-        public bool IsEnd => Position >= Length;
+        public bool IsEnd => Position >= Reader.Length;
 
         public byte[] GetNextBytes(int count)
         {
@@ -32,11 +27,12 @@ namespace ManageModsAndSavefiles
             return result;
         }
 
+
         public byte[] GetBytes(int count)
         {
             Tracer.Assert(count < 1000);
             var result = new byte[count];
-            Reader.Seek(Position, SeekOrigin.Begin);
+            Reader.Position = Position;
             Reader.Read(result, 0, count);
             return result;
         }
@@ -79,10 +75,9 @@ namespace ManageModsAndSavefiles
                 .OrderBy(i => i.attribute.LineNumber);
 
             foreach(var member in members)
-                member.attribute.AssignValue(result, member.member, this);
+                Data.AssignValue(result, member.member, this);
 
-            NotImplementedMethod();
-            return null;
+            return result;
         }
 
         static bool IsRelevant(MemberInfo member)
@@ -97,7 +92,7 @@ namespace ManageModsAndSavefiles
 
             var propertyInfo = (PropertyInfo) member;
             return !propertyInfo.GetIndexParameters().Any()
-                && propertyInfo.GetAccessors().Any(a => a.ReturnType != typeof(void));
+                   && propertyInfo.GetAccessors().Any(a => a.ReturnType != typeof(void));
         }
 
 
@@ -114,62 +109,42 @@ namespace ManageModsAndSavefiles
                 LineNumber = lineNumber;
             }
 
-            public void AssignValue(object result, MemberInfo member, BinaryRead reader)
-            {
-                AssignValue(GetValue(result, member, reader), result, member);
-            }
-
-            static void AssignValue(object value, object result, MemberInfo member)
-            {
-                throw new NotImplementedException();
-            }
-
-            static object GetValue(object result, MemberInfo member, BinaryRead reader)
+            internal static void AssignValue(object target, MemberInfo member, BinaryRead reader)
             {
                 var fieldInfo = member as FieldInfo;
-                return fieldInfo == null
-                    ? GetValue(result, (PropertyInfo) member, reader)
-                    : GetValue(fieldInfo, reader);
+                if(fieldInfo == null)
+                {
+                    var propertyInfo = (PropertyInfo) member;
+                    propertyInfo.SetValue(target, GetValue(propertyInfo.PropertyType, reader, member));
+                }
+                else
+                    fieldInfo.SetValue(target, GetValue(fieldInfo.FieldType, reader, member));
             }
 
-            static object GetValue(FieldInfo member, BinaryRead reader)
-                => GetValue(member.FieldType, reader, member.GetAttributes<ArraySetup>(false));
-
-            static object GetValue
-            (
-                Type type,
-                BinaryRead reader,
-                IEnumerable<ArraySetup> arraySetups,
-                int level = 0)
+            static object GetValue(Type type, BinaryRead reader, MemberInfo member, int level = 0)
             {
-                if(type.IsArray)
-                {
-                    var arraySetup = arraySetups.Single(i => i.Level == level);
-                    var count = arraySetup.Count;
-                    if(arraySetup.CountType != null)
-                        count = Convert.ToInt32(reader.GetNext(arraySetup.CountType));
+                if(!type.IsArray)
+                    return reader.GetNext(type);
 
-                    if(arraySetup.MaxCount > 0 && count > arraySetup.MaxCount)
-                        throw new InvalidArrayException("Too big array encountered");
+                var arraySetup = member.GetAttributes<ArraySetup>(false).Single(i => i.Level == level);
+                var count = arraySetup.Count;
+                if(arraySetup.CountType != null)
+                    count = Convert.ToInt32(reader.GetNext(arraySetup.CountType));
 
-                    var t = type.GenericTypeArguments;
-                    return count
-                        .Select(i => GetValue(t.Single(), reader, arraySetups, level + 1))
-                        .ToArray();
-                }
+                if(arraySetup.MaxCount > 0 && count > arraySetup.MaxCount)
+                    throw new InvalidArrayException("Too big array encountered");
 
-                throw new NotImplementedException();
+                var elementType = type.GetElementType();
+                var result = Array.CreateInstance(elementType, count);
+                foreach(var o in count.Select(i => new {i, value = GetValue(elementType, reader, member, level + 1)}))
+                    result.SetValue(o.value, o.i);
+                return result;
             }
 
             public sealed class InvalidArrayException : Exception
             {
                 public InvalidArrayException(string message)
-                    : base(message) {}
-            }
-
-            static object GetValue(object result, PropertyInfo member, BinaryRead reader)
-            {
-                throw new NotImplementedException();
+                    : base(message) { }
             }
         }
 
@@ -198,7 +173,7 @@ namespace ManageModsAndSavefiles
             public sealed class InvalidException : Exception
             {
                 public InvalidException(string message)
-                    : base(message) {}
+                    : base(message) { }
             }
         }
 
