@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
+using ManageModsAndSavefiles.Reader;
 
 namespace ManageModsAndSavefiles
 {

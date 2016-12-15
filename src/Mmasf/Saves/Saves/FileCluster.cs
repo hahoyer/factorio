@@ -1,14 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using hw.DebugFormatter;
 using hw.Helper;
 using ManageModsAndSavefiles.Mods;
+using ManageModsAndSavefiles.Reader;
 
 namespace ManageModsAndSavefiles.Saves
 {
     public sealed class FileCluster : DumpableObject
     {
+        sealed class VersionReader : DumpableObject, BinaryRead.IReaderProvider
+        {
+            object BinaryRead.IReaderProvider.ReadAndAdvance(BinaryRead reader)
+                => new Version
+                (
+                    reader.GetNext<short>(),
+                    reader.GetNext<short>(),
+                    reader.GetNext<short>(),
+                    reader.GetNext<short>()
+                );
+        }
+
+        sealed class ExactVersionReader : DumpableObject, BinaryRead.IReaderProvider
+        {
+            object BinaryRead.IReaderProvider.ReadAndAdvance(BinaryRead reader)
+            {
+                var isBefore0_14_14 = ((UserContext) reader.UserContext).IsBefore01414;
+
+                return isBefore0_14_14
+                    ? new Version
+                    (
+                        reader.GetNext<short>(),
+                        reader.GetNext<short>(),
+                        reader.GetNext<short>(),
+                        reader.GetNext<short>()
+                    )
+                    : new Version
+                    (
+                        reader.GetNext<byte>(),
+                        reader.GetNext<byte>(),
+                        reader.GetNext<byte>(),
+                        reader.GetNext<short>()
+                    );
+            }
+        }
+
         const string LevelInitDat = "level-init.dat";
         const string LevelDat = "level.dat";
         const double TicksPerSecond = 60.0;
@@ -16,16 +54,13 @@ namespace ManageModsAndSavefiles.Saves
         readonly string Path;
         readonly MmasfContext Parent;
 
-        Version VersionValue;
+        BinaryData DataValue;
+
         ModDescription[] ModsValue;
-        string MapName;
-        string ScenarioName;
-        string CampaignName;
         TimeSpan? DurationValue;
         public Resource[] Resources;
         public byte[] BeforeMods;
         public SomeStruct[] Structs;
-        byte Difficulty;
 
         public FileCluster(string path, MmasfContext parent)
         {
@@ -38,20 +73,20 @@ namespace ManageModsAndSavefiles.Saves
 
         public override string ToString()
             => Name.Quote() + "  " +
-               Version + "  " +
-               MapName.Quote() + "  " +
-               ScenarioName.Quote() + "  " +
-               CampaignName.Quote() + "  " +
-               Difficulty + "  " +
-               Duration.Format3Digits();
+            Version + "  " +
+            DataValue.MapName.Quote() + "  " +
+            DataValue.ScenarioName.Quote() + "  " +
+            DataValue.CampaignName.Quote() + "  " +
+            DataValue.Difficulty + "  " +
+            Duration.Format3Digits();
 
         public Version Version
         {
             get
             {
-                if(VersionValue == null)
+                if(DataValue == null)
                     ReadLevelDatFile();
-                return VersionValue;
+                return DataValue.Version;
             }
         }
 
@@ -75,46 +110,37 @@ namespace ManageModsAndSavefiles.Saves
             }
         }
 
+        sealed class BinaryData
+        {
+            [DataItem(CaptureIdentifier = "Version", Reader = typeof(VersionReader))]
+            internal Version Version;
+            [DataItem]
+            internal string ScenarioName;
+            [DataItem]
+            internal string CampaignName;
+            [DataItem]
+            internal string MapName;
+            [DataItem]
+            [Ignore(9)]
+            internal byte Difficulty;
+            [DataItem(Reader = typeof(ExactVersionReader))]
+            [Ignore(1)]
+            internal Version ExactVersion;
+        }
+
         void ReadLevelDatFile()
         {
             var reader = LevelDatReader;
+            reader.UserContext = new UserContext();
 
-            VersionValue = new Version
-            (
-                reader.GetNext<short>(),
-                reader.GetNext<short>(),
-                reader.GetNext<short>(),
-                reader.GetNext<short>()
-            );
+            DataValue = reader.GetNext<BinaryData>();
 
             var isBefore0_13 = Version < new Version(0, 13);
             var is0_13_9_2 = Version == new Version(0, 13, 9, 2);
             var isBefore0_14_9_1 = Version < new Version(0, 14, 9, 1);
             var isBefore0_14_14 = Version < new Version(0, 14, 14);
 
-            ScenarioName = reader.GetNextString<int>();
-            CampaignName = reader.GetNextString<int>();
-            MapName = reader.GetNextString<int>();
-            Difficulty = reader.GetNext<byte>();
-            var someBytes = reader.GetNextBytes(9);
-            var exactVersion =
-                isBefore0_14_14
-                    ? new Version
-                    (
-                        reader.GetNext<short>(),
-                        reader.GetNext<short>(),
-                        reader.GetNext<short>(),
-                        reader.GetNext<short>()
-                    )
-                    : new Version
-                    (
-                        reader.GetNext<byte>(),
-                        reader.GetNext<byte>(),
-                        reader.GetNext<byte>(),
-                        reader.GetNext<short>()
-                    );
-
-            var byte1 = reader.GetNext<byte>();
+            var lookAhead = reader.GetBytes(100);
             if(isBefore0_13)
                 Structs = reader.GetNextArray<int, SomeStruct>(100);
 
@@ -135,14 +161,14 @@ namespace ManageModsAndSavefiles.Saves
             DurationValue = TimeSpan.FromSeconds(reader.GetNext<int>() / TicksPerSecond);
             var someBytes3 = reader.GetNextBytes(2);
 
-            var lookAhead = reader.GetBytes(100);
             Resources = reader.GetNextArray<int, Resource>(100);
         }
 
         [DisableDump]
         public BinaryRead LevelInitDatReader => BinaryRead(LevelInitDat);
 
-        BinaryRead BinaryRead(string fileName) { return new BinaryRead(GetFile(fileName).Reader); }
+        BinaryRead BinaryRead(string fileName)
+            => new BinaryRead(GetFile(fileName).Reader);
 
         [DisableDump]
         public BinaryRead LevelDatReader => BinaryRead(LevelDat);
@@ -151,28 +177,28 @@ namespace ManageModsAndSavefiles.Saves
         {
             public sealed class Sub
             {
-                [BinaryRead.Data]
+                [DataItem]
                 public short ShortNumber;
-                [BinaryRead.Data]
+                [DataItem]
                 public int Number;
             }
 
-            [BinaryRead.Data]
-            [BinaryRead.ArraySetup(9)]
+            [DataItem]
+            [ArraySetup(9)]
             public byte[] Bytes;
 
-            [BinaryRead.Data]
-            [BinaryRead.ArraySetup(typeof(int), MaxCount = 100)]
+            [DataItem]
+            [ArraySetup(typeof(int), MaxCount = 100)]
             public Sub[] SomeBytes;
         }
 
         public sealed class Resource
         {
-            [BinaryRead.Data]
-            [BinaryRead.ArraySetup(typeof(int), MaxCount = 100)]
+            [DataItem]
+            [ArraySetup(typeof(int), MaxCount = 100)]
             public string Text;
-            [BinaryRead.Data]
-            [BinaryRead.ArraySetup(3)]
+            [DataItem]
+            [ArraySetup(3)]
             public byte[] Numbers;
 
             public override string ToString() => Text.Quote() + "(" + Numbers.Stringify(",") + ")";
@@ -213,6 +239,29 @@ namespace ManageModsAndSavefiles.Saves
                 };
         }
     }
+
+    sealed class UserContext : DumpableObject, BinaryRead.IContext
+    {
+        Version Version;
+        public bool IsBefore013 => Version < new Version(0, 13);
+        public bool Is01392 => Version == new Version(0, 13, 9, 2);
+        public bool IsBefore01491 => Version < new Version(0, 14, 9, 1);
+        public bool IsBefore01414 => Version < new Version(0, 14, 14);
+
+
+        void BinaryRead.IContext.Got(MemberInfo member, object captureIdentifier, object result)
+        {
+            var identifier = captureIdentifier as string;
+            if(identifier == "Version")
+            {
+                Version = (Version) result;
+                return;
+            }
+
+            NotImplementedMethod(member.Name, captureIdentifier, result.ToString());
+        }
+    }
+
 
     // d4rkpl4y3r
 

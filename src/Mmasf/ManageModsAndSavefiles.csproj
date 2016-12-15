@@ -11,7 +11,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AssemblyInfo.tt</DependentUpon>
     </Compile>
-    <Compile Include="BinaryRead.cs" />
+    <Compile Include="Reader\ArraySetup.cs" />
+    <Compile Include="Reader\BinaryRead.cs" />
     <Compile Include="BooleanJsonConverter.cs" />
     <Compile Include="CompoundCache.cs" />
     <Compile Include="Configuration.cs" />
@@ -59,6 +60,8 @@
     <Compile Include="Mods\FileCluster.cs" />
     <Compile Include="Mods\InfoJSon.cs" />
     <Compile Include="Mods\ModMatrix.cs" />
+    <Compile Include="Reader\DataItem.cs" />
+    <Compile Include="Reader\Ignore.cs" />
     <Compile Include="Saves\Saves\FileCluster.cs" />
     <Compile Include="Saves\Saves\ModConflict.cs" />
     <Compile Include="SeekableReader.cs" />
