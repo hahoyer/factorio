@@ -124,7 +124,7 @@ namespace ManageModsAndSavefiles.Saves
             [Ignore(9)]
             internal byte Difficulty;
             [DataItem(Reader = typeof(ExactVersionReader))]
-            [Ignore(1)]
+            [Ignore(1, CaptureIdentifier = "Lookahead")]
             internal Version ExactVersion;
         }
 
@@ -249,12 +249,18 @@ namespace ManageModsAndSavefiles.Saves
         public bool IsBefore01414 => Version < new Version(0, 14, 14);
 
 
-        void BinaryRead.IContext.Got(MemberInfo member, object captureIdentifier, object result)
+        void BinaryRead.IContext.Got(BinaryRead reader, MemberInfo member, object captureIdentifier, object result)
         {
-            var identifier = captureIdentifier as string;
-            if(identifier == "Version")
+            if(captureIdentifier as string == "Version")
             {
                 Version = (Version) result;
+                return;
+            }
+
+            if (captureIdentifier as string == "Lookahead")
+            {
+                var value = reader.GetBytes(100);
+                Tracer.TraceBreak();
                 return;
             }
 

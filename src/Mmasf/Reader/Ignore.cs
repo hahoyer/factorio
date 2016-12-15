@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace ManageModsAndSavefiles.Reader
@@ -10,6 +11,7 @@ namespace ManageModsAndSavefiles.Reader
     {
         readonly int Count;
         readonly int LineNumber;
+        public object CaptureIdentifier;
 
         public Ignore(int count, [CallerLineNumber] int lineNumber = 0)
         {
@@ -19,6 +21,10 @@ namespace ManageModsAndSavefiles.Reader
 
         int BinaryRead.IAdvancer.Value => LineNumber;
 
-        public void Execute(BinaryRead reader) { reader.Position += Count; }
+        internal void Execute(BinaryRead reader, MemberInfo member)
+        {
+            reader.Position += Count;
+            reader.SignalToUserContext(CaptureIdentifier, member, null);
+        }
     }
 }

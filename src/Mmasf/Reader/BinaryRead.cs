@@ -18,7 +18,7 @@ namespace ManageModsAndSavefiles.Reader
 
         public interface IContext
         {
-            void Got(MemberInfo member, object captureIdentifier, object result);
+            void Got(BinaryRead reader, MemberInfo member, object captureIdentifier, object result);
         }
 
         public BinaryRead(Stream reader) { Reader = reader; }
@@ -83,7 +83,7 @@ namespace ManageModsAndSavefiles.Reader
                 if(ignore == null)
                     AssignAndAdvance(result, member);
                 else
-                    ignore.Execute(this);
+                    ignore.Execute(this, member);
         }
 
         static IEnumerable<MemberInfo> GetRelevantMembers(Type target)
@@ -121,9 +121,9 @@ namespace ManageModsAndSavefiles.Reader
 
             var accessors = propertyInfo.GetAccessors();
             return accessors.Length == 2
-                && accessors.All(a => !a.IsPrivate)
-                && accessors.Any(a => a.ReturnType != typeof(void))
-                && accessors.Any(a => a.ReturnType == typeof(void));
+                   && accessors.All(a => !a.IsPrivate)
+                   && accessors.Any(a => a.ReturnType != typeof(void))
+                   && accessors.Any(a => a.ReturnType == typeof(void));
         }
 
 
@@ -170,17 +170,15 @@ namespace ManageModsAndSavefiles.Reader
                 fieldInfo.SetValue(target, value);
             }
 
-            SignalToUserContext(member, value);
+            var ci = member.GetAttribute<DataItem>(false)?.CaptureIdentifier;
+            SignalToUserContext(ci, member,value);
         }
 
-        void SignalToUserContext(MemberInfo member, object value)
+        internal void SignalToUserContext(object captureIdentifier, MemberInfo member, object value)
         {
-            if(UserContext == null)
+            if (UserContext == null || captureIdentifier == null)
                 return;
-
-            var ci = member.GetAttribute<DataItem>(false);
-            if(ci?.CaptureIdentifier != null)
-                UserContext.Got(member, ci.CaptureIdentifier, value);
+            UserContext.Got(this, member, captureIdentifier, value);
         }
 
         object GetNext(Type type, MemberInfo member, int level = 0)
@@ -256,5 +254,6 @@ namespace ManageModsAndSavefiles.Reader
         {
             object ReadAndAdvance(BinaryRead reader);
         }
+
     }
 }
