@@ -13,7 +13,8 @@ namespace ManageModsAndSavefiles.Saves
     {
         sealed class VersionReader : DumpableObject, BinaryRead.IReaderProvider
         {
-            object BinaryRead.IReaderProvider.ReadAndAdvance(BinaryRead reader)
+            object BinaryRead.IReaderProvider.ReadAndAdvance
+                (BinaryRead reader, Type type, MemberInfo member)
                 => new Version
                 (
                     reader.GetNext<short>(),
@@ -25,11 +26,12 @@ namespace ManageModsAndSavefiles.Saves
 
         sealed class ExactVersionReader : DumpableObject, BinaryRead.IReaderProvider
         {
-            object BinaryRead.IReaderProvider.ReadAndAdvance(BinaryRead reader)
+            object BinaryRead.IReaderProvider.ReadAndAdvance
+                (BinaryRead reader, Type type, MemberInfo member)
             {
-                var isBefore0_14_14 = ((UserContext) reader.UserContext).IsBefore01414;
+                var isBefore01414 = ((UserContext) reader.UserContext).IsBefore01414;
 
-                return isBefore0_14_14
+                return isBefore01414
                     ? new Version
                     (
                         reader.GetNext<short>(),
@@ -47,6 +49,15 @@ namespace ManageModsAndSavefiles.Saves
             }
         }
 
+        sealed class ReaderBefore013 : DumpableObject, BinaryRead.IReaderProvider
+        {
+            object BinaryRead.IReaderProvider.ReadAndAdvance
+                (BinaryRead reader, Type type, MemberInfo member)
+                => ((UserContext) reader.UserContext).IsBefore013
+                    ? reader.GetNext(type, member)
+                    : null;
+        }
+
         const string LevelInitDat = "level-init.dat";
         const string LevelDat = "level.dat";
         const double TicksPerSecond = 60.0;
@@ -56,16 +67,11 @@ namespace ManageModsAndSavefiles.Saves
 
         BinaryData DataValue;
 
-        ModDescription[] ModsValue;
-        TimeSpan? DurationValue;
-        public Resource[] Resources;
-        public byte[] BeforeMods;
-        public SomeStruct[] Structs;
-
         public FileCluster(string path, MmasfContext parent)
         {
             Path = path;
             Parent = parent;
+            Tracer.Line(Path);
         }
 
         public string Name => Path.FileHandle().Name;
@@ -84,8 +90,7 @@ namespace ManageModsAndSavefiles.Saves
         {
             get
             {
-                if(DataValue == null)
-                    ReadLevelDatFile();
+                EnsureDataRead();
                 return DataValue.Version;
             }
         }
@@ -94,9 +99,8 @@ namespace ManageModsAndSavefiles.Saves
         {
             get
             {
-                if(DurationValue == null)
-                    ReadLevelDatFile();
-                return DurationValue.AssertValue();
+                EnsureDataRead();
+                return DataValue.Duration;
             }
         }
 
@@ -104,9 +108,8 @@ namespace ManageModsAndSavefiles.Saves
         {
             get
             {
-                if(ModsValue == null)
-                    ReadLevelDatFile();
-                return ModsValue;
+                EnsureDataRead();
+                return DataValue.Mods;
             }
         }
 
@@ -124,30 +127,38 @@ namespace ManageModsAndSavefiles.Saves
             [Ignore(9)]
             internal byte Difficulty;
             [DataItem(Reader = typeof(ExactVersionReader))]
-            [Ignore(1, CaptureIdentifier = "Lookahead")]
+            [Ignore(1)]
+            //[Ignore(0, CaptureIdentifier = "Lookahead")]
             internal Version ExactVersion;
+            [DataItem(Reader = typeof(ReaderBefore013))]
+            [ArraySetup(typeof(int))]
+            internal SomeStruct[] Structs;
+            [DataItem]
+            internal ModDescription[] Mods;
+
+            internal TimeSpan Duration;
+            internal Resource[] Resources;
+            internal byte[] BeforeMods;
         }
 
-        void ReadLevelDatFile()
+        void EnsureDataRead()
         {
+            if(DataValue != null)
+                return;
+
             var reader = LevelDatReader;
             reader.UserContext = new UserContext();
 
             DataValue = reader.GetNext<BinaryData>();
 
             var isBefore0_13 = Version < new Version(0, 13);
-            var is0_13_9_2 = Version == new Version(0, 13, 9, 2);
             var isBefore0_14_9_1 = Version < new Version(0, 14, 9, 1);
             var isBefore0_14_14 = Version < new Version(0, 14, 14);
-
-            var lookAhead = reader.GetBytes(100);
-            if(isBefore0_13)
-                Structs = reader.GetNextArray<int, SomeStruct>(100);
 
             var modCount = reader.GetNext<int>();
             Tracer.Assert(modCount < 100);
 
-            ModsValue =
+            DataValue.Mods =
                 modCount
                     .Select(i => Parent.CreateModReference(i, reader, isBefore0_14_14))
                     .ToArray();
@@ -158,10 +169,10 @@ namespace ManageModsAndSavefiles.Saves
             if(!isBefore0_14_9_1)
                 someText2 = reader.GetNextString<int>();
 
-            DurationValue = TimeSpan.FromSeconds(reader.GetNext<int>() / TicksPerSecond);
+            DataValue.Duration = TimeSpan.FromSeconds(reader.GetNext<int>() / TicksPerSecond);
             var someBytes3 = reader.GetNextBytes(2);
 
-            Resources = reader.GetNextArray<int, Resource>(100);
+            DataValue.Resources = reader.GetNextArray<int, Resource>(100);
         }
 
         [DisableDump]
@@ -240,6 +251,7 @@ namespace ManageModsAndSavefiles.Saves
         }
     }
 
+
     sealed class UserContext : DumpableObject, BinaryRead.IContext
     {
         Version Version;
@@ -249,7 +261,8 @@ namespace ManageModsAndSavefiles.Saves
         public bool IsBefore01414 => Version < new Version(0, 14, 14);
 
 
-        void BinaryRead.IContext.Got(BinaryRead reader, MemberInfo member, object captureIdentifier, object result)
+        void BinaryRead.IContext.Got
+            (BinaryRead reader, MemberInfo member, object captureIdentifier, object result)
         {
             if(captureIdentifier as string == "Version")
             {
@@ -257,7 +270,7 @@ namespace ManageModsAndSavefiles.Saves
                 return;
             }
 
-            if (captureIdentifier as string == "Lookahead")
+            if(captureIdentifier as string == "Lookahead")
             {
                 var value = reader.GetBytes(100);
                 Tracer.TraceBreak();

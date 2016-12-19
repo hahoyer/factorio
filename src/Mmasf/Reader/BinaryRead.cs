@@ -32,7 +32,6 @@ namespace ManageModsAndSavefiles.Reader
             return result;
         }
 
-
         public byte[] GetBytes(int count)
         {
             Tracer.Assert(count < 1000);
@@ -121,9 +120,9 @@ namespace ManageModsAndSavefiles.Reader
 
             var accessors = propertyInfo.GetAccessors();
             return accessors.Length == 2
-                   && accessors.All(a => !a.IsPrivate)
-                   && accessors.Any(a => a.ReturnType != typeof(void))
-                   && accessors.Any(a => a.ReturnType == typeof(void));
+                && accessors.All(a => !a.IsPrivate)
+                && accessors.Any(a => a.ReturnType != typeof(void))
+                && accessors.Any(a => a.ReturnType == typeof(void));
         }
 
 
@@ -156,50 +155,66 @@ namespace ManageModsAndSavefiles.Reader
 
         internal void AssignAndAdvance(object target, MemberInfo member)
         {
-            object value;
             var fieldInfo = member as FieldInfo;
+            var propertyInfo = member as PropertyInfo;
+            Tracer.Assert(fieldInfo != null || propertyInfo != null);
+
+            var type = fieldInfo?.FieldType ?? propertyInfo.PropertyType;
+
+            var value = GetNextWithOrWithoutReader(type, member);
+
             if(fieldInfo == null)
-            {
-                var propertyInfo = (PropertyInfo) member;
-                value = GetNext(propertyInfo.PropertyType, member);
                 propertyInfo.SetValue(target, value);
-            }
             else
-            {
-                value = GetNext(fieldInfo.FieldType, member);
                 fieldInfo.SetValue(target, value);
-            }
 
             var ci = member.GetAttribute<DataItem>(false)?.CaptureIdentifier;
-            SignalToUserContext(ci, member,value);
+            SignalToUserContext(ci, member, value);
         }
 
         internal void SignalToUserContext(object captureIdentifier, MemberInfo member, object value)
         {
-            if (UserContext == null || captureIdentifier == null)
+            if(UserContext == null || captureIdentifier == null)
                 return;
+
             UserContext.Got(this, member, captureIdentifier, value);
         }
 
-        object GetNext(Type type, MemberInfo member, int level = 0)
+        object GetNextWithOrWithoutReader(Type type, MemberInfo member)
         {
-            var reader = member.GetAttribute<DataItem>(false)?.Reader;
-            if(reader != null)
-                return GetNextWithReader(type, reader);
-
-            return type.IsArray ? GetNextArray(type, member, level) : GetNext(type);
+            var readerType = member.GetAttribute<DataItem>(false)?.Reader;
+            return readerType == null
+                ? GetNext(type, member)
+                : GetNextWithReader(readerType, type, member);
         }
 
-        object GetNextWithReader(Type type, Type reader)
+        public object GetNext(Type type, MemberInfo member)
+            => GetNext(type, member, 0);
+
+        object GetNext(Type type, MemberInfo member, int level)
+            => type.IsArray
+                ? GetNextArray(type, member, level)
+                : type == typeof(string)
+                    ? GetNextString(member)
+                    : GetNext(type);
+
+        string GetNextString(MemberInfo member)
         {
-            var result = ((IReaderProvider) Activator.CreateInstance(reader))
-                .ReadAndAdvance(this);
-            if(result.GetType().Is(type))
+            var countType = member.GetAttribute<StringSetup>(false)?.CountType ?? typeof(int);
+            var length = Convert.ToInt32(GetNext(countType));
+            return GetNextString(length);
+        }
+
+        object GetNextWithReader(Type readerType, Type type, MemberInfo member)
+        {
+            var result = ((IReaderProvider) Activator.CreateInstance(readerType))
+                .ReadAndAdvance(this, type, member);
+            if(result == null || result.GetType().Is(type))
                 return result;
 
             throw new InvalidException
             (
-                $"Return type of {reader.Name} is {result.GetType().Name}, whitch is not a {type.Name}."
+                $"Return type of {readerType.Name} is {result.GetType().Name}, whitch is not a {type.Name}."
             );
         }
 
@@ -211,12 +226,13 @@ namespace ManageModsAndSavefiles.Reader
 
         object GetNextArray(Type type, MemberInfo member, int level)
         {
-            var arraySetup = member.GetAttributes<ArraySetup>(false).Single(i => i.Level == level);
-            var count = arraySetup.Count;
-            if(arraySetup.CountType != null)
-                count = Convert.ToInt32(GetNext(arraySetup.CountType));
+            var arraySetup = member
+                .GetAttributes<ArraySetup>(false)
+                .SingleOrDefault(i => i.Level == level);
 
-            if(arraySetup.MaxCount > 0 && count > arraySetup.MaxCount)
+            var count = GetCount(arraySetup);
+
+            if(arraySetup?.MaxCount > 0 && count > arraySetup.MaxCount)
                 throw new InvalidArrayException("Too big array encountered");
 
             var elementType = type.GetElementType();
@@ -232,6 +248,12 @@ namespace ManageModsAndSavefiles.Reader
 
             return array;
         }
+
+        int GetCount(ArraySetup arraySetup)
+            =>
+            arraySetup?.Count > 0
+                ? arraySetup.Count
+                : Convert.ToInt32(GetNext(arraySetup?.CountType ?? typeof(int)));
 
         public sealed class InvalidArrayException : Exception
         {
@@ -252,8 +274,7 @@ namespace ManageModsAndSavefiles.Reader
 
         public interface IReaderProvider
         {
-            object ReadAndAdvance(BinaryRead reader);
+            object ReadAndAdvance(BinaryRead reader, Type type, MemberInfo member);
         }
-
     }
 }

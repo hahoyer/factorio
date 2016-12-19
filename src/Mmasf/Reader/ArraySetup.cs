@@ -17,8 +17,6 @@ namespace ManageModsAndSavefiles.Reader
 
         public void AssertValid()
         {
-            if(CountType == null && Count == 0)
-                throw new InvalidException("CountType and Count not set");
             if(CountType != null && Count > 0)
                 throw new InvalidException("CountType and Count are both set");
             if(Count < 0)
@@ -30,5 +28,5 @@ namespace ManageModsAndSavefiles.Reader
             public InvalidException(string message)
                 : base(message) { }
         }
-    }
+    }         
 }

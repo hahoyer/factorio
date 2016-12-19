@@ -101,7 +101,7 @@ namespace ManageModsAndSavefiles
             ConfigurationCache.Invalidate();
         }
 
-        internal ModDescription CreateModReferenceBefore0_14(int i, BinaryRead reader)
+        internal ModDescription CreateModReferenceBefore014(int i, BinaryRead reader)
         {
             var name = reader.GetNextString<int>();
 
@@ -113,7 +113,7 @@ namespace ManageModsAndSavefiles
         public ModDescription CreateModReference(int i, BinaryRead reader, bool isBefore01414)
         {
             if(isBefore01414)
-                return CreateModReferenceBefore0_14(i, reader);
+                return CreateModReferenceBefore014(i, reader);
 
             var name = reader.GetNextString<byte>();
             var lookAhead = reader.GetBytes(150);

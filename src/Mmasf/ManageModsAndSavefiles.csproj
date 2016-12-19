@@ -62,6 +62,7 @@
     <Compile Include="Mods\ModMatrix.cs" />
     <Compile Include="Reader\DataItem.cs" />
     <Compile Include="Reader\Ignore.cs" />
+    <Compile Include="Reader\StringSetup.cs" />
     <Compile Include="Saves\Saves\FileCluster.cs" />
     <Compile Include="Saves\Saves\ModConflict.cs" />
     <Compile Include="SeekableReader.cs" />
