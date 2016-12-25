@@ -42,6 +42,7 @@ namespace Common
 
             tempRequestFile.Name = request;
 
+            ("Waiting for response on " + response).WriteLine();
             Semaphore.WaitOne();
 
             var result = responseFile.String;

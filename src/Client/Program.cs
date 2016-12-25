@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Remoting.Channels;
 using Common;
 using hw.DebugFormatter;
 using hw.Helper;
@@ -19,9 +20,12 @@ namespace Client
 
             var directory = Constants.RootPath.PathCombine("Mmasf");
 
-            var response = new FileBasedCommunicatorClient(directory).Get("Test Text");
+            ChannelServices.RegisterChannel(new FileBasedClientChannel(directory), false);
+            var data = (ITestData) Activator.GetObject(typeof(ITestData), "");
+
+
             "Response: ".WriteLine();
-            response.WriteLine();
+            data.TestString.WriteLine();
 
             "(End)Press any key:".WriteLine();
             var k = Console.ReadKey();
