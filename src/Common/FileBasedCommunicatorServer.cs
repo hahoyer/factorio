@@ -6,17 +6,17 @@ using hw.Helper;
 
 namespace Common
 {
-    public class FileBasedCommunicatorServer
+    public class FileBasedCommunicatorServer : DumpableObject, IDisposable
     {
         readonly string Address;
-        readonly Func<string, string, string> Get;
+        readonly Func<string, string, string, string> Get;
         readonly FileSystemWatcher Watcher;
 
-        public FileBasedCommunicatorServer(string address, Func<string, string, string> get)
+        public FileBasedCommunicatorServer(string uri, Func<string, string, string, string> get)
         {
-            Address = address;
+            Address = Constants.RootPath.PathCombine(uri);
             Get = get;
-            Watcher = new FileSystemWatcher(address)
+            Watcher = new FileSystemWatcher(Address)
             {
                 Filter = "*" + Constants.RequestExtension,
                 IncludeSubdirectories = true
@@ -24,6 +24,8 @@ namespace Common
             Watcher.Renamed += (o, a) => OnFileSeen(a.FullPath);
             Watcher.Created += (o, a) => OnFileSeen(a.FullPath);
         }
+
+        void IDisposable.Dispose() { Stop(); }
 
         public void Start()
         {
@@ -40,10 +42,10 @@ namespace Common
         void OnFileSeen(string path)
         {
             if(path.EndsWith(Constants.RequestExtension))
-                ApplyGettter(path);
+                ApplyGetter(path);
         }
 
-        void ApplyGettter(string request)
+        void ApplyGetter(string request)
         {
             var requestFile = request.FileHandle();
 
@@ -51,11 +53,14 @@ namespace Common
             if(response.Exists)
                 response.Delete();
 
-            Tracer.Assert(requestFile.DirectoryName.FileHandle().DirectoryName == Address);
-            var name = requestFile.DirectoryName.FileHandle().Name;
+            var requestDirectoryFile = requestFile.DirectoryName.FileHandle();
+            var methodName = requestDirectoryFile.Name;
+            var requestDirectoryRootFile = requestDirectoryFile.DirectoryName.FileHandle();
+            Tracer.Assert(requestDirectoryRootFile.DirectoryName == Address);
+            var className = requestDirectoryRootFile.Name;
 
             var tempResponseFile = requestFile;
-            tempResponseFile.String = Get(name, tempResponseFile.String);
+            tempResponseFile.String = Get(className, methodName, tempResponseFile.String);
             tempResponseFile.Name = response.Name;
         }
     }

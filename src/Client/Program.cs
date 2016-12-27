@@ -18,14 +18,15 @@ namespace Client
 
             1.Seconds().Sleep();
 
-            var directory = Constants.RootPath.PathCombine("Mmasf");
-
-            ChannelServices.RegisterChannel(new FileBasedClientChannel(directory), false);
-            var data = (ITestData) Activator.GetObject(typeof(ITestData), "");
+            ChannelServices.RegisterChannel(new FileBasedClientChannel(), false);
+            var data = (ITestData) Activator.GetObject(typeof(ITestData), "filebased://localhost/Mmasf");
 
 
-            "Response: ".WriteLine();
+            "Response to TestString: ".WriteLine();
             data.TestString.WriteLine();
+
+            "Response to TestFunction: ".WriteLine();
+            data.TestFunction(12,"lorum").WriteLine();
 
             "(End)Press any key:".WriteLine();
             var k = Console.ReadKey();

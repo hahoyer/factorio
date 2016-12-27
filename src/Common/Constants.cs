@@ -13,5 +13,6 @@ namespace Common
         public static readonly string RootPath = Environment
             .GetFolderPath(Environment.SpecialFolder.CommonApplicationData)
             .PathCombine("hw.FileCommunicator");
+        public const string FileBasedSchemeName = "filebased";
     }
 }

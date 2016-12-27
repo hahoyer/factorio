@@ -2,29 +2,28 @@
 using System.Reflection;
 using System.Runtime.Remoting.Messaging;
 using hw.DebugFormatter;
+using hw.Helper;
 
 
-namespace Client
+namespace Common
 {
     class MessageSink : DumpableObject, IMessageSink
     {
-        readonly FileBasedClientChannel Parent;
+        readonly string ObjectURI;
 
-        public MessageSink(FileBasedClientChannel parent) { Parent = parent; }
+        public MessageSink(string objectURI) { ObjectURI = objectURI; }
 
         IMessage IMessageSink.SyncProcessMessage(IMessage msg)
         {
-            var m = msg as IMethodCallMessage;
+            var methodCallMessage = msg as IMethodCallMessage;
 
-            if(m != null)
+            if(methodCallMessage != null)
             {
-                var methodName = m.MethodName;
-                var mm = (MethodInfo) m.MethodBase;
-                var className = mm.DeclaringType.FullName;
-
-                Tracer.Assert(!m.Args.Any());
-                var result = Parent.Get(className, methodName, mm.ReturnType);
-                return new ReturnMessage(result, null, 0, null, m);
+                var methodInfo = (MethodInfo) methodCallMessage.MethodBase;
+                Tracer.Assert(!methodCallMessage.HasVarArgs);
+                Tracer.Assert(methodCallMessage.InArgCount == methodCallMessage.ArgCount);
+                var result = Get(methodInfo, methodCallMessage.Args);
+                return new ReturnMessage(result, null, 0, null, methodCallMessage);
             }
             NotImplementedMethod(msg.ToString());
             return null;
@@ -45,11 +44,13 @@ namespace Client
             }
         }
 
-        object Serialize(object o)
+        object Get(MethodInfo method, object[] arguments)
         {
-            NotImplementedMethod(o)
-                ;
-            return null;
+            var className = method.DeclaringType.AssertNotNull().FullName;
+            var methodName = method.Name;
+            var c = new FileBasedCommunicatorClient(Constants.RootPath.PathCombine(ObjectURI, className, methodName));
+            var resultType = method.ReturnType;
+            return c.Get(arguments.Select(a => a.ToJson()).ToArray()).FromJson(resultType);
         }
     }
 }

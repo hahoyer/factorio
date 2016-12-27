@@ -1,45 +1,41 @@
 ﻿using System;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Messaging;
-using Common;
 using hw.DebugFormatter;
-using hw.Helper;
 
 
-namespace Client
+namespace Common
 {
     public class FileBasedClientChannel : DumpableObject, IChannelSender, ISecurableChannel
     {
-        readonly string Directory;
-        public FileBasedClientChannel(string directory) { Directory = directory; }
-
-        string IChannel.Parse(string url, out string objectURI)
+        string IChannel.Parse(string urlString, out string objectURI)
         {
-            NotImplementedMethod(url, url);
-            objectURI = null;
-            return null;
+            objectURI = Parse(urlString);
+            return objectURI;
         }
 
         int IChannel.ChannelPriority => 100;
 
-        string IChannel.ChannelName => "MMasf";
+        string IChannel.ChannelName => Constants.FileBasedSchemeName;
 
-        IMessageSink IChannelSender.CreateMessageSink(string url, object remoteChannelData, out string objectURI)
+        IMessageSink IChannelSender.CreateMessageSink(string urlString, object remoteChannelData, out string objectURI)
         {
-            Tracer.Assert(url == "");
+            objectURI = Parse(urlString);
+            if(objectURI == null)
+                return null;
             Tracer.Assert(remoteChannelData == null);
-            objectURI = "";
-            return new MessageSink(this);
+            return new MessageSink(objectURI);
         }
 
         bool ISecurableChannel.IsSecured { get; set; }
 
-        public object Get(string className, string methodName, Type resultType)
+        static string Parse(string urlString)
         {
-            var c = new FileBasedCommunicatorClient(Directory.PathCombine(className));
-            var result = c.Get(methodName).FromJson(resultType);
-
-            throw new NotImplementedException();
+            var url = new Uri(urlString);
+            Tracer.Assert(url.IsLoopback);
+            Tracer.Assert(url.AbsolutePath.StartsWith("/"));
+            var objectURI = url.AbsolutePath.Substring(1);
+            return url.Scheme.ToLower() == Constants.FileBasedSchemeName ? objectURI : null;
         }
     }
 }

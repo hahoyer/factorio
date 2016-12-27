@@ -53,6 +53,7 @@
     <Compile Include="FileBasedClientChannel.cs" />
     <Compile Include="FileBasedCommunicatorClient.cs" />
     <Compile Include="FileBasedCommunicatorServer.cs" />
+    <Compile Include="FileBasedServer.cs" />
     <Compile Include="hw\DebugFormatter\Configuration.cs" />
     <Compile Include="hw\DebugFormatter\DebugTextWriter.cs" />
     <Compile Include="hw\DebugFormatter\DisableDumpAttribute.cs" />

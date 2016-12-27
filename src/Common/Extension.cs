@@ -33,5 +33,15 @@ namespace Common
         public static void ToJsonFile<T>(this string jsonFileName, T o)
             where T : class
             => jsonFileName.FileHandle().String = o.ToJson();
+
+        public static string UnescapeComma(this string value)
+            => value
+                .Replace("&comma;", ",")
+                .Replace("&ampersant;", "&");
+
+        public static string EscapeComma(this string value)
+            => value
+                .Replace("&", "&ampersant;")
+                .Replace(",", "&comma;");
     }
 }

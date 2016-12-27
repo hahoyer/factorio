@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using hw.Helper;
 
@@ -13,7 +14,7 @@ namespace Common
         readonly Semaphore Semaphore = new Semaphore(0, 1);
         public FileBasedCommunicatorClient(string address) { Address = address; }
 
-        public string Get(string data)
+        public string Get(string[] data)
         {
             var guid = Guid.NewGuid();
             var address = Address.PathCombine(guid.ToString());
@@ -25,8 +26,7 @@ namespace Common
             var tempRequest = address + Constants.TempExtension;
             var tempRequestFile = tempRequest.FileHandle();
             tempRequestFile.EnsureDirectoryOfFileExists();
-            tempRequestFile.String = data;
-
+            tempRequestFile.String = data.Select(Extension.EscapeComma).Stringify(",");
 
             var response = address + Constants.ResponseExtension;
             var responseFile = response.FileHandle();
