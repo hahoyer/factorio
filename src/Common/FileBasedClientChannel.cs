@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Messaging;
 using hw.DebugFormatter;
 
-
 namespace Common
 {
-    public class FileBasedClientChannel : DumpableObject, IChannelSender, ISecurableChannel
+    public sealed class FileBasedClientChannel : DumpableObject, IChannelSender, ISecurableChannel
     {
         string IChannel.Parse(string urlString, out string objectURI)
         {
@@ -18,11 +19,13 @@ namespace Common
 
         string IChannel.ChannelName => Constants.FileBasedSchemeName;
 
-        IMessageSink IChannelSender.CreateMessageSink(string urlString, object remoteChannelData, out string objectURI)
+        IMessageSink IChannelSender.CreateMessageSink
+            (string urlString, object remoteChannelData, out string objectURI)
         {
             objectURI = Parse(urlString);
             if(objectURI == null)
                 return null;
+
             Tracer.Assert(remoteChannelData == null);
             return new MessageSink(objectURI);
         }

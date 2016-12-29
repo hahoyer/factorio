@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Remoting.Channels;
 using Common;
 using hw.DebugFormatter;
-using hw.Helper;
-
 
 namespace Client
 {
@@ -19,14 +19,16 @@ namespace Client
             1.Seconds().Sleep();
 
             ChannelServices.RegisterChannel(new FileBasedClientChannel(), false);
-            var data = (ITestData) Activator.GetObject(typeof(ITestData), "filebased://localhost/Mmasf");
 
+            var data =
+                (ITestData1) Activator
+                    .GetObject(typeof(ITestData1), "filebased://localhost/Mmasf");
 
             "Response to TestString: ".WriteLine();
             data.TestString.WriteLine();
 
             "Response to TestFunction: ".WriteLine();
-            data.TestFunction(12,"lorum").WriteLine();
+            data.TestFunction(12, "lorum").WriteLine();
 
             "(End)Press any key:".WriteLine();
             var k = Console.ReadKey();

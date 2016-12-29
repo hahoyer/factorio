@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Remoting;
 using Common;
 using hw.DebugFormatter;
-
 
 namespace Server
 {
@@ -14,9 +15,12 @@ namespace Server
             Tracer.LinePart("");
             Console.SetOut(console);
             DebugTextWriter.Register(false);
-            RemotingConfiguration.RegisterWellKnownServiceType(typeof(TestData), "1", WellKnownObjectMode.Singleton);
-            RemotingConfiguration.RegisterWellKnownServiceType(typeof(TestData1), "2", WellKnownObjectMode.Singleton);
-            RemotingConfiguration.RegisterWellKnownServiceType(typeof(TestData2), "3", WellKnownObjectMode.Singleton);
+            RemotingConfiguration.RegisterWellKnownServiceType
+                (typeof(TestData), "1", WellKnownObjectMode.Singleton);
+            RemotingConfiguration.RegisterWellKnownServiceType
+                (typeof(TestData1), "2", WellKnownObjectMode.Singleton);
+            RemotingConfiguration.RegisterWellKnownServiceType
+                (typeof(TestData2), "3", WellKnownObjectMode.Singleton);
 
             using(var server = new FileBasedServer("Mmasf"))
             {

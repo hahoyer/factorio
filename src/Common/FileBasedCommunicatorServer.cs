@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
 
-
 namespace Common
 {
-    public class FileBasedCommunicatorServer : DumpableObject, IDisposable
+    public sealed class FileBasedCommunicatorServer : DumpableObject, IDisposable
     {
         readonly string Address;
         readonly Func<string, string, string, string> Get;
@@ -15,7 +16,9 @@ namespace Common
         public FileBasedCommunicatorServer(string uri, Func<string, string, string, string> get)
         {
             Address = Constants.RootPath.PathCombine(uri);
+            Address.FileHandle().EnsureIsExistentDirectory();
             Get = get;
+
             Watcher = new FileSystemWatcher(Address)
             {
                 Filter = "*" + Constants.RequestExtension,
@@ -35,7 +38,8 @@ namespace Common
 
         public void Stop()
         {
-            ("Stop waiting for requests on " + Address + "\\*" + Constants.RequestExtension).WriteLine();
+            ("Stop waiting for requests on " + Address + "\\*" + Constants.RequestExtension)
+                .WriteLine();
             Watcher.EnableRaisingEvents = false;
         }
 

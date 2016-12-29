@@ -1,13 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using hw.Helper;
 
-
 namespace Common
 {
-    public class FileBasedCommunicatorClient
+    public sealed class FileBasedCommunicatorClient
     {
         readonly string Address;
 
