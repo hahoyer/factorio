@@ -13,7 +13,8 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile></CompilerResponseFile>
+    <CompilerResponseFile>
+    </CompilerResponseFile>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows64:19</UnityBuildTarget>
     <UnityVersion>5.5.0b11</UnityVersion>
@@ -76,17 +77,18 @@
     <Reference Include="INIFileParser">
       <HintPath>Assets\StandAlone\INIFileParser.dll</HintPath>
     </Reference>
-    <Reference Include="ManageModsAndSavefiles">
-      <HintPath>Assets\StandAlone\ManageModsAndSavefiles.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>Assets\StandAlone\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Common">
+      <HintPath>Assets\StandAlone\Common.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\CameraMouseLook.cs" />
     <Compile Include="Assets\CapsuleController.cs" />
     <Compile Include="Assets\Configuration.cs" />
+    <Compile Include="Assets\MmasfContext.cs" />
     <Compile Include="Assets\UserConfigurations.cs" />
     <Compile Include="Assets\VersionInformationToWall.cs" />
   </ItemGroup>

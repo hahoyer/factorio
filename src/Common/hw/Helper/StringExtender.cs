@@ -22,10 +22,12 @@ namespace hw.Helper
         /// <param name="count"> The count. </param>
         /// <param name="isLineStart"></param>
         /// <returns> </returns>
-        public static string Indent(this string x, int count = 1, string tabString = "    ", bool isLineStart = false)
+        public static string Indent
+            (this string x, int count = 1, string tabString = "    ", bool isLineStart = false)
         {
             var effectiveTabString = tabString.Repeat(count);
-            return (isLineStart ? effectiveTabString : "") + x.Replace("\n", "\n" + effectiveTabString);
+            return (isLineStart ? effectiveTabString : "")
+                + x.Replace("\n", "\n" + effectiveTabString);
         }
 
         /// <summary>
@@ -40,6 +42,7 @@ namespace hw.Helper
             var result = "";
             for(var i = 0; i < count; i++)
                 result += s;
+
             return result;
         }
 
@@ -54,10 +57,14 @@ namespace hw.Helper
         {
             if(data.IndexOf("\n", StringComparison.Ordinal) < 0)
                 return left + data + right;
+
             return "\n" + left + Indent("\n" + data) + "\n" + right;
         }
 
-        public static string SaveConcat(this string delim, params string[] data) { return data.Where(d => !string.IsNullOrEmpty(d)).Stringify(delim); }
+        public static string SaveConcat(this string delim, params string[] data)
+        {
+            return data.Where(d => !string.IsNullOrEmpty(d)).Stringify(delim);
+        }
 
         /// <summary>
         ///     Converts string to a string literal.
@@ -69,6 +76,7 @@ namespace hw.Helper
         {
             if(x == null)
                 return "null";
+
             return "\"" + x.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
         }
 
@@ -85,6 +93,7 @@ namespace hw.Helper
                 result += HexDumpFiller(i, bytes.Length);
                 result += bytes[i].ToString("x2");
             }
+
             result += HexDumpFiller(bytes.Length, bytes.Length);
             return result;
         }
@@ -100,40 +109,76 @@ namespace hw.Helper
                 return "]";
             if(i % 4 == 0)
                 return " ";
+
             return "";
         }
 
         public static string ExecuteCommand(this string command)
         {
-            var procStartInfo = new ProcessStartInfo("cmd", "/c " + command) {RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true};
-            var proc = new Process {StartInfo = procStartInfo};
+            var procStartInfo = new ProcessStartInfo("cmd", "/c " + command)
+            {
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            var proc = new Process
+            {
+                StartInfo = procStartInfo
+            };
             proc.Start();
             return proc.StandardOutput.ReadToEnd();
         }
 
         public static File FileHandle(this string name) { return File.Create(name); }
-        public static string PathCombine(this string head, params string[] tail) { return Path.Combine(head, Path.Combine(tail)); }
 
-        public static string UnderScoreToCamelCase(this string name) { return name.Split('_').Select(ToLowerFirstUpper).Stringify(""); }
+        public static string PathCombine(this string head, params string[] tail)
+            => tail.Aggregate(head, Path.Combine);
 
-        public static string ToLowerFirstUpper(this string text) { return text.Substring(0, 1).ToUpperInvariant() + text.Substring(1).ToLowerInvariant(); }
-        public static string TableNameToClassName(this string name) { return name.UnderScoreToCamelCase().ToSingular(); }
+        public static string UnderScoreToCamelCase(this string name)
+        {
+            return name.Split('_').Select(ToLowerFirstUpper).Stringify("");
+        }
+
+        public static string ToLowerFirstUpper(this string text)
+        {
+            return text.Substring(0, 1).ToUpperInvariant() + text.Substring(1).ToLowerInvariant();
+        }
+
+        public static string TableNameToClassName(this string name)
+        {
+            return name.UnderScoreToCamelCase().ToSingular();
+        }
+
         [StringFormatMethod("pattern")]
-        public static string ReplaceArgs(this string pattern, params object[] args) { return String.Format(pattern, args); }
-        public static bool Matches(this string input, string pattern) { return new Regex(pattern).IsMatch(input); }
+        public static string ReplaceArgs(this string pattern, params object[] args)
+        {
+            return string.Format(pattern, args);
+        }
+
+        public static bool Matches(this string input, string pattern)
+        {
+            return new Regex(pattern).IsMatch(input);
+        }
 
         public static IEnumerable<string> Split(this string target, params int[] sizes)
         {
             var start = 0;
-            foreach(var length in sizes.Select(size => Math.Max(0, Math.Min(target.Length - start, size))))
+            foreach(
+                var length in
+                sizes.Select(size => Math.Max(0, Math.Min(target.Length - start, size))))
             {
                 yield return target.Substring(start, length);
+
                 start += length;
             }
+
             yield return target.Substring(start);
         }
 
-        public static string Format(this string x, StringAligner aligner) { return aligner.Format(x); }
+        public static string Format(this string x, StringAligner aligner)
+        {
+            return aligner.Format(x);
+        }
 
         internal static int BeginMatch(string a, string b)
         {
@@ -152,6 +197,7 @@ namespace hw.Helper
             var stringAligner = new StringAligner();
             for(var i = 0; i < columnCount; i++)
                 stringAligner.AddFloatingColumn("  ");
+
             return stringAligner;
         }
     }

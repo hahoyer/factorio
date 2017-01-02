@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Remoting.Channels;
+using System.Runtime.Remoting.Proxies;
 using Common;
 using hw.DebugFormatter;
 
@@ -18,17 +18,15 @@ namespace Client
 
             1.Seconds().Sleep();
 
-            ChannelServices.RegisterChannel(new FileBasedClientChannel(), false);
+            var client = new FileBasedClient("Mmasf");
 
-            var data =
-                (ITestData1) Activator
-                    .GetObject(typeof(ITestData1), "filebased://localhost/Mmasf");
+            var data = client.Get<ManageModsAndSavefiles>();
 
-            "Response to TestString: ".WriteLine();
-            data.TestString.WriteLine();
+            "Response to FactorioInformation: ".WriteLine();
+            data.FactorioInformation.WriteLine();
 
             "Response to TestFunction: ".WriteLine();
-            data.TestFunction(12, "lorum").WriteLine();
+            data.UserConfigurations[0].Path.WriteLine();
 
             "(End)Press any key:".WriteLine();
             var k = Console.ReadKey();

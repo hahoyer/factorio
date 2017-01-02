@@ -17,18 +17,44 @@ namespace Common
         IMessage IMessageSink.SyncProcessMessage(IMessage msg)
         {
             var methodCallMessage = msg as IMethodCallMessage;
-
-            if(methodCallMessage != null)
+            if(methodCallMessage == null)
             {
-                var methodInfo = (MethodInfo) methodCallMessage.MethodBase;
-                Tracer.Assert(!methodCallMessage.HasVarArgs);
-                Tracer.Assert(methodCallMessage.InArgCount == methodCallMessage.ArgCount);
-                var result = Get(methodInfo, methodCallMessage.Args);
-                return new ReturnMessage(result, null, 0, null, methodCallMessage);
+                NotImplementedMethod(msg.ToString());
+                return null;
             }
 
-            NotImplementedMethod(msg.ToString());
-            return null;
+            Tracer.Assert(!methodCallMessage.HasVarArgs, "var-arguments are not supported.");
+
+            Tracer.Assert
+            (
+                methodCallMessage.InArgCount == methodCallMessage.ArgCount,
+                "Only in-arguments are supported"
+            );
+
+            var methodInfo = (MethodInfo) methodCallMessage.MethodBase;
+
+            var result = SyncProcessMethod(methodInfo, methodCallMessage);
+            return new ReturnMessage(result, null, 0, null, methodCallMessage);
+        }
+
+        object SyncProcessMethod(MethodInfo methodInfo, IMethodCallMessage methodCallMessage)
+        {
+            switch(methodInfo.MemberType)
+            {
+            case MemberTypes.Method:
+                return Get(methodInfo, methodCallMessage.Args);
+            case MemberTypes.Property:
+                return SyncProcessProperty(methodCallMessage, methodInfo);
+            default:
+                throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        ReturnMessage SyncProcessProperty
+            (IMethodCallMessage methodCallMessage, MethodInfo methodInfo)
+        {
+            var result = Get(methodInfo, methodCallMessage.Args);
+            return new ReturnMessage(result, null, 0, null, methodCallMessage);
         }
 
         IMessageCtrl IMessageSink.AsyncProcessMessage(IMessage msg, IMessageSink replySink)

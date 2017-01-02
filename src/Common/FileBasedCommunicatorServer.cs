@@ -28,7 +28,7 @@ namespace Common
             Watcher.Created += (o, a) => OnFileSeen(a.FullPath);
         }
 
-        void IDisposable.Dispose() { Stop(); }
+        void IDisposable.Dispose() => Stop();
 
         public void Start()
         {
@@ -52,7 +52,7 @@ namespace Common
         void ApplyGetter(string request)
         {
             var requestFile = request.FileHandle();
-
+              
             var response = Path.ChangeExtension(request, Constants.ResponseExtension).FileHandle();
             if(response.Exists)
                 response.Delete();

@@ -16,14 +16,22 @@ namespace Server
             Console.SetOut(console);
             DebugTextWriter.Register(false);
             RemotingConfiguration.RegisterWellKnownServiceType
-                (typeof(TestData), "1", WellKnownObjectMode.Singleton);
-            RemotingConfiguration.RegisterWellKnownServiceType
-                (typeof(TestData1), "2", WellKnownObjectMode.Singleton);
-            RemotingConfiguration.RegisterWellKnownServiceType
-                (typeof(TestData2), "3", WellKnownObjectMode.Singleton);
+                (typeof(ManageModsAndSavefiles), "", WellKnownObjectMode.Singleton);
 
             using(var server = new FileBasedServer("Mmasf"))
             {
+                var instance = new ManageModsAndSavefiles
+                {
+                    FactorioInformation = "FactorioInformation Test",
+                    UserConfigurations = new[]
+                    {
+                        new UserConfiguration
+                        {
+                            Path = "Test path"
+                        }
+                    }
+                };
+                server.Register(instance);
                 "(Server)Press any key:".WriteLine();
                 var k = Console.ReadKey();
             }

@@ -135,49 +135,6 @@ namespace hw.Helper
         }
 
         /// <summary>
-        ///     Returns index list of all elements, that have no other element, with "isInRelation(element, other)" is true
-        ///     For example if relation is "element ;&less; other" will return the maximal element
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="list"></param>
-        /// <param name="isInRelation"></param>
-        /// <returns></returns>
-        public static IEnumerable<int> FrameIndexList<T>
-            (this IEnumerable<T> list, Func<T, T, bool> isInRelation)
-        {
-            var listArray = list.ToArray();
-            return
-                listArray.Select((item, index) => new Tuple<T, int>(item, index))
-                    .Where(element => !listArray.Any(other => isInRelation(element.Item1, other)))
-                    .Select(element => element.Item2);
-        }
-        /// <summary>
-        ///     Returns list of all elements, that have no other element, with "isInRelation(element, other)" is true
-        ///     For example if relation is "element ;&less; other" will return the maximal element
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="list"></param>
-        /// <param name="isInRelation"></param>
-        /// <returns></returns>
-        public static IEnumerable<T> FrameElementList<T>
-            (this IEnumerable<T> list, Func<T, T, bool> isInRelation)
-        {
-            var listArray = list.ToArray();
-            return listArray.FrameIndexList(isInRelation).Select(index => listArray[index]);
-        }
-
-        public static IEnumerable<int> MaxIndexList<T>(this IEnumerable<T> list)
-            where T : IComparable<T>
-        {
-            return list.FrameIndexList((a, b) => a.CompareTo(b) < 0);
-        }
-        public static IEnumerable<int> MinIndexList<T>(this IEnumerable<T> list)
-            where T : IComparable<T>
-        {
-            return list.FrameIndexList((a, b) => a.CompareTo(b) > 0);
-        }
-
-        /// <summary>
         ///     Checks if object starts with given object.
         /// </summary>
         /// <typeparam name="T"> </typeparam>
@@ -259,52 +216,6 @@ namespace hw.Helper
         {
             for(long i = 0; i < count; i++)
                 yield return getValue(i);
-        }
-
-        public static IEnumerable<Tuple<TKey, TLeft, TRight>> Merge<TKey, TLeft, TRight>
-            (
-            this IEnumerable<TLeft> left,
-            IEnumerable<TRight> right,
-            Func<TLeft, TKey> getLeftKey,
-            Func<TRight, TKey> getRightKey) where TLeft : class where TRight : class
-        {
-            var leftCommon = left.Select
-                (l => new Tuple<TKey, TLeft, TRight>(getLeftKey(l), l, null));
-            var rightCommon = right.Select
-                (r => new Tuple<TKey, TLeft, TRight>(getRightKey(r), null, r));
-            return
-                leftCommon.Union(rightCommon)
-                    .GroupBy(t => t.Item1)
-                    .Select<IGrouping<TKey, Tuple<TKey, TLeft, TRight>>, Tuple<TKey, TLeft, TRight>>
-                    (Merge);
-        }
-
-        public static IEnumerable<Tuple<TKey, T, T>> Merge<TKey, T>
-            (this IEnumerable<T> left, IEnumerable<T> right, Func<T, TKey> getKey)
-            where T : class
-        {
-            return Merge(left, right, getKey, getKey);
-        }
-
-        public static Tuple<TKey, TLeft, TRight> Merge<TKey, TLeft, TRight>
-            (IGrouping<TKey, Tuple<TKey, TLeft, TRight>> grouping)
-            where TLeft : class where TRight : class
-        {
-            var list = grouping.ToArray();
-            switch(list.Length)
-            {
-                case 1:
-                    return list[0];
-                case 2:
-                    if(list[0].Item2 == null && list[1].Item3 == null)
-                        return new Tuple<TKey, TLeft, TRight>
-                            (grouping.Key, list[1].Item2, list[0].Item3);
-                    if(list[1].Item2 == null && list[0].Item3 == null)
-                        return new Tuple<TKey, TLeft, TRight>
-                            (grouping.Key, list[0].Item2, list[1].Item3);
-                    break;
-            }
-            throw new DuplicateKeyException();
         }
 
         public static FunctionCache<TKey, IEnumerable<T>> ToDictionaryEx<TKey, T>

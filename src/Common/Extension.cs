@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using hw.DebugFormatter;
 using hw.Helper;
 using Newtonsoft.Json;
-
 
 namespace Common
 {
@@ -43,5 +44,38 @@ namespace Common
             => value
                 .Replace("&", "&ampersant;")
                 .Replace(",", "&comma;");
+
+        public static IEnumerable<T> EnsureAny<T>(this IEnumerable<T> value, Action onError)
+        {
+            var isAny = false;
+            foreach(var item in value)
+            {
+                yield return item;
+
+                isAny = true;
+            }
+
+            if(isAny)
+                yield break;
+
+            onError();
+        }
+
+        public static IEnumerable<T> EnsureNoDuplicate<T>(this IEnumerable<T> value, Action onError)
+        {
+            var isAny = false;
+            foreach(var item in value)
+            {
+                if(isAny)
+                {
+                    onError();
+                    yield break;
+                }
+
+                yield return item;
+
+                isAny = true;
+            }
+        }
     }
 }
