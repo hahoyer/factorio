@@ -5,14 +5,15 @@ using System.Linq;
 namespace ManageModsAndSavefiles.Reader
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
-    public sealed class Array : Attribute
+    public sealed class ArrayItem : Attribute
     {
         public int Level = 0;
         public readonly int Count;
         public Type CountType;
         public int MaxCount;
+        public Type Reader;
 
-        public Array(int count = 0)
+        public ArrayItem(int count = 0)
         {
             Count = count;
         }

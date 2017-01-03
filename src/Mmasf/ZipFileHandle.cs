@@ -71,5 +71,6 @@ namespace ManageModsAndSavefiles
                 return new StreamWithCleanupList(reader, reader, zipReader, zipArchive);
             }
         }
+        protected override string GetNodeDump() { return ArchivePath + "+" + ItemPath; }
     }
 }

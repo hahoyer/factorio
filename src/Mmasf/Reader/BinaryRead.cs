@@ -120,9 +120,9 @@ namespace ManageModsAndSavefiles.Reader
 
             var accessors = propertyInfo.GetAccessors();
             return accessors.Length == 2
-                && accessors.All(a => !a.IsPrivate)
-                && accessors.Any(a => a.ReturnType != typeof(void))
-                && accessors.Any(a => a.ReturnType == typeof(void));
+                   && accessors.All(a => !a.IsPrivate)
+                   && accessors.Any(a => a.ReturnType != typeof(void))
+                   && accessors.Any(a => a.ReturnType == typeof(void));
         }
 
 
@@ -198,6 +198,15 @@ namespace ManageModsAndSavefiles.Reader
                     ? GetNextString(member)
                     : GetNext(type);
 
+        object GetNextElement(Type readerType, Type type, MemberInfo member, int level)
+            => readerType == null
+                ? type.IsArray
+                    ? GetNextArray(type, member, level)
+                    : type == typeof(string)
+                        ? GetNextString(member)
+                        : GetNext(type)
+                : GetNextWithReader(readerType, type, member);
+
         string GetNextString(MemberInfo member)
         {
             var countType = member.GetAttribute<StringSetup>(false)?.CountType ?? typeof(int);
@@ -221,19 +230,21 @@ namespace ManageModsAndSavefiles.Reader
         sealed class InvalidException : Exception
         {
             public InvalidException(string message)
-                : base(message) { }
+                : base(message)
+            {}
         }
 
         object GetNextArray(Type type, MemberInfo member, int level)
         {
             var arraySetup = member
-                .GetAttributes<Array>(false)
+                .GetAttributes<ArrayItem>(false)
                 .SingleOrDefault(i => i.Level == level);
 
             var count = GetCount(arraySetup);
 
             if(arraySetup?.MaxCount > 0 && count > arraySetup.MaxCount)
                 throw new InvalidArrayException("Too big array encountered");
+            var readerType = arraySetup?.Reader;
 
             var elementType = type.GetElementType();
             var array = System.Array.CreateInstance(elementType, count);
@@ -242,23 +253,24 @@ namespace ManageModsAndSavefiles.Reader
                 i => new
                 {
                     i,
-                    value = GetNext(elementType, member, level + 1)
+                    value = GetNextElement(readerType, elementType, member, level + 1)
                 }))
                 array.SetValue(o.value, o.i);
 
             return array;
         }
 
-        int GetCount(Array array)
+        int GetCount(ArrayItem arrayItem)
             =>
-            array?.Count > 0
-                ? array.Count
-                : Convert.ToInt32(GetNext(array?.CountType ?? typeof(int)));
+                arrayItem?.Count > 0
+                    ? arrayItem.Count
+                    : Convert.ToInt32(GetNext(arrayItem?.CountType ?? typeof(int)));
 
         public sealed class InvalidArrayException : Exception
         {
             public InvalidArrayException(string message)
-                : base(message) { }
+                : base(message)
+            {}
         }
 
         internal interface IAdvancer

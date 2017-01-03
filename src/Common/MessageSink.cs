@@ -45,19 +45,18 @@ namespace Common
         object SyncProcessMethod(MethodInfo methodInfo, IMethodCallMessage methodCallMessage)
         {
             if(methodInfo.IsSpecialName
-                && methodInfo.Name.StartsWith("get_")
-                && !methodInfo.GetParameters().Any())
+               && methodInfo.Name.StartsWith("get_")
+               && !methodInfo.GetParameters().Any())
                 return Get(methodInfo);
 
             var property = methodInfo
-                .DeclaringType
-                .AssertNotNull()
-                .GetProperties()
-                .SingleOrDefault(p => p.GetGetMethod().MetadataToken == methodInfo.MetadataToken)
-                ?.GetAttribute<DirectAccess>()
-
-            if(methodInfo.)
-                return Get(methodInfo, methodCallMessage);
+                    .DeclaringType
+                    .AssertNotNull()
+                    .GetProperties()
+                    .SingleOrDefault(p => p.GetGetMethod().MetadataToken == methodInfo.MetadataToken)
+                //?.GetAttribute<DirectAccess>()
+                ;
+            return Get(methodInfo, methodCallMessage);
         }
 
         object Get(MethodInfo methodInfo)
