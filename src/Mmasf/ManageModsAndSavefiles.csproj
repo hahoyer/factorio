@@ -11,7 +11,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AssemblyInfo.tt</DependentUpon>
     </Compile>
-    <Compile Include="Reader\ArraySetup.cs" />
+    <Compile Include="Reader\Array.cs" />
     <Compile Include="Reader\BinaryRead.cs" />
     <Compile Include="BooleanJsonConverter.cs" />
     <Compile Include="CompoundCache.cs" />

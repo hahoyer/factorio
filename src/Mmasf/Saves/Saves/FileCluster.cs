@@ -79,12 +79,12 @@ namespace ManageModsAndSavefiles.Saves
 
         public override string ToString()
             => Name.Quote() + "  " +
-            Version + "  " +
-            DataValue.MapName.Quote() + "  " +
-            DataValue.ScenarioName.Quote() + "  " +
-            DataValue.CampaignName.Quote() + "  " +
-            DataValue.Difficulty + "  " +
-            Duration.Format3Digits();
+                Version + "  " +
+                DataValue.MapName.Quote() + "  " +
+                DataValue.ScenarioName.Quote() + "  " +
+                DataValue.CampaignName.Quote() + "  " +
+                DataValue.Difficulty + "  " +
+                Duration.Format3Digits();
 
         public Version Version
         {
@@ -131,7 +131,7 @@ namespace ManageModsAndSavefiles.Saves
             //[Ignore(0, CaptureIdentifier = "Lookahead")]
             internal Version ExactVersion;
             [DataItem(Reader = typeof(ReaderBefore013))]
-            [ArraySetup(typeof(int))]
+            [Reader.Array(CountType = typeof(int))]
             internal SomeStruct[] Structs;
             [DataItem]
             internal ModDescription[] Mods;
@@ -195,21 +195,21 @@ namespace ManageModsAndSavefiles.Saves
             }
 
             [DataItem]
-            [ArraySetup(9)]
+            [Reader.Array(9)]
             public byte[] Bytes;
 
             [DataItem]
-            [ArraySetup(typeof(int), MaxCount = 100)]
+            [Reader.Array(CountType = typeof(int), MaxCount = 100)]
             public Sub[] SomeBytes;
         }
 
         public sealed class Resource
         {
             [DataItem]
-            [ArraySetup(typeof(int), MaxCount = 100)]
+            [Reader.Array(CountType = typeof(int), MaxCount = 100)]
             public string Text;
             [DataItem]
-            [ArraySetup(3)]
+            [Reader.Array(3)]
             public byte[] Numbers;
 
             public override string ToString() => Text.Quote() + "(" + Numbers.Stringify(",") + ")";

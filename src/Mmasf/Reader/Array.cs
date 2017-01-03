@@ -5,15 +5,17 @@ using System.Linq;
 namespace ManageModsAndSavefiles.Reader
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
-    public sealed class ArraySetup : Attribute
+    public sealed class Array : Attribute
     {
         public int Level = 0;
-        public readonly Type CountType;
         public readonly int Count;
+        public Type CountType;
         public int MaxCount;
 
-        public ArraySetup(int count) { Count = count; }
-        public ArraySetup(Type countType) { CountType = countType; }
+        public Array(int count = 0)
+        {
+            Count = count;
+        }
 
         public void AssertValid()
         {
@@ -28,5 +30,6 @@ namespace ManageModsAndSavefiles.Reader
             public InvalidException(string message)
                 : base(message) { }
         }
-    }         
+    }
+
 }

@@ -227,7 +227,7 @@ namespace ManageModsAndSavefiles.Reader
         object GetNextArray(Type type, MemberInfo member, int level)
         {
             var arraySetup = member
-                .GetAttributes<ArraySetup>(false)
+                .GetAttributes<Array>(false)
                 .SingleOrDefault(i => i.Level == level);
 
             var count = GetCount(arraySetup);
@@ -236,7 +236,7 @@ namespace ManageModsAndSavefiles.Reader
                 throw new InvalidArrayException("Too big array encountered");
 
             var elementType = type.GetElementType();
-            var array = Array.CreateInstance(elementType, count);
+            var array = System.Array.CreateInstance(elementType, count);
             foreach(var o in count.Select
             (
                 i => new
@@ -249,11 +249,11 @@ namespace ManageModsAndSavefiles.Reader
             return array;
         }
 
-        int GetCount(ArraySetup arraySetup)
+        int GetCount(Array array)
             =>
-            arraySetup?.Count > 0
-                ? arraySetup.Count
-                : Convert.ToInt32(GetNext(arraySetup?.CountType ?? typeof(int)));
+            array?.Count > 0
+                ? array.Count
+                : Convert.ToInt32(GetNext(array?.CountType ?? typeof(int)));
 
         public sealed class InvalidArrayException : Exception
         {

@@ -1,23 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using hw.DebugFormatter;
 using hw.Helper;
 
 namespace Common
 {
-    public sealed class FileBasedCommunicatorClient
+    public sealed class FileBasedCommunicatorClient : DumpableObject
     {
         readonly string Address;
 
         readonly Semaphore Semaphore = new Semaphore(0, 1);
         public FileBasedCommunicatorClient(string address) { Address = address; }
 
-        public string Get(string[] data)
+        public string Get(string[] data, string identifier)
         {
-            var guid = Guid.NewGuid();
-            var address = Address.PathCombine(guid.ToString());
+            var address = Address.PathCombine
+            (
+                Process.GetCurrentProcess().Id.ToString(),
+                Thread.CurrentThread.ManagedThreadId.ToString(),
+                identifier
+            );
+
             var request = address + Constants.RequestExtension;
             var requestFile = request.FileHandle();
             if(requestFile.Exists)
@@ -49,6 +56,12 @@ namespace Common
 
             responseFile.Delete();
             return result;
+        }
+
+        public string Get(string identifier)
+        {
+            NotImplementedMethod(identifier);
+            return null;
         }
 
         void OnFileSeen(string path)

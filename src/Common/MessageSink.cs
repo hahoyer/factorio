@@ -11,8 +11,13 @@ namespace Common
     sealed class MessageSink : DumpableObject, IMessageSink
     {
         readonly string ObjectURI;
+        readonly FileBasedClient Parent;
 
-        public MessageSink(string objectURI) { ObjectURI = objectURI; }
+        public MessageSink(string objectURI, FileBasedClient parent)
+        {
+            ObjectURI = objectURI;
+            Parent = parent;
+        }
 
         IMessage IMessageSink.SyncProcessMessage(IMessage msg)
         {
@@ -39,22 +44,58 @@ namespace Common
 
         object SyncProcessMethod(MethodInfo methodInfo, IMethodCallMessage methodCallMessage)
         {
-            switch(methodInfo.MemberType)
-            {
-            case MemberTypes.Method:
-                return Get(methodInfo, methodCallMessage.Args);
-            case MemberTypes.Property:
-                return SyncProcessProperty(methodCallMessage, methodInfo);
-            default:
-                throw new ArgumentOutOfRangeException();
-            }
+            if(methodInfo.IsSpecialName
+                && methodInfo.Name.StartsWith("get_")
+                && !methodInfo.GetParameters().Any())
+                return Get(methodInfo);
+
+            var property = methodInfo
+                .DeclaringType
+                .AssertNotNull()
+                .GetProperties()
+                .SingleOrDefault(p => p.GetGetMethod().MetadataToken == methodInfo.MetadataToken)
+                ?.GetAttribute<DirectAccess>()
+
+            if(methodInfo.)
+                return Get(methodInfo, methodCallMessage);
+        }
+
+        object Get(MethodInfo methodInfo)
+        {
+            var className = methodInfo.DeclaringType.AssertNotNull().FullName;
+            var methodName = methodInfo.Name;
+
+            var c = new FileBasedCommunicatorClient
+                (Constants.RootPath.PathCombine(ObjectURI, className, methodName));
+
+            var resultType = methodInfo.ReturnType;
+            return c
+                .Get(methodInfo.MetadataToken.ToString())
+                .FromJson(resultType);
+        }
+
+        object Get(MethodInfo methodInfo, IMethodCallMessage methodCallMessage)
+        {
+            var className = methodInfo.DeclaringType.AssertNotNull().FullName;
+            var methodName = methodInfo.Name;
+            var c = new FileBasedCommunicatorClient
+                (Constants.RootPath.PathCombine(ObjectURI, className, methodName));
+
+            var resultType = methodInfo.ReturnType;
+            return c
+                .Get
+                (
+                    methodCallMessage.Args.Select(a => a.ToJson()).ToArray(),
+                    methodInfo.MetadataToken.ToString()
+                )
+                .FromJson(resultType);
         }
 
         ReturnMessage SyncProcessProperty
-            (IMethodCallMessage methodCallMessage, MethodInfo methodInfo)
+            (IMethodCallMessage message, MethodInfo method)
         {
-            var result = Get(methodInfo, methodCallMessage.Args);
-            return new ReturnMessage(result, null, 0, null, methodCallMessage);
+            NotImplementedMethod(message, method);
+            return null;
         }
 
         IMessageCtrl IMessageSink.AsyncProcessMessage(IMessage msg, IMessageSink replySink)
@@ -70,16 +111,6 @@ namespace Common
                 NotImplementedMethod();
                 return null;
             }
-        }
-
-        object Get(MethodInfo method, object[] arguments)
-        {
-            var className = method.DeclaringType.AssertNotNull().FullName;
-            var methodName = method.Name;
-            var c = new FileBasedCommunicatorClient
-                (Constants.RootPath.PathCombine(ObjectURI, className, methodName));
-            var resultType = method.ReturnType;
-            return c.Get(arguments.Select(a => a.ToJson()).ToArray()).FromJson(resultType);
         }
     }
 }

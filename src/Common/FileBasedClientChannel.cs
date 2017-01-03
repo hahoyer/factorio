@@ -26,8 +26,8 @@ namespace Common
             if(objectURI == null)
                 return null;
 
-            Tracer.Assert(remoteChannelData == null);
-            return new MessageSink(objectURI);
+            var client = (FileBasedClient) remoteChannelData;
+            return new MessageSink(objectURI, client);
         }
 
         bool ISecurableChannel.IsSecured { get; set; }
