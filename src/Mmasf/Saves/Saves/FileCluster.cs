@@ -219,10 +219,11 @@ namespace ManageModsAndSavefiles.Saves
 
         ZipFileHandle GetFile(string name)
         {
-            var zipFileHandle = Path
+            var zipFileHandles = Path
                 .ZipFileHandle()
-                .Items
-                .Where(item => item.ItemName == name);
+                .Items;
+            var zipFileHandle = zipFileHandles
+                .Where(item => item.ItemName == name && item.Depth == 2);
             return zipFileHandle.Single();
         }
 

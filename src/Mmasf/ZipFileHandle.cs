@@ -15,6 +15,7 @@ namespace ManageModsAndSavefiles
         readonly string ItemPath;
 
         public string ItemName => ItemPath.Split('/').Last();
+        public int Depth => ItemPath.Split('/').Length;
 
         public ZipFileHandle(string archivePath, string itemPath = null)
         {
@@ -38,13 +39,10 @@ namespace ManageModsAndSavefiles
             {
                 return
                     ZipFile.OpenRead(ArchivePath)
-                        .Entries.Single(item => item.Name == ItemPath)
+                        .Entries.Single(item => item.FullName == ItemPath)
                         .Length;
             }
         }
-
-        public ZipFileHandle GetItem(string itemPath)
-            => new ZipFileHandle(ArchivePath, ItemPath?.PathCombine(itemPath) ?? itemPath);
 
         public IEnumerable<ZipFileHandle> Items
         {
@@ -54,7 +52,7 @@ namespace ManageModsAndSavefiles
                 {
                     var readOnlyCollection = zipFile.Entries;
                     return readOnlyCollection
-                        .Select(item => new ZipFileHandle(ArchivePath, item.Name));
+                        .Select(item => new ZipFileHandle(ArchivePath, item.FullName));
                 }
             }
         }
@@ -64,7 +62,7 @@ namespace ManageModsAndSavefiles
             get
             {
                 var zipArchive = ZipFile.OpenRead(ArchivePath);
-                var zipEntry = zipArchive.Entries.Single(item => item.Name == ItemPath);
+                var zipEntry = zipArchive.Entries.Single(item => item.FullName == ItemPath);
                 var zipReader = zipEntry.Open();
                 var reader = new SeekableReader(zipReader, Length);
 
