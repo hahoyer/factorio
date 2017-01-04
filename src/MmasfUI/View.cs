@@ -27,7 +27,7 @@ namespace MmasfUI
 
             if(configFileName == null)
                 configFileName = GetFileName();
-            configFileName.FileHandle().AssumeDirectoryOfFileExists();
+            configFileName.FileHandle().EnsureDirectoryOfFileExists();
 
             PositionConfig = new PositionConfig(()=> configFileName)
             {

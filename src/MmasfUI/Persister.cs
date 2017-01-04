@@ -117,7 +117,7 @@ namespace MmasfUI
         hw.Helper.File FileHandle(string name)
         {
             var result = FileName.PathCombine(name).FileHandle();
-            result.AssumeDirectoryOfFileExists();
+            result.EnsureDirectoryOfFileExists();
             return result;
         }
 

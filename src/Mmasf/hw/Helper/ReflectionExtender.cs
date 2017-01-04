@@ -185,7 +185,7 @@ namespace hw.Helper
             }
         }
 
-        internal static IEnumerable<FieldInfo> GetFieldInfos(this Type type) { return type.ThisAndBias().SelectMany(t => t.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)); }
+        public static IEnumerable<FieldInfo> GetFieldInfos(this Type type) { return type.ThisAndBias().SelectMany(t => t.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)); }
 
         public static T Parse<T>(this string title) { return (T) Enum.Parse(typeof(T), title); }
 

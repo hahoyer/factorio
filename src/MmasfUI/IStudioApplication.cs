@@ -6,6 +6,7 @@ namespace MmasfUI
 {
     public interface IStudioApplication : IApplication
     {
+        ManageModsAndSavefiles.MmasfContext Context { get; }
         void Exit();
         void Open();
     }

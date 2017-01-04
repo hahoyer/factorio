@@ -27,7 +27,7 @@ namespace MmasfUI
             if(fileOpenController.FileName == null)
                 return;
 
-            new EditorView(new FileConfiguration(fileOpenController.FileName), application).Run();
+            //new EditorView(new FileConfiguration(fileOpenController.FileName), application).Run();
         }
 
         internal static void OnFileOpen
@@ -113,7 +113,7 @@ namespace MmasfUI
                 {
                     var result = EditorFilesPath.PathCombine(configurationFileName);
                     var nameFile = result.PathCombine("Name").FileHandle();
-                    nameFile.AssumeDirectoryOfFileExists();
+                    nameFile.EnsureDirectoryOfFileExists();
                     nameFile.String = fileName;
                     return result;
                 }

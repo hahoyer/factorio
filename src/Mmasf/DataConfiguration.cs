@@ -17,12 +17,14 @@ namespace ManageModsAndSavefiles
         internal DataConfiguration(string fileName)
         {
             IniFile = new IniFile(fileName.PathCombine(ConfigurationIniFileName));
+            RootUserConfigurationPath = fileName.FileHandle().DirectoryName;
             PathCache = new ValueCache<string>(GetPath);
         }
 
         string GetPath() => IniFile[PathSectionName][WriteDataTag]
             .PathFromFactorioStyle();
 
-        internal string Path => PathCache.Value;
+        public string CurrentUserConfigurationPath => PathCache.Value;
+        public string RootUserConfigurationPath { get; }
     }
 }

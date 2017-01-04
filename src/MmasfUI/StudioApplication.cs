@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using ManageModsAndSavefiles;
 
 namespace MmasfUI
 {
@@ -47,13 +48,9 @@ namespace MmasfUI
             Application.Run(this);
         }
 
-        ChildView Open(FileConfiguration file)
-        {
-            NotImplementedMethod(file);
-            return null;
-
-        }
+        static ChildView Open(FileConfiguration file) { throw new NotImplementedException(); }
 
         void IStudioApplication.Open() { throw new NotImplementedException(); }
+        MmasfContext IStudioApplication.Context => MmasfContext.Instance;
     }
 }

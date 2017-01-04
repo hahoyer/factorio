@@ -47,6 +47,7 @@
     <Compile Include="Persister.cs" />
     <Compile Include="StudioApplication.cs" />
     <Compile Include="SystemConfiguration.cs" />
+    <Compile Include="TableLayoutPanelExtension.cs" />
     <Compile Include="View.cs" />
   </ItemGroup>
   <ItemGroup>
