@@ -34,7 +34,7 @@ namespace MmasfUI
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            MainForm
+            new ContextView(this).Run();
 
             var editorViews = SystemConfiguration
                 .ActiveFileNames
@@ -47,13 +47,13 @@ namespace MmasfUI
             Application.Run(this);
         }
 
-        View Open(FileConfiguration file) { throw new NotImplementedException(); }
+        ChildView Open(FileConfiguration file)
+        {
+            NotImplementedMethod(file);
+            return null;
+
+        }
 
         void IStudioApplication.Open() { throw new NotImplementedException(); }
-    }
-
-    interface IEditView
-    {
-        string FileName { get; }
     }
 }

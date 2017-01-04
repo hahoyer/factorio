@@ -85,7 +85,7 @@ namespace MmasfUI
         static string GetKnownConfigurationPath(string fileName, string fullFileName)
         {
             var fileHandle = EditorFilesPath.PathCombine(fileName).FileHandle();
-            fileHandle.AssumeDirectoryOfFileExists();
+            fileHandle.EnsureDirectoryOfFileExists();
 
             var result = ConfigurationPathsForAllKnownFiles
                 .SingleOrDefault

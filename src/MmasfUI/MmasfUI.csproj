@@ -15,10 +15,16 @@
       <Project>{ebb73c84-6622-4183-a28f-b0dff606006b}</Project>
       <Name>ManageModsAndSavefiles</Name>
     </ProjectReference>
+    <Reference Include="JetBrains.Annotations, Version=10.2.1.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>..\packages\JetBrains.Annotations.10.2.1\lib\net\JetBrains.Annotations.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChildView.cs" />
+    <Compile Include="ContextView.cs" />
     <Compile Include="FileConfiguration.cs" />
     <Compile Include="FileOpenController.cs" />
     <Compile Include="hw\Forms\CursorUtil.cs" />
