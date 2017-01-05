@@ -50,7 +50,6 @@ namespace MmasfUI
 
         static ChildView Open(FileConfiguration file) { throw new NotImplementedException(); }
 
-        void IStudioApplication.Open() { throw new NotImplementedException(); }
         MmasfContext IStudioApplication.Context => MmasfContext.Instance;
     }
 }

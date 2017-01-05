@@ -24,6 +24,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChildView.cs" />
+    <Compile Include="Commands\Extension.cs" />
+    <Compile Include="Commands\Menu.cs" />
+    <Compile Include="Commands\MenuEntry.cs" />
+    <Compile Include="Commands\MenuItem.cs" />
     <Compile Include="ContextView.cs" />
     <Compile Include="FileConfiguration.cs" />
     <Compile Include="FileOpenController.cs" />
