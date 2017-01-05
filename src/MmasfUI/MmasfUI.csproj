@@ -29,6 +29,7 @@
     <Compile Include="Commands\MenuEntry.cs" />
     <Compile Include="Commands\MenuItem.cs" />
     <Compile Include="ContextView.cs" />
+    <Compile Include="ContextExtension.cs" />
     <Compile Include="FileConfiguration.cs" />
     <Compile Include="FileOpenController.cs" />
     <Compile Include="hw\Forms\CursorUtil.cs" />
@@ -48,10 +49,18 @@
     <Compile Include="IStudioApplication.cs" />
     <Compile Include="MainContainer.cs" />
     <Compile Include="MainView.cs" />
+    <Compile Include="PanelCell.cs" />
+    <Compile Include="PanelColumn.cs" />
     <Compile Include="Persister.cs" />
     <Compile Include="StudioApplication.cs" />
     <Compile Include="SystemConfiguration.cs" />
     <Compile Include="TableLayoutPanelExtension.cs" />
+    <Compile Include="UserConfigurationIndicatorView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="UserConfigurationRowView.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="View.cs" />
   </ItemGroup>
   <ItemGroup>

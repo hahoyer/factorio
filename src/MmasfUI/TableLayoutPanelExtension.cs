@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -12,7 +11,7 @@ namespace MmasfUI
     static class TableLayoutPanelExtension
     {
         const int DefaultTextSize = 10;
-        static readonly Control _dummy = new Control();
+        internal static readonly Control _dummy = new Control();
 
         internal static Control CreateGroup(this Control client, string title)
         {
@@ -32,8 +31,11 @@ namespace MmasfUI
         internal static Control CreateColumnView(this IEnumerable<Control> controls)
             => InternalCreateLineupView(true, controls);
 
-        internal static Control CreateRowView(this IEnumerable<Control> controls)
-            => InternalCreateLineupView(false, controls);
+        internal static Control CreateRowView
+        (
+            this IEnumerable<Control> controls,
+            TableLayoutPanelCellBorderStyle style = TableLayoutPanelCellBorderStyle.Single)
+            => InternalCreateLineupView(false, controls, style);
 
         internal static Control CreateLineupView
             (this bool inColumns, params Control[] controls)
@@ -43,18 +45,25 @@ namespace MmasfUI
             (this bool inColumns, params Control[] controls)
             => CreateTableLayoutPanel(inColumns, controls);
 
-        static Control InternalCreateLineupView
-            (bool useColumns, IEnumerable<Control> controls)
+        internal static Control InternalCreateLineupView
+        (
+            bool useColumns,
+            IEnumerable<Control> controls,
+            TableLayoutPanelCellBorderStyle style = TableLayoutPanelCellBorderStyle.Single)
         {
             var effectiveControls = controls
                 .Where(item => item != null && item != _dummy)
                 .ToArray();
             return effectiveControls.Length == 1
                 ? effectiveControls[0]
-                : CreateTableLayoutPanel(useColumns, effectiveControls);
+                : CreateTableLayoutPanel(useColumns, effectiveControls, style);
         }
 
-        static TableLayoutPanel CreateTableLayoutPanel(bool inColumns, Control[] controls)
+        internal static TableLayoutPanel CreateTableLayoutPanel
+        (
+            bool inColumns,
+            Control[] controls,
+            TableLayoutPanelCellBorderStyle style = TableLayoutPanelCellBorderStyle.Single)
         {
             var result = new TableLayoutPanel
             {
@@ -62,7 +71,7 @@ namespace MmasfUI
                 AutoSizeMode = AutoSizeMode.GrowAndShrink,
                 ColumnCount = inColumns ? controls.Length : 1,
                 RowCount = inColumns ? 1 : controls.Length,
-                CellBorderStyle = TableLayoutPanelCellBorderStyle.Single
+                CellBorderStyle = style
             };
 
             result.Controls.AddRange(controls);
@@ -82,12 +91,12 @@ namespace MmasfUI
 
         static Font CreateFont(double factor, bool isBold = false)
             =>
-            new Font
-            (
-                "Lucida Console",
-                (int)(DefaultTextSize * factor),
-                isBold ? FontStyle.Bold : FontStyle.Regular
-            );
+                new Font
+                (
+                    "Lucida Console",
+                    (int) (DefaultTextSize * factor),
+                    isBold ? FontStyle.Bold : FontStyle.Regular
+                );
 
         internal static Label CreateView(this int value, double factor = 1, bool isBold = false)
             => new Label
@@ -113,21 +122,20 @@ namespace MmasfUI
         internal static string GetIdText(this object target)
         {
             var result = target.GetType().PrettyName();
-            if (target is Dumpable)
+            if(target is Dumpable)
                 return result + "." + target.GetObjectId() + "i";
             return result;
         }
 
         internal static int GetObjectId(this object dumpable)
-            => ((DumpableObject)dumpable).ObjectId;
+            => ((DumpableObject) dumpable).ObjectId;
 
         internal static int? GetObjectId<T>(this object dumpable)
         {
-            if (dumpable is T)
-                return ((DumpableObject)dumpable).ObjectId;
+            if(dumpable is T)
+                return ((DumpableObject) dumpable).ObjectId;
 
             return null;
         }
-
     }
 }

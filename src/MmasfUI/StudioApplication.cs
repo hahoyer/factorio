@@ -17,7 +17,7 @@ namespace MmasfUI
             child.Activated += (a, s) => OnActivated(child);
         }
 
-        static void OnActivated(Form child) { throw new NotImplementedException(); }
+        static void OnActivated(Form child) { }
 
         void IStudioApplication.Exit() => ExitThread();
 
