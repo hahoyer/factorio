@@ -65,6 +65,8 @@ namespace MmasfUI
             Control[] controls,
             TableLayoutPanelCellBorderStyle style = TableLayoutPanelCellBorderStyle.Single)
         {
+            Tracer.FlaggedLine("\n" + controls.Select(c=>c.Size.ToString()).Stringify(" "));
+
             var result = new TableLayoutPanel
             {
                 AutoSize = true,
@@ -74,7 +76,14 @@ namespace MmasfUI
                 CellBorderStyle = style
             };
 
+            Tracer.Line(result.GetType().Name + " " + result.Size);
             result.Controls.AddRange(controls);
+            result.PerformLayout();
+            Tracer.Line(controls.Select(c => c.Size.ToString()).Stringify(" "));
+            Tracer.Line(result.GetType().Name + " " + result.Size);
+            result.AutoSize = true;
+            result.PerformLayout();
+            Tracer.Line(result.GetType().Name + " " + result.Size);
             return result;
         }
 
@@ -82,14 +91,17 @@ namespace MmasfUI
             => CreateView(dumpable.Dump());
 
         internal static Label CreateView(this string text, double factor = 1, bool isBold = false)
-            => new Label
+        {
+            var result = new Label
             {
                 Font = CreateFont(factor, isBold),
-                AutoSize = true,
                 Text = text
             };
+            Tracer.FlaggedLine(text + ": " + result.Size);
+            return result;
+        }
 
-        static Font CreateFont(double factor, bool isBold = false)
+public         static Font CreateFont(this double factor, bool isBold = false)
             =>
                 new Font
                 (
@@ -124,6 +136,7 @@ namespace MmasfUI
             var result = target.GetType().PrettyName();
             if(target is Dumpable)
                 return result + "." + target.GetObjectId() + "i";
+
             return result;
         }
 

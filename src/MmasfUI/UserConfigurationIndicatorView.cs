@@ -14,6 +14,7 @@ namespace MmasfUI
         {
             Size = new Size(10, 30);
             BackColor = context.GetIndicatorColor(configuration);
+            Tracer.FlaggedLine(configuration.Name + ": " + Size);
         }
 
         protected override void OnMouseClick(MouseEventArgs e)

@@ -58,7 +58,7 @@
     <Compile Include="UserConfigurationIndicatorView.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="UserConfigurationRowView.cs">
+    <Compile Include="UserConfigurationTile.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="View.cs" />
