@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using hw.DebugFormatter;
 using ManageModsAndSavefiles;
 
 namespace MmasfUI
@@ -26,23 +27,26 @@ namespace MmasfUI
                 .Select(configuration => new UserConfigurationTile(context, configuration))
                 .ToArray<Control>();
 
-            var maxWidth = rows.Max(row => row.Width);
-            foreach(var row in rows)
-                row.Width = maxWidth;
-
-            var table = new FlowLayoutPanel
+            var table = new Panel
             {
-                FlowDirection = FlowDirection.TopDown,
-                AutoSize = true,
-                AutoSizeMode = AutoSizeMode.GrowAndShrink,
-                Margin = Padding.Empty
+                Dock = DockStyle.Top
             };
 
+            var height = 0;
+            foreach(var row in rows)
+            {
+                row.Location = new Point(0, height);
+                row.Width = table.Width;
+                height += row.Height;
+                row.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+            }
+
+            table.Height = height;
             table.Controls.AddRange(rows);
 
             var result = new Panel
             {
-                AutoScroll = true
+                AutoScroll = true,
             };
             result.Controls.Add(table);
             return result;

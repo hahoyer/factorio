@@ -30,6 +30,7 @@
     <Compile Include="Commands\MenuItem.cs" />
     <Compile Include="ContextView.cs" />
     <Compile Include="ContextExtension.cs" />
+    <Compile Include="Extension.cs" />
     <Compile Include="FileConfiguration.cs" />
     <Compile Include="FileOpenController.cs" />
     <Compile Include="hw\Forms\CursorUtil.cs" />

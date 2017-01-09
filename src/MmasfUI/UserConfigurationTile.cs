@@ -8,32 +8,33 @@ using ManageModsAndSavefiles;
 
 namespace MmasfUI
 {
-    sealed class UserConfigurationTile : FlowLayoutPanel
+    sealed class UserConfigurationTile : Panel
     {
         public UserConfigurationTile(MmasfContext context, UserConfiguration configuration)
         {
-            FlowDirection = FlowDirection.LeftToRight;
-            AutoSize = true;
-            WrapContents = false;
-            BorderStyle = BorderStyle.Fixed3D;
-            Border3DSide = 
-            Margin = Padding.Empty;
+            BorderStyle = BorderStyle.FixedSingle;
 
             var indicator = new Panel
             {
+                Location = new Point(0, 0),
                 Size = new Size(10, 30),
-                BackColor = context.GetIndicatorColor(configuration)
+                BackColor = context.GetIndicatorColor(configuration),
             };
 
             var name = new Label
             {
+                Location = new Point(indicator.Width, 0),
                 Font = 1.0.CreateFont(),
-                Text = configuration.Name
+                Text = configuration.Name,
+                AutoSize = true
             };
+
+            name.DoLayout();
+
+            Size = new Size(indicator.Width + name.Width, Math.Max(indicator.Height, name.Height));
 
             Controls.Add(indicator);
             Controls.Add(name);
-            Tracer.FlaggedLine("\n" + GetType().Name + " " + configuration.Name + ": " + Size);
         }
 
         protected override void OnMouseClick(MouseEventArgs e)
