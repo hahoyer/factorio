@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using hw.DebugFormatter;
 using ManageModsAndSavefiles;
 
 namespace MmasfUI
@@ -46,10 +45,20 @@ namespace MmasfUI
 
             var result = new Panel
             {
-                AutoScroll = true,
+                AutoScroll = true
             };
+
             result.Controls.Add(table);
             return result;
+        }
+
+        internal static Control[] GetUserConfigurationViews(this Control control)
+        {
+            var results = control.Controls.Cast<Control>().ToArray();
+            if(results.All(row => row is UserConfigurationTile))
+                return results;
+
+            return results.Single().GetUserConfigurationViews();
         }
     }
 }
