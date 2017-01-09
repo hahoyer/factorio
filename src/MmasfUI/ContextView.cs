@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Windows.Forms;
+using hw.Helper;
 using MmasfUI.Commands;
 
 namespace MmasfUI
@@ -11,13 +11,15 @@ namespace MmasfUI
     {
         public readonly IStudioApplication Parent;
         int CurrentConfigurationIndexValue;
+        readonly ValueCache<UserConfigurationTile[]> UserConfigurationTilesCache;
 
         public ContextView(IStudioApplication parent)
             : base(parent)
         {
             Parent = parent;
             Client = parent.Context.CreateView();
-            SetCurrentConfigurationIndex(0);
+            UserConfigurationTilesCache = new ValueCache<UserConfigurationTile[]>(Client.GetUserConfigurationTiles);
+            SetCurrentConfigurationIndex(true);
             Frame.Menu = this.CreateMenu();
             Title = "Factorio user configurations";
         }
@@ -29,37 +31,18 @@ namespace MmasfUI
             {
                 if(CurrentConfigurationIndexValue == value)
                     return;
-                SetCurrentConfigurationIndex(value);
+
+                SetCurrentConfigurationIndex(false);
+                CurrentConfigurationIndexValue = value;
+                SetCurrentConfigurationIndex(true);
             }
         }
 
-        void SetCurrentConfigurationIndex(int value)
+        void SetCurrentConfigurationIndex(bool value)
         {
-            var currentIndex = 0;
-            foreach(var view in Client.GetUserConfigurationViews())
-            {
-                view.BackColor = currentIndex == value ? Color.Blue : Color.Gray;
-                currentIndex++;
-            }
-            CurrentConfigurationIndexValue = value;
+            UserConfigurationTilesCache.Value[CurrentConfigurationIndex].Selection = value;
         }
 
         public void New() { throw new NotImplementedException(); }
-    }
-
-
-    public sealed class TransparentPanel : Panel
-    {
-        protected override CreateParams CreateParams
-        {
-            get
-            {
-                var cp = base.CreateParams;
-                cp.ExStyle |= 0x00000020;
-                return cp;
-            }
-        }
-
-        protected override void OnPaintBackground(PaintEventArgs e) { }
     }
 }

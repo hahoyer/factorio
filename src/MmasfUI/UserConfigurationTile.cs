@@ -10,6 +10,9 @@ namespace MmasfUI
 {
     sealed class UserConfigurationTile : Panel
     {
+        readonly Color SelectedColor;
+        readonly Color NotSelectedColor;
+
         public UserConfigurationTile(MmasfContext context, UserConfiguration configuration)
         {
             BorderStyle = BorderStyle.FixedSingle;
@@ -18,7 +21,7 @@ namespace MmasfUI
             {
                 Location = new Point(0, 0),
                 Size = new Size(10, 30),
-                BackColor = context.GetIndicatorColor(configuration),
+                BackColor = context.GetIndicatorColor(configuration)
             };
 
             var name = new Label
@@ -29,12 +32,21 @@ namespace MmasfUI
                 AutoSize = true
             };
 
+            NotSelectedColor = BackColor;
+            SelectedColor = Color.LightGoldenrodYellow;
+
             name.DoLayout();
 
             Size = new Size(indicator.Width + name.Width, Math.Max(indicator.Height, name.Height));
 
             Controls.Add(indicator);
             Controls.Add(name);
+        }
+
+        public bool Selection
+        {
+            get { return SelectedColor == BackColor; }
+            set { BackColor = value ? SelectedColor : NotSelectedColor; }
         }
 
         protected override void OnMouseClick(MouseEventArgs e)

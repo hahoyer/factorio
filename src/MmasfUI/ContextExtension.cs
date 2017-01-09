@@ -52,13 +52,14 @@ namespace MmasfUI
             return result;
         }
 
-        internal static Control[] GetUserConfigurationViews(this Control control)
+        internal static UserConfigurationTile[] GetUserConfigurationTiles(this Control control)
         {
-            var results = control.Controls.Cast<Control>().ToArray();
-            if(results.All(row => row is UserConfigurationTile))
-                return results;
+            var controls = control.Controls.Cast<Control>().ToArray();
+            var results = controls.Select(item => item as UserConfigurationTile).ToArray();
+            if(results.Any(row => row == null))
+                return controls.Single().GetUserConfigurationTiles();
 
-            return results.Single().GetUserConfigurationViews();
+            return results;
         }
     }
 }
