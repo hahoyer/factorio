@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Windows.Forms;
 using hw.Helper;
 using MmasfUI.Commands;
 
@@ -11,15 +12,16 @@ namespace MmasfUI
     {
         public readonly IStudioApplication Parent;
         int CurrentConfigurationIndexValue;
-        readonly ValueCache<UserConfigurationTile[]> UserConfigurationTilesCache;
+        readonly UserConfigurationTile[] UserConfigurationTiles;
 
         public ContextView(IStudioApplication parent)
             : base(parent)
         {
             Parent = parent;
             Client = parent.Context.CreateView();
-            UserConfigurationTilesCache = new ValueCache<UserConfigurationTile[]>(Client.GetUserConfigurationTiles);
-            SetCurrentConfigurationIndex(true);
+            UserConfigurationTiles = Client.GetUserConfigurationTiles();
+            VisualizeCurrentConfigurationIndex(true);
+
             Frame.Menu = this.CreateMenu();
             Title = "Factorio user configurations";
         }
@@ -32,15 +34,15 @@ namespace MmasfUI
                 if(CurrentConfigurationIndexValue == value)
                     return;
 
-                SetCurrentConfigurationIndex(false);
+                VisualizeCurrentConfigurationIndex(false);
                 CurrentConfigurationIndexValue = value;
-                SetCurrentConfigurationIndex(true);
+                VisualizeCurrentConfigurationIndex(true);
             }
         }
 
-        void SetCurrentConfigurationIndex(bool value)
+        void VisualizeCurrentConfigurationIndex(bool value)
         {
-            UserConfigurationTilesCache.Value[CurrentConfigurationIndex].Selection = value;
+            UserConfigurationTiles[CurrentConfigurationIndex].Selection = value;
         }
 
         public void New() { throw new NotImplementedException(); }
