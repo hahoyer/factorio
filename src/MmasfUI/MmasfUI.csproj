@@ -29,7 +29,6 @@
   <ItemGroup>
     <Compile Include="MainContainer.cs" />
     <Compile Include="PositionConfig.cs" />
-    <Compile Include="View.cs" />
   </ItemGroup>
   <Import Project="sys.targets" />
 </Project>

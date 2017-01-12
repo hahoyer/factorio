@@ -34,11 +34,7 @@ namespace MmasfUI
         /// </summary>
         public Window Target
         {
-            [UsedImplicitly]
-            get
-            {
-                return TargetValue;
-            }
+            [UsedImplicitly] get { return TargetValue; }
             set
             {
                 Disconnect();
@@ -96,12 +92,12 @@ namespace MmasfUI
             LoadPosition();
         }
 
-        Rectangle? Position
+        Rect? Position
         {
             get
             {
                 return Convert
-                    (0, null, s => (Rectangle?) new RectangleConverter().ConvertFromString(s));
+                    (0, null, s => s.ToRect());
             }
             set { Save(value, WindowState); }
         }
@@ -110,7 +106,7 @@ namespace MmasfUI
 
         File FileHandle => FileName?.FileHandle();
 
-        void Save(Rectangle? position, WindowState state)
+        void Save(Rect? position, WindowState state)
         {
             var fileHandle = FileHandle;
             Tracer.Assert(fileHandle != null);
@@ -163,15 +159,15 @@ namespace MmasfUI
 
             if(TargetValue.WindowState == WindowState.Normal)
             {
-                Tracer.Assert(new RectangleConverter().CanConvertFrom(TargetValue.RestoreBounds.GetType()));
-                Position = (Rectangle?) new RectangleConverter().ConvertFrom(TargetValue.RestoreBounds);
+                Position = TargetValue.RestoreBounds;
             }
 
             WindowState = TargetValue.WindowState;
         }
 
-        static Rectangle EnsureVisible(Rectangle value)
+        static Rectangle EnsureVisible(Rect valueRect)
         {
+            var value = valueRect.ToRectangle();
             var allScreens = Screen.AllScreens;
             if(allScreens.Any(s => s.Bounds.IntersectsWith(value)))
                 return value;
@@ -193,6 +189,21 @@ namespace MmasfUI
 
             Tracer.Assert(closestScreen.Bounds.IntersectsWith(result));
             return result;
+        }
+    }
+
+    static class Extension
+    {
+        internal static Rect? ToRect(this string value)
+        {
+            Dumpable.NotImplementedFunction(value);
+            return null;
+        }
+
+        internal static Rectangle ToRectangle(this Rect value)
+        {
+            Dumpable.NotImplementedFunction(value);
+            return default(Rectangle);
         }
     }
 }
