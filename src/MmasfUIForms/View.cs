@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Windows;
 using System.Windows.Forms;
 using hw.DebugFormatter;
+using hw.Forms;
 using hw.Helper;
 
 namespace MmasfUI
 {
     public abstract class View : DumpableObject
     {
-        protected readonly Window Frame;
+        protected readonly Form Frame;
         PositionConfig PositionConfig;
 
         protected View(string configFileName = null)
@@ -25,11 +25,11 @@ namespace MmasfUI
 
             Frame.Closing += OnClosing;
 
-            if (configFileName == null)
+            if(configFileName == null)
                 configFileName = GetFileName();
             configFileName.FileHandle().EnsureDirectoryOfFileExists();
 
-            PositionConfig = new PositionConfig(() => configFileName)
+            PositionConfig = new PositionConfig(()=> configFileName)
             {
                 Target = Frame
             };
@@ -41,8 +41,8 @@ namespace MmasfUI
 
         static string ToValidFileChar(char c)
         {
-            if (Path.GetInvalidFileNameChars().Contains(c))
-                return "%" + (int)c;
+            if(Path.GetInvalidFileNameChars().Contains(c))
+                return "%" + (int) c;
             return "" + c;
         }
 
@@ -52,9 +52,9 @@ namespace MmasfUI
             Frame.Visible = false;
         }
 
-        internal System.Windows.Controls.Control Client
+        internal Control Client
         {
-            get { return Frame.Controls.Cast<System.Windows.Controls.Control>().FirstOrDefault(); }
+            get { return Frame.Controls.Cast<Control>().FirstOrDefault(); }
             set
             {
                 Tracer.Assert(Frame.Controls.Count == 0);

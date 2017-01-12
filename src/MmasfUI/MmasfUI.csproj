@@ -19,53 +19,17 @@
       <HintPath>..\packages\JetBrains.Annotations.10.2.1\lib\net\JetBrains.Annotations.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChildView.cs" />
-    <Compile Include="Commands\Extension.cs" />
-    <Compile Include="Commands\Menu.cs" />
-    <Compile Include="Commands\MenuEntry.cs" />
-    <Compile Include="Commands\MenuItem.cs" />
-    <Compile Include="ContextView.cs" />
-    <Compile Include="ContextExtension.cs" />
-    <Compile Include="Extension.cs" />
-    <Compile Include="FileConfiguration.cs" />
-    <Compile Include="FileOpenController.cs" />
-    <Compile Include="hw\Forms\CursorUtil.cs" />
-    <Compile Include="hw\Forms\Extender.cs" />
-    <Compile Include="hw\Forms\IAdditionalNodeInfoProvider.cs" />
-    <Compile Include="hw\Forms\IIconKeyProvider.cs" />
-    <Compile Include="hw\Forms\ITreeNodeSupport.cs" />
-    <Compile Include="hw\Forms\NodeAttribute.cs" />
-    <Compile Include="hw\Forms\NodeNameAttribute.cs" />
-    <Compile Include="hw\Forms\PositionConfig.cs" />
-    <Compile Include="hw\Forms\SmartNodeAttribute.cs" />
-    <Compile Include="hw\Forms\TreeForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="hw\Forms\TreeForm.Designer.cs" />
-    <Compile Include="IApplication.cs" />
-    <Compile Include="IStudioApplication.cs" />
     <Compile Include="MainContainer.cs" />
-    <Compile Include="MainView.cs" />
-    <Compile Include="PanelCell.cs" />
-    <Compile Include="PanelColumn.cs" />
-    <Compile Include="Persister.cs" />
-    <Compile Include="StudioApplication.cs" />
-    <Compile Include="SystemConfiguration.cs" />
-    <Compile Include="TableLayoutPanelExtension.cs" />
-    <Compile Include="UserConfigurationIndicatorView.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="UserConfigurationTile.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="PositionConfig.cs" />
     <Compile Include="View.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="hw\Forms\TreeForm.resx" />
   </ItemGroup>
   <Import Project="sys.targets" />
 </Project>

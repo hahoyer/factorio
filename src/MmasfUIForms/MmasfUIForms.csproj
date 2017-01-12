@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <ProjectGuid>{E45A2DC4-C15F-4BB9-9957-2BA93273FF22}</ProjectGuid>
+    <TargetTypeEx>CSharp.WinExe</TargetTypeEx>
+    <AssemblyName>MmasfUIForms</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="sys.targets" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Mmasf\ManageModsAndSavefiles.csproj">
+      <Project>{ebb73c84-6622-4183-a28f-b0dff606006b}</Project>
+      <Name>ManageModsAndSavefiles</Name>
+    </ProjectReference>
+    <Reference Include="JetBrains.Annotations, Version=10.2.1.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>..\packages\JetBrains.Annotations.10.2.1\lib\net\JetBrains.Annotations.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ChildView.cs" />
+    <Compile Include="Commands\Extension.cs" />
+    <Compile Include="Commands\Menu.cs" />
+    <Compile Include="Commands\MenuEntry.cs" />
+    <Compile Include="Commands\MenuItem.cs" />
+    <Compile Include="ContextView.cs" />
+    <Compile Include="ContextExtension.cs" />
+    <Compile Include="Extension.cs" />
+    <Compile Include="FileConfiguration.cs" />
+    <Compile Include="FileOpenController.cs" />
+    <Compile Include="hw\Forms\CursorUtil.cs" />
+    <Compile Include="hw\Forms\Extender.cs" />
+    <Compile Include="hw\Forms\IAdditionalNodeInfoProvider.cs" />
+    <Compile Include="hw\Forms\IIconKeyProvider.cs" />
+    <Compile Include="hw\Forms\ITreeNodeSupport.cs" />
+    <Compile Include="hw\Forms\NodeAttribute.cs" />
+    <Compile Include="hw\Forms\NodeNameAttribute.cs" />
+    <Compile Include="hw\Forms\PositionConfig.cs" />
+    <Compile Include="hw\Forms\SmartNodeAttribute.cs" />
+    <Compile Include="hw\Forms\TreeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="hw\Forms\TreeForm.Designer.cs" />
+    <Compile Include="IApplication.cs" />
+    <Compile Include="IStudioApplication.cs" />
+    <Compile Include="MainContainer.cs" />
+    <Compile Include="MainView.cs" />
+    <Compile Include="PanelCell.cs" />
+    <Compile Include="PanelColumn.cs" />
+    <Compile Include="Persister.cs" />
+    <Compile Include="StudioApplication.cs" />
+    <Compile Include="SystemConfiguration.cs" />
+    <Compile Include="TableLayoutPanelExtension.cs" />
+    <Compile Include="UserConfigurationIndicatorView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="UserConfigurationTile.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="View.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="hw\Forms\TreeForm.resx" />
+  </ItemGroup>
+  <Import Project="sys.targets" />
+</Project>
