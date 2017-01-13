@@ -4,7 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using hw.Helper;
 
-namespace MmasfUI
+namespace MmasfUIForms
 {
     static class Extension
     {
@@ -39,5 +39,7 @@ namespace MmasfUI
             temp.Controls.Add(control);
             temp.Controls.Remove(control);
         }
+
+
     }
 }

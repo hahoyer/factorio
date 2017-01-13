@@ -5,7 +5,7 @@ using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
 
-namespace MmasfUI
+namespace MmasfUIForms
 {
     sealed class Persister : DumpableObject
     {

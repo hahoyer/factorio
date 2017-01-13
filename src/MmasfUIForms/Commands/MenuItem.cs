@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using hw.DebugFormatter;
 
-namespace MmasfUI.Commands
+namespace MmasfUIForms.Commands
 {
     abstract class MenuItem : DumpableObject
     {

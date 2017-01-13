@@ -4,7 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using ManageModsAndSavefiles;
 
-namespace MmasfUI
+namespace MmasfUIForms
 {
     public sealed class StudioApplication : ApplicationContext, IStudioApplication
     {

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 using ManageModsAndSavefiles;
 
-namespace MmasfUI
+namespace MmasfUIForms
 {
     static class ContextExtension
     {

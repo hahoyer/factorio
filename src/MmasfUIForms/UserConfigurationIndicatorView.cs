@@ -6,7 +6,7 @@ using System.Windows.Forms;
 using hw.DebugFormatter;
 using ManageModsAndSavefiles;
 
-namespace MmasfUI
+namespace MmasfUIForms
 {
     sealed class UserConfigurationIndicatorView : Panel
     {

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MmasfUI
+namespace MmasfUIForms
 {
     public interface IStudioApplication : IApplication
     {

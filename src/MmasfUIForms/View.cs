@@ -8,7 +8,7 @@ using hw.DebugFormatter;
 using hw.Forms;
 using hw.Helper;
 
-namespace MmasfUI
+namespace MmasfUIForms
 {
     public abstract class View : DumpableObject
     {

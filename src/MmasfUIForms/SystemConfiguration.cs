@@ -5,7 +5,7 @@ using System.Windows.Forms;
 using hw.DebugFormatter;
 using hw.Helper;
 
-namespace MmasfUI
+namespace MmasfUIForms
 {
     static class SystemConfiguration
     {

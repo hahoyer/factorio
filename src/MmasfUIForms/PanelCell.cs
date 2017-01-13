@@ -5,7 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 using hw.DebugFormatter;
 
-namespace MmasfUI
+namespace MmasfUIForms
 {
     sealed class PanelCell : DataGridViewCell
     {

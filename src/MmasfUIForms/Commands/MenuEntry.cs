@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using hw.DebugFormatter;
 
-namespace MmasfUI.Commands
+namespace MmasfUIForms.Commands
 {
     sealed class MenuEntry<T> : MenuItem
     {

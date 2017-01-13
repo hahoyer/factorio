@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace MmasfUI.Commands
+namespace MmasfUIForms.Commands
 {
     static class Extension
     {

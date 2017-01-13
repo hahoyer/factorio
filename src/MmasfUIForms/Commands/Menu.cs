@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MmasfUI.Commands
+namespace MmasfUIForms.Commands
 {
     sealed class Menu : MenuItem
     {
