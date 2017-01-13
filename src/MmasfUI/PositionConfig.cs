@@ -96,8 +96,7 @@ namespace MmasfUI
         {
             get
             {
-                return Convert
-                    (0, null, s => s.ToRect());
+                return Convert(0, null, s => s.FromJson<Rect?>());
             }
             set { Save(value, WindowState); }
         }
@@ -113,7 +112,7 @@ namespace MmasfUI
             fileHandle.String = "{0}\n{1}"
                 .ReplaceArgs
                 (
-                    position == null ? "" : new RectangleConverter().ConvertToString(position.Value),
+                    position == null ? "" : position.Value.ToJson(),
                     state
                 );
         }
@@ -189,21 +188,6 @@ namespace MmasfUI
 
             Tracer.Assert(closestScreen.Bounds.IntersectsWith(result));
             return result;
-        }
-    }
-
-    static class Extension
-    {
-        internal static Rect? ToRect(this string value)
-        {
-            Dumpable.NotImplementedFunction(value);
-            return null;
-        }
-
-        internal static Rectangle ToRectangle(this Rect value)
-        {
-            Dumpable.NotImplementedFunction(value);
-            return default(Rectangle);
         }
     }
 }
