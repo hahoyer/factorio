@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using hw.DebugFormatter;
 using hw.Helper;
 using ManageModsAndSavefiles;
@@ -127,7 +128,7 @@ namespace MmasfUI
         {
             var stackPanel = new StackPanel();
 
-            foreach(var configuration in instance.UserConfigurations.Select(CreateView))
+            foreach(var configuration in instance.UserConfigurations.Select(instance.CreateView))
                 stackPanel.Children.Add(configuration);
 
             return new ScrollViewer
@@ -137,10 +138,37 @@ namespace MmasfUI
             };
         }
 
-        static UIElement CreateView(this UserConfiguration configuration)
-            => new TextBox
+        static UIElement CreateView(this MmasfContext context, UserConfiguration configuration)
+        {
+            var result = new StackPanel();
+            result.Orientation = Orientation.Horizontal;
+            var indicatorColor = GetIndicatorColor(context, configuration);
+            var header = new TextBox
+            {
+                Background= indicatorColor,
+                MinHeight = 30,
+                MinWidth = 20
+
+            };
+
+            var textBox = new TextBox
             {
                 Text = configuration.Name
             };
+
+            result.Children.Add(header);
+            result.Children.Add(textBox);
+            return result;
+        }
+
+        internal static SolidColorBrush GetIndicatorColor
+            (this MmasfContext context, UserConfiguration configuration)
+            => context.DataConfiguration.RootUserConfigurationPath == configuration.Path
+                ? (context.DataConfiguration.CurrentUserConfigurationPath == configuration.Path
+                    ? System.Windows.Media.Brushes.DarkBlue
+                    : System.Windows.Media.Brushes.LightBlue)
+                : (context.DataConfiguration.CurrentUserConfigurationPath == configuration.Path
+                    ? System.Windows.Media.Brushes.Black
+                    : System.Windows.Media.Brushes.LightGray);
     }
 }

@@ -9,8 +9,6 @@ namespace MmasfUI
 {
     public sealed class MainContainer : Application
     {
-        
-
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
