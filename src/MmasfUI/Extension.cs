@@ -124,26 +124,15 @@ namespace MmasfUI
                 };
         }
 
-        public static UIElement CreateView(this MmasfContext instance)
-        {
-            var stackPanel = new StackPanel();
 
-            foreach(var configuration in instance.UserConfigurations.Select(instance.CreateView))
-                stackPanel.Children.Add(configuration);
+        internal static UIElement CreateView(this MmasfContext instance) => new ContextView(instance);
 
-            return new ScrollViewer
-            {
-                Content = stackPanel,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto
-            };
-        }
-
-        static UIElement CreateView(this MmasfContext context, UserConfiguration configuration)
+        internal static UIElement CreateView(this MmasfContext context, UserConfiguration configuration)
         {
             var result = new StackPanel();
             result.Orientation = Orientation.Horizontal;
             var indicatorColor = GetIndicatorColor(context, configuration);
-            var header = new TextBox
+            var header = new Label
             {
                 Background= indicatorColor,
                 MinHeight = 30,
@@ -151,9 +140,9 @@ namespace MmasfUI
 
             };
 
-            var textBox = new TextBox
+            var textBox = new Label
             {
-                Text = configuration.Name
+                Content= configuration.Name
             };
 
             result.Children.Add(header);
@@ -161,7 +150,7 @@ namespace MmasfUI
             return result;
         }
 
-        internal static SolidColorBrush GetIndicatorColor
+        static SolidColorBrush GetIndicatorColor
             (this MmasfContext context, UserConfiguration configuration)
             => context.DataConfiguration.RootUserConfigurationPath == configuration.Path
                 ? (context.DataConfiguration.CurrentUserConfigurationPath == configuration.Path
@@ -170,5 +159,45 @@ namespace MmasfUI
                 : (context.DataConfiguration.CurrentUserConfigurationPath == configuration.Path
                     ? System.Windows.Media.Brushes.Black
                     : System.Windows.Media.Brushes.LightGray);
+
+        static Menu CreateMainMenu(this Application application)
+            => new Menu
+            {
+                Items =
+                {
+                    new MenuItem
+                    {
+                        Header = "_File",
+                        Items =
+                        {
+                            new MenuItem
+                            {
+                                Header = "_New",
+                                Command = new Command(OnNew)
+                            },
+                            new MenuItem
+                            {
+                                Header = "_Exit",
+                                Command = new Command(application.Shutdown)
+                            }
+                        }
+                    }
+                }
+            };
+
+        static void OnNew() { throw new NotImplementedException(); }
+
+        internal static void CreateMainWindow(this Application application)
+        {
+            var main = new Window
+            {
+                Content = MmasfContext.Instance.CreateView(),
+                Title = "MmasfContext"
+            };
+
+            main.InstallPositionPersister();
+            main.InstallMainMenu(application.CreateMainMenu());
+            main.Show();
+        }
     }
 }

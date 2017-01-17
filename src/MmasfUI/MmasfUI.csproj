@@ -32,6 +32,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Command.cs" />
+    <Compile Include="ContextView.cs" />
     <Compile Include="Extension.cs" />
     <Compile Include="MainContainer.cs" />
     <Compile Include="PositionConfig.cs" />
