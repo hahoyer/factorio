@@ -101,13 +101,14 @@ namespace MmasfUI
                 Title = "MmasfContext"
             };
 
+            view.Selection.RegisterKeyBoardHandler(main);
             main.InstallPositionPersister();
             main.InstallMainMenu(application.CreateMainMenu());
+            Tracer.FlaggedLine("XMAL: \n" + XDocument.Parse(XamlWriter.Save(main)));
             main.Show();
 
-            Tracer.FlaggedLine("XMAL: \n" + XDocument.Parse(XamlWriter.Save(main)));
 
-            new Task(() => SimulateSelections(view)).Start();
+            //new Task(() => SimulateSelections(view)).Start();
         }
 
         static void SimulateSelections(ContextView view)

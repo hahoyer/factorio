@@ -6,11 +6,12 @@ using hw.DebugFormatter;
 
 namespace MmasfUI
 {
-    sealed class SelectionViewByOpacity : DumpableObject, ISelectionItemView
+    sealed class SelectionViewByOpacity : DumpableObject, Selection.IItemView
     {
         readonly UIElement Target;
         public SelectionViewByOpacity(UIElement target) { Target = target; }
 
-        bool ISelectionItemView.Selection { set { Target.Opacity = value ? 0.2 : 0; } }
+        bool Selection.IItemView.Selection { set { Target.Opacity = value ? 0.2 : 0; } }
+        Action Selection.IItemView.OnMouseClick { set { Target.MouseLeftButtonUp += (s, e) => value(); } }
     }
 }

@@ -1,20 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
+using System.Windows.Input;
 using hw.DebugFormatter;
-using hw.Helper;
 
 namespace MmasfUI
 {
-    sealed class Selection<T>
-        where T :class
+    abstract class Selection : DumpableObject
     {
+        internal interface IItemView
+        {
+            bool Selection { set; }
+            Action OnMouseClick { set; }
+        }
+
         sealed class Item
         {
-            internal readonly T Target;
-            internal readonly ISelectionItemView ItemView;
+            [DisableDump]
+            internal readonly object Target;
+            [DisableDump]
+            internal readonly IItemView ItemView;
 
-            public Item(T target, ISelectionItemView itemView)
+            public Item(object target, IItemView itemView)
             {
                 Target = target;
                 ItemView = itemView;
@@ -24,19 +32,21 @@ namespace MmasfUI
         readonly List<Item> Items = new List<Item>();
         Item CurrentItem;
 
-        public void Add(T target, int index, ISelectionItemView itemView)
+        protected void Add(object target, int index, IItemView itemView)
         {
             while(Items.Count <= index)
                 Items.Add(null);
-            Items[index] = new Item(target, itemView);
+            var item = new Item(target, itemView);
+            Items[index] = item;
+            itemView.OnMouseClick = () => CurrentTarget = target;
         }
 
-        internal T Current
+        internal object CurrentTarget
         {
             get { return CurrentItem?.Target; }
             set
             {
-                if(Current == value)
+                if(CurrentTarget == value)
                     return;
 
                 if(CurrentItem != null)
@@ -44,15 +54,50 @@ namespace MmasfUI
 
                 CurrentItem = value == null ? null : Items.Single(i => i.Target.Equals(value));
 
-                if (CurrentItem != null)
+                if(CurrentItem != null)
                     CurrentItem.ItemView.Selection = true;
             }
         }
 
+        internal void RegisterKeyBoardHandler(Window window) { window.KeyUp += GetKey; }
+
+        void GetKey(object sender, KeyEventArgs e)
+        {
+            var index = GetIndex(e.Key);
+
+            if (index == null)
+                return;
+
+            SetCurrentTarget(index.Value);
+            e.Handled = true;
+        }
+
+        int? GetIndex(Key key)
+        {
+            switch(key)
+            {
+                case Key.Up:
+                    return (CurrentItem == null ? Items.Count : Items.IndexOf(CurrentItem)) - 1;
+                case Key.Down:
+                    return (CurrentItem == null ? -1 : Items.IndexOf(CurrentItem)) + 1;
+                case Key.Home:
+                    return 0;
+                case Key.End:
+                    return Items.Count;
+            }
+            return null;
+        }
+
+        void SetCurrentTarget(int i)
+        {
+            CurrentTarget = Items.Any() ? Items[Math.Max(0, Math.Min(i, Items.Count - 1))].Target : null;
+        }
     }
 
-    interface ISelectionItemView
+    sealed class Selection<T> : Selection
+        where T : class
     {
-        bool Selection { set; }
+        internal T Current { get { return (T) CurrentTarget; } set { CurrentTarget = value; } }
+        internal void Add(T target, int index, IItemView itemView) { base.Add(target, index, itemView); }
     }
 }
