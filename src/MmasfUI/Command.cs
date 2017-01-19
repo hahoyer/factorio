@@ -6,7 +6,7 @@ using hw.DebugFormatter;
 
 namespace MmasfUI
 {
-    sealed class Command : DumpableObject, ICommand
+    public sealed class Command : DumpableObject, ICommand
     {
         readonly Action Execute;
         readonly Func<bool> CanExecute;

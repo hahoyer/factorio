@@ -125,28 +125,45 @@ namespace MmasfUI
         }
 
 
-        internal static UIElement CreateView(this MmasfContext instance) => new ContextView(instance);
+        internal static UIElement CreateView(this MmasfContext instance)
+            => new ContextView(instance);
 
-        internal static UIElement CreateView(this MmasfContext context, UserConfiguration configuration)
+        internal static UIElement CreateView
+        (
+            this MmasfContext context,
+            UserConfiguration configuration,
+            Selection<UserConfiguration> selection,
+            int index)
         {
-            var result = new StackPanel();
-            result.Orientation = Orientation.Horizontal;
+            var data = new StackPanel
+            {
+                Orientation = Orientation.Horizontal
+            };
             var indicatorColor = GetIndicatorColor(context, configuration);
             var header = new Label
             {
-                Background= indicatorColor,
+                Background = indicatorColor,
                 MinHeight = 30,
                 MinWidth = 20
-
             };
 
             var textBox = new Label
             {
-                Content= configuration.Name
+                Content = configuration.Name
             };
 
-            result.Children.Add(header);
-            result.Children.Add(textBox);
+            data.Children.Add(header);
+            data.Children.Add(textBox);
+
+            var frame = new Label
+            {
+                Opacity= index==1?0.2:0,
+                Background = System.Windows.Media.Brushes.Yellow
+            };
+
+            var result = new Grid();
+            result.Children.Add(data);
+            result.Children.Add(frame);
             return result;
         }
 
@@ -198,6 +215,9 @@ namespace MmasfUI
             main.InstallPositionPersister();
             main.InstallMainMenu(application.CreateMainMenu());
             main.Show();
+
+            var x = System.Windows.Markup.XamlWriter.Save(main);
+
         }
     }
 }
