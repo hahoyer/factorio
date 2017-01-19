@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using hw.DebugFormatter;
 using hw.Helper;
 using ManageModsAndSavefiles;
@@ -30,6 +29,7 @@ namespace MmasfUI
 
         public static void Sleep(this TimeSpan value) => Thread.Sleep(value);
 
+        public static TimeSpan MilliSeconds(this int value) => TimeSpan.FromMilliseconds(value);
         public static TimeSpan Seconds(this int value) => TimeSpan.FromSeconds(value);
         public static void WriteLine(this string value) => Tracer.Line(value);
 
@@ -125,99 +125,7 @@ namespace MmasfUI
         }
 
 
-        internal static UIElement CreateView(this MmasfContext instance)
+        internal static ContextView CreateView(this MmasfContext instance)
             => new ContextView(instance);
-
-        internal static UIElement CreateView
-        (
-            this MmasfContext context,
-            UserConfiguration configuration,
-            Selection<UserConfiguration> selection,
-            int index)
-        {
-            var data = new StackPanel
-            {
-                Orientation = Orientation.Horizontal
-            };
-            var indicatorColor = GetIndicatorColor(context, configuration);
-            var header = new Label
-            {
-                Background = indicatorColor,
-                MinHeight = 30,
-                MinWidth = 20
-            };
-
-            var textBox = new Label
-            {
-                Content = configuration.Name
-            };
-
-            data.Children.Add(header);
-            data.Children.Add(textBox);
-
-            var frame = new Label
-            {
-                Opacity= index==1?0.2:0,
-                Background = System.Windows.Media.Brushes.Yellow
-            };
-
-            var result = new Grid();
-            result.Children.Add(data);
-            result.Children.Add(frame);
-            return result;
-        }
-
-        static SolidColorBrush GetIndicatorColor
-            (this MmasfContext context, UserConfiguration configuration)
-            => context.DataConfiguration.RootUserConfigurationPath == configuration.Path
-                ? (context.DataConfiguration.CurrentUserConfigurationPath == configuration.Path
-                    ? System.Windows.Media.Brushes.DarkBlue
-                    : System.Windows.Media.Brushes.LightBlue)
-                : (context.DataConfiguration.CurrentUserConfigurationPath == configuration.Path
-                    ? System.Windows.Media.Brushes.Black
-                    : System.Windows.Media.Brushes.LightGray);
-
-        static Menu CreateMainMenu(this Application application)
-            => new Menu
-            {
-                Items =
-                {
-                    new MenuItem
-                    {
-                        Header = "_File",
-                        Items =
-                        {
-                            new MenuItem
-                            {
-                                Header = "_New",
-                                Command = new Command(OnNew)
-                            },
-                            new MenuItem
-                            {
-                                Header = "_Exit",
-                                Command = new Command(application.Shutdown)
-                            }
-                        }
-                    }
-                }
-            };
-
-        static void OnNew() { throw new NotImplementedException(); }
-
-        internal static void CreateMainWindow(this Application application)
-        {
-            var main = new Window
-            {
-                Content = MmasfContext.Instance.CreateView(),
-                Title = "MmasfContext"
-            };
-
-            main.InstallPositionPersister();
-            main.InstallMainMenu(application.CreateMainMenu());
-            main.Show();
-
-            var x = System.Windows.Markup.XamlWriter.Save(main);
-
-        }
     }
 }
