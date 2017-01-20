@@ -6,15 +6,16 @@ using System.Windows.Controls;
 using System.Windows.Markup;
 using System.Xml.Linq;
 using hw.DebugFormatter;
-using hw.Helper;
 using ManageModsAndSavefiles;
 
 namespace MmasfUI
 {
     public sealed class MainContainer : Application
     {
+        static readonly MainContainer Instance = new MainContainer();
+
         [STAThread]
-        public static void Main() => new MainContainer().Run();
+        public static void Main() => Instance.Run();
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -29,8 +30,8 @@ namespace MmasfUI
 
             view.Selection.RegisterKeyBoardHandler(main);
             main.InstallPositionPersister();
-            main.InstallMainMenu(MainContainer.CreateMainMenu());
-            Tracer.FlaggedLine("XMAL: \n" + XDocument.Parse(XamlWriter.Save(main)));
+            main.InstallMainMenu(CreateMainMenu());
+            Tracer.FlaggedLine("XAML: \n" + XDocument.Parse(XamlWriter.Save(main)));
             main.Show();
 
 
@@ -66,5 +67,7 @@ namespace MmasfUI
                     }
                 }
             };
+
+        internal static void OnExit() { Instance.Shutdown(); }
     }
 }

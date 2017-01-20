@@ -65,7 +65,7 @@ namespace MmasfUI
         {
             var index = GetIndex(e.Key);
 
-            if (index == null)
+            if(index == null)
                 return;
 
             SetCurrentTarget(index.Value);
