@@ -65,51 +65,9 @@ namespace MmasfUI
                     ? Brushes.Black
                     : Brushes.LightGray);
 
-        static Menu CreateMainMenu(this Application application)
-            => new Menu
-            {
-                Items =
-                {
-                    new MenuItem
-                    {
-                        Header = "_File",
-                        Items =
-                        {
-                            new MenuItem
-                            {
-                                Header = "_New",
-                                Command = new Command(OnNew)
-                            },
-                            new MenuItem
-                            {
-                                Header = "_Exit",
-                                Command = new Command(application.Shutdown)
-                            }
-                        }
-                    }
-                }
-            };
+        internal static void OnNew() { throw new NotImplementedException(); }
+        internal static void OnSelect() { throw new NotImplementedException(); }
 
-        static void OnNew() { throw new NotImplementedException(); }
-
-        internal static void CreateMainWindow(this Application application)
-        {
-            var view = MmasfContext.Instance.CreateView();
-            var main = new Window
-            {
-                Content = view,
-                Title = "MmasfContext"
-            };
-
-            view.Selection.RegisterKeyBoardHandler(main);
-            main.InstallPositionPersister();
-            main.InstallMainMenu(application.CreateMainMenu());
-            Tracer.FlaggedLine("XMAL: \n" + XDocument.Parse(XamlWriter.Save(main)));
-            main.Show();
-
-
-            //new Task(() => SimulateSelections(view)).Start();
-        }
 
         static void SimulateSelections(ContextView view)
         {
