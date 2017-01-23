@@ -6,12 +6,12 @@ using hw.DebugFormatter;
 
 namespace MmasfUI
 {
-    public class Command : DumpableObject, ICommand
+    sealed class Command : DumpableObject, ICommand
     {
         readonly Action Execute;
         readonly Func<bool> CanExecute;
 
-        public Command(Action execute, Func<bool> canExecute = null)
+        public Command(Object commandTarget, Action execute, Func<bool> canExecute = null)
         {
             Execute = execute;
             CanExecute = canExecute;
@@ -39,5 +39,4 @@ namespace MmasfUI
 
         event EventHandler ICommand.CanExecuteChanged { add { } remove { } }
     }
-
 }

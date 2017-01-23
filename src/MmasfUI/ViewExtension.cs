@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using ManageModsAndSavefiles;
 
@@ -94,5 +95,7 @@ namespace MmasfUI
             result.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
             return result;
         }
+
+        internal static ICommand Command(this object commandTaget, Action execute, Func<bool> canExecute = null) => new Command(commandTaget,execute,canExecute);
     }
 }

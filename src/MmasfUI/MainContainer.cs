@@ -38,7 +38,7 @@ namespace MmasfUI
             //new Task(() => SimulateSelections(view)).Start();
         }
 
-        static Menu CreateMainMenu()
+        Menu CreateMainMenu()
             => new Menu
             {
                 Items =
@@ -51,23 +51,23 @@ namespace MmasfUI
                             new MenuItem
                             {
                                 Header = "_New",
-                                Command = Commands.New
+                                Command = this.Command(OnNew)
                             },
                             new MenuItem
                             {
                                 Header = "_Select",
-                                Command = Commands.Select
+                                Command = this.Command(OnSelect)
                             },
                             new MenuItem
                             {
                                 Header = "_Exit",
-                                Command = Commands.Exit
+                                Command = this.Command(OnExit)
                             }
                         }
                     }
                 }
             };
 
-        internal static void OnExit() { Instance.Shutdown(); }
+        void OnExit() => Shutdown();
     }
 }
