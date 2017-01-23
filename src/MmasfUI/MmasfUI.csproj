@@ -34,12 +34,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Command.cs" />
+    <Compile Include="CommandAttribute.cs" />
+    <Compile Include="CommandManager.cs" />
     <Compile Include="ContextView.cs" />
     <Compile Include="Extension.cs" />
     <Compile Include="MainContainer.cs" />
     <Compile Include="PositionConfig.cs" />
     <Compile Include="Selection.cs" />
     <Compile Include="SelectionViewByOpacity.cs" />
+    <Compile Include="UserConfigurationView.cs" />
     <Compile Include="ViewExtension.cs" />
   </ItemGroup>
   <Import Project="sys.targets" />

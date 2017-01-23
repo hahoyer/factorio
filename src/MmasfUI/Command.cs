@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Windows.Input;
 using hw.DebugFormatter;
 
@@ -8,19 +9,19 @@ namespace MmasfUI
 {
     sealed class Command : DumpableObject, ICommand
     {
-        readonly Action Execute;
-        readonly Func<bool> CanExecute;
+        readonly CommandManager Parent;
+        readonly MemberInfo Method;
 
-        public Command(Object commandTarget, Action execute, Func<bool> canExecute = null)
+        internal Command(CommandManager parent, MemberInfo method)
         {
-            Execute = execute;
-            CanExecute = canExecute;
+            Parent = parent;
+            Method = method;
         }
 
         bool ICommand.CanExecute(object parameter)
         {
             if(parameter == null)
-                return CanExecute == null || CanExecute();
+                return Parent.CanExecute(Method);
 
             NotImplementedMethod(parameter);
             return false;
@@ -30,13 +31,17 @@ namespace MmasfUI
         {
             if(parameter == null)
             {
-                Execute();
+                Parent.Execute(Method);
                 return;
             }
 
             NotImplementedMethod(parameter);
         }
 
-        event EventHandler ICommand.CanExecuteChanged { add { } remove { } }
+        event EventHandler ICommand.CanExecuteChanged
+        {
+            add { System.Windows.Input.CommandManager.RequerySuggested += value; }
+            remove { System.Windows.Input.CommandManager.RequerySuggested -= value; }
+        }
     }
 }

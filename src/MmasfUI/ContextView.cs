@@ -12,5 +12,9 @@ namespace MmasfUI
             ();
 
         internal ContextView(MmasfContext data) { Content = data.CreateContextView(Selection); }
+
+        [Command("UserConfigurations.New")]
+        public void OnNew() { throw new NotImplementedException(); }
+
     }
 }

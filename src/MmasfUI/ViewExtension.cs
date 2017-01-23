@@ -11,21 +11,15 @@ namespace MmasfUI
 {
     static class ViewExtension
     {
-        static UIElement CreateView
-        (
-            this MmasfContext context,
-            UserConfiguration configuration,
-            Selection<UserConfiguration> selection,
-            int index)
+        internal  static StackPanel CreateView(this UserConfiguration configuration, SolidColorBrush getIndicatorColor)
         {
             var data = new StackPanel
             {
                 Orientation = Orientation.Horizontal
             };
-            var indicatorColor = GetIndicatorColor(context, configuration);
             var header = new Label
             {
-                Background = indicatorColor,
+                Background = getIndicatorColor,
                 MinHeight = 30,
                 MinWidth = 20
             };
@@ -37,22 +31,10 @@ namespace MmasfUI
 
             data.Children.Add(header);
             data.Children.Add(textBox);
-
-            var frame = new Label
-            {
-                Opacity = 0,
-                Background = Brushes.Yellow
-            };
-
-            var result = new Grid();
-            result.Children.Add(data);
-            result.Children.Add(frame);
-
-            selection.Add(configuration, index, new SelectionViewByOpacity(frame));
-            return result;
+            return data;
         }
 
-        static SolidColorBrush GetIndicatorColor
+        internal static SolidColorBrush GetIndicatorColor
             (this MmasfContext context, UserConfiguration configuration)
             => context.DataConfiguration.RootUserConfigurationPath == configuration.Path
                 ? (context.DataConfiguration.CurrentUserConfigurationPath == configuration.Path
@@ -61,9 +43,6 @@ namespace MmasfUI
                 : (context.DataConfiguration.CurrentUserConfigurationPath == configuration.Path
                     ? Brushes.Black
                     : Brushes.LightGray);
-
-        internal static void OnNew() { throw new NotImplementedException(); }
-        internal static void OnSelect() { throw new NotImplementedException(); }
 
 
         static void SimulateSelections(ContextView view)
@@ -86,7 +65,7 @@ namespace MmasfUI
 
             var elements = data
                 .UserConfigurations
-                .Select((configuration, index) => data.CreateView(configuration, selection, index));
+                .Select((configuration, index) => (UIElement) new UserConfigurationView(data,configuration, selection, index));
 
             foreach(var configuration in elements)
                 panel.Children.Add(configuration);
@@ -96,6 +75,13 @@ namespace MmasfUI
             return result;
         }
 
-        internal static ICommand Command(this object commandTaget, Action execute, Func<bool> canExecute = null) => new Command(commandTaget,execute,canExecute);
+        internal static MenuItem MenuItem(this string menuItemText, string commandIdentifier)
+        {
+            return new MenuItem
+            {
+                Header = menuItemText,
+                Command = MainContainer.Instance.CommandManager.ByName(commandIdentifier)
+            };
+        }
     }
 }

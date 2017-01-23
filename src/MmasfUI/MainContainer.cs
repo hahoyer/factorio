@@ -12,7 +12,7 @@ namespace MmasfUI
 {
     public sealed class MainContainer : Application
     {
-        static readonly MainContainer Instance = new MainContainer();
+        internal static readonly MainContainer Instance = new MainContainer();
 
         [STAThread]
         public static void Main() => Instance.Run();
@@ -31,14 +31,15 @@ namespace MmasfUI
             view.Selection.RegisterKeyBoardHandler(main);
             main.InstallPositionPersister();
             main.InstallMainMenu(CreateMainMenu());
-            Tracer.FlaggedLine("XAML: \n" + XDocument.Parse(XamlWriter.Save(main)));
+            //Tracer.FlaggedLine("XAML: \n" + XDocument.Parse(XamlWriter.Save(main)));
+            CommandManager.Activate(main);
             main.Show();
 
 
             //new Task(() => SimulateSelections(view)).Start();
         }
 
-        Menu CreateMainMenu()
+        static Menu CreateMainMenu()
             => new Menu
             {
                 Items =
@@ -48,26 +49,17 @@ namespace MmasfUI
                         Header = "_File",
                         Items =
                         {
-                            new MenuItem
-                            {
-                                Header = "_New",
-                                Command = this.Command(OnNew)
-                            },
-                            new MenuItem
-                            {
-                                Header = "_Select",
-                                Command = this.Command(OnSelect)
-                            },
-                            new MenuItem
-                            {
-                                Header = "_Exit",
-                                Command = this.Command(OnExit)
-                            }
+                            "_New".MenuItem("UserConfigurations.New"),
+                            "_Select".MenuItem("UserConfiguration.Select"),
+                            "_Exit".MenuItem("Exit"),
                         }
                     }
                 }
             };
 
-        void OnExit() => Shutdown();
+        [Command("Exit")]
+        public void OnExit() => Shutdown();
+
+        internal readonly CommandManager CommandManager = new CommandManager(typeof(MainContainer).Namespace);
     }
 }
