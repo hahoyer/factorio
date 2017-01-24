@@ -27,8 +27,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MmasfUI", "MmasfUI\MmasfUI.csproj", "{E45A2DC4-C15F-4BB9-9957-2BA93273FF24}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MmasfUIForms", "MmasfUIForms\MmasfUIForms.csproj", "{E45A2DC4-C15F-4BB9-9957-2BA93273FF22}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,10 +57,6 @@ Global
 		{E45A2DC4-C15F-4BB9-9957-2BA93273FF24}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E45A2DC4-C15F-4BB9-9957-2BA93273FF24}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E45A2DC4-C15F-4BB9-9957-2BA93273FF24}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E45A2DC4-C15F-4BB9-9957-2BA93273FF22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E45A2DC4-C15F-4BB9-9957-2BA93273FF22}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E45A2DC4-C15F-4BB9-9957-2BA93273FF22}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E45A2DC4-C15F-4BB9-9957-2BA93273FF22}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
