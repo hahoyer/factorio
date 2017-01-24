@@ -8,13 +8,25 @@ namespace MmasfUI
 {
     public sealed class ContextView : ContentControl
     {
-        internal readonly Selection<UserConfiguration> Selection = new Selection<UserConfiguration>
-            ();
+        readonly MmasfContext Context;
+        internal readonly Selection<UserConfiguration> Selection
+            = new Selection<UserConfiguration>();
 
-        internal ContextView(MmasfContext data) { Content = data.CreateContextView(Selection); }
+        internal ContextView(MmasfContext context)
+        {
+            Context = context;
+            CreateView();
+        }
+
+        void CreateView() { Content = Context.CreateContextView(Selection, this); }
 
         [Command("UserConfigurations.New")]
         public void OnNew() { throw new NotImplementedException(); }
 
+        public void Refresh()
+        {
+            Selection.Current = null;
+            CreateView();
+        }
     }
 }

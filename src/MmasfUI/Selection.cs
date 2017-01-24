@@ -9,9 +9,13 @@ namespace MmasfUI
 {
     abstract partial class Selection : DumpableObject
     {
-        internal interface IItemView
+        internal interface IAcceptor
         {
             bool IsSelected { set; }
+        }
+
+        internal interface IController
+        {
             void RegisterSelectionTrigger(Action value);
         }
 
@@ -20,9 +24,9 @@ namespace MmasfUI
             [DisableDump]
             internal readonly object Target;
             [DisableDump]
-            internal readonly IItemView ItemView;
+            internal readonly IAcceptor ItemView;
 
-            public Item(object target, IItemView itemView)
+            public Item(object target, IAcceptor itemView)
             {
                 Target = target;
                 ItemView = itemView;
@@ -32,12 +36,17 @@ namespace MmasfUI
         readonly List<Item> Items = new List<Item>();
         Item CurrentItem;
 
-        protected void Add(int index, object target, IItemView itemView)
+        protected void Add(int index, object target, IAcceptor itemView)
         {
             while(Items.Count <= index)
                 Items.Add(null);
             var item = new Item(target, itemView);
             Items[index] = item;
+            (itemView as IController)?.RegisterSelectionTrigger(() => CurrentTarget = target);
+        }
+
+        protected void Add(object target, IController itemView)
+        {
             itemView.RegisterSelectionTrigger(() => CurrentTarget = target);
         }
 
@@ -57,7 +66,7 @@ namespace MmasfUI
                 if(CurrentItem != null)
                     CurrentItem.ItemView.IsSelected = true;
             }
-        }
+        }                                           
 
         internal void RegisterKeyBoardHandler(Window window) { window.KeyUp += GetKey; }
 
@@ -98,6 +107,7 @@ namespace MmasfUI
         where T : class
     {
         internal T Current { get { return (T) CurrentTarget; } set { CurrentTarget = value; } }
-        internal void Add(int index, T target, IItemView itemView) => base.Add(index, target, itemView);
+        internal void Add(int index, T target, IAcceptor itemView) => base.Add(index, target, itemView);
+        internal void Add(T target, IController itemView) => base.Add(target, itemView);
     }
 }

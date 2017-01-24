@@ -8,25 +8,25 @@ namespace MmasfUI
 {
     partial class Selection
     {
-        internal sealed class ViewByOpacity : DumpableObject, IItemView
+        internal sealed class ViewByOpacity : DumpableObject, IAcceptor, IController
         {
             readonly UIElement Target;
             public ViewByOpacity(UIElement target) { Target = target; }
 
-            bool IItemView.IsSelected { set { Target.Opacity = value ? 0.2 : 0; } }
+            bool IAcceptor.IsSelected { set { Target.Opacity = value ? 0.2 : 0; } }
 
-            void IItemView.RegisterSelectionTrigger(Action value)
+            void IController.RegisterSelectionTrigger(Action value)
             {
                 Target.MouseLeftButtonUp += (s, e) => value();
             }
         }
 
-        internal sealed class List : DumpableObject, IItemView
+        internal sealed class List : DumpableObject, IAcceptor, IController
         {
-            readonly IItemView[] Items;
-            public List(params IItemView[] items) { Items = items; }
+            readonly IAcceptor[] Items;
+            public List(params IAcceptor[] items) { Items = items; }
 
-            bool IItemView.IsSelected
+            bool IAcceptor.IsSelected
             {
                 set
                 {
@@ -35,9 +35,9 @@ namespace MmasfUI
                 }
             }
 
-            void IItemView.RegisterSelectionTrigger(Action value)
+            void IController.RegisterSelectionTrigger(Action value)
             {
-                foreach(var item in Items)
+                foreach(var item in Items.OfType<IController>())
                     item.RegisterSelectionTrigger(value);
             }
         }

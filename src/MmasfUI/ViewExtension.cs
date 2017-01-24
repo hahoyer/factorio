@@ -57,7 +57,7 @@ namespace MmasfUI
 
 
         internal static ScrollViewer CreateContextView
-            (this MmasfContext data, Selection<UserConfiguration> selection)
+            (this MmasfContext data, Selection<UserConfiguration> selection, ContextView parent)
         {
             var result = new ScrollViewer();
             var panel = new StackPanel();
@@ -67,7 +67,15 @@ namespace MmasfUI
                 .Select
                 (
                     (configuration, index) =>
-                        (UIElement) new UserConfigurationView(data, configuration, selection, index));
+                        (UIElement) new UserConfigurationView
+                        (
+                            data, 
+                            configuration, 
+                            selection, 
+                            index,
+                            parent
+                            )
+                            );
 
             foreach(var configuration in elements)
                 panel.Children.Add(configuration);
