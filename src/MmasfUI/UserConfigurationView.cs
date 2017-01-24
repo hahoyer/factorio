@@ -44,7 +44,6 @@ namespace MmasfUI
             );
 
             ContextMenu = CreateContextMenu();
-            this.ContextMenuOpening += (s, e) => System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             Content = result;
         }
 
@@ -60,7 +59,7 @@ namespace MmasfUI
         }
 
         [Command("UserConfiguration.Select")]
-        bool CanExecuteSelect => !Configuration.IsCurrent;
+        public bool CanExecuteSelect => !Configuration.IsCurrent;
 
         bool Selection.IAcceptor.IsSelected { set { MainContainer.Instance.CommandManager.Activate(this, value); } }
     }

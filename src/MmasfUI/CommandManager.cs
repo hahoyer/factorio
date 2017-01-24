@@ -29,7 +29,7 @@ namespace MmasfUI
             var canExecute = execute.DeclaringType?.GetProperties().SingleOrDefault(p => IsRelevant(p, identifier));
 
 
-            return new Command(this, null, (MethodInfo) execute, canExecute);
+            return new Command(this, (MethodInfo) execute, canExecute);
         }
 
         static bool IsRelevant(MemberInfo m, string identifier)

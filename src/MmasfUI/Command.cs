@@ -13,7 +13,7 @@ namespace MmasfUI
         readonly MethodInfo Execute;
         readonly PropertyInfo CanExecute;
 
-        internal Command(CommandManager parent, MethodInfo method, MethodInfo execute, PropertyInfo canExecute)
+        internal Command(CommandManager parent, MethodInfo execute, PropertyInfo canExecute)
         {
             Parent = parent;
             Execute = execute;

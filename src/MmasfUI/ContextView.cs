@@ -25,8 +25,10 @@ namespace MmasfUI
 
         internal void Refresh()
         {
+            var oldSelection = Selection.Current;
             Selection.Current = null;
             CreateView();
+            Selection.Current = oldSelection;
         }
     }
 }
