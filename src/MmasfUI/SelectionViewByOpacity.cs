@@ -6,12 +6,40 @@ using hw.DebugFormatter;
 
 namespace MmasfUI
 {
-    sealed class SelectionViewByOpacity : DumpableObject, Selection.IItemView
+    partial class Selection
     {
-        readonly UIElement Target;
-        public SelectionViewByOpacity(UIElement target) { Target = target; }
+        internal sealed class ViewByOpacity : DumpableObject, IItemView
+        {
+            readonly UIElement Target;
+            public ViewByOpacity(UIElement target) { Target = target; }
 
-        bool Selection.IItemView.Selection { set { Target.Opacity = value ? 0.2 : 0; } }
-        Action Selection.IItemView.OnMouseClick { set { Target.MouseLeftButtonUp += (s, e) => value(); } }
+            bool IItemView.IsSelected { set { Target.Opacity = value ? 0.2 : 0; } }
+
+            void IItemView.RegisterSelectionTrigger(Action value)
+            {
+                Target.MouseLeftButtonUp += (s, e) => value();
+            }
+        }
+
+        internal sealed class List : DumpableObject, IItemView
+        {
+            readonly IItemView[] Items;
+            public List(params IItemView[] items) { Items = items; }
+
+            bool IItemView.IsSelected
+            {
+                set
+                {
+                    foreach(var item in Items)
+                        item.IsSelected = value;
+                }
+            }
+
+            void IItemView.RegisterSelectionTrigger(Action value)
+            {
+                foreach(var item in Items)
+                    item.RegisterSelectionTrigger(value);
+            }
+        }
     }
 }

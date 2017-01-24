@@ -32,7 +32,7 @@ namespace MmasfUI
             main.InstallPositionPersister();
             main.InstallMainMenu(CreateMainMenu());
             //Tracer.FlaggedLine("XAML: \n" + XDocument.Parse(XamlWriter.Save(main)));
-            CommandManager.Activate(main);
+            CommandManager.Activate(this);
             main.Show();
 
 

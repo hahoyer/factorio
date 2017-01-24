@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 using ManageModsAndSavefiles;
 
@@ -11,7 +10,8 @@ namespace MmasfUI
 {
     static class ViewExtension
     {
-        internal  static StackPanel CreateView(this UserConfiguration configuration, SolidColorBrush getIndicatorColor)
+        internal static StackPanel CreateView
+            (this UserConfiguration configuration, SolidColorBrush getIndicatorColor)
         {
             var data = new StackPanel
             {
@@ -48,24 +48,26 @@ namespace MmasfUI
         static void SimulateSelections(ContextView view)
         {
             while(true)
-            {
                 foreach(var configuration in MmasfContext.Instance.UserConfigurations)
                 {
                     view.Dispatcher.Invoke(() => view.Selection.Current = configuration);
                     1.Seconds().Sleep();
                 }
-            }
         }
 
 
-        internal static ScrollViewer CreateContextView(this MmasfContext data, Selection<UserConfiguration> selection)
+        internal static ScrollViewer CreateContextView
+            (this MmasfContext data, Selection<UserConfiguration> selection)
         {
             var result = new ScrollViewer();
             var panel = new StackPanel();
 
             var elements = data
                 .UserConfigurations
-                .Select((configuration, index) => (UIElement) new UserConfigurationView(data,configuration, selection, index));
+                .Select
+                (
+                    (configuration, index) =>
+                        (UIElement) new UserConfigurationView(data, configuration, selection, index));
 
             foreach(var configuration in elements)
                 panel.Children.Add(configuration);
@@ -76,12 +78,10 @@ namespace MmasfUI
         }
 
         internal static MenuItem MenuItem(this string menuItemText, string commandIdentifier)
-        {
-            return new MenuItem
+            => new MenuItem
             {
                 Header = menuItemText,
                 Command = MainContainer.Instance.CommandManager.ByName(commandIdentifier)
             };
-        }
     }
 }

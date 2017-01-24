@@ -26,7 +26,7 @@ namespace MmasfUI
                 .SelectMany(t => t.GetMembers().Where(m => IsRelevant(m, identifier)))
                 .Single();
 
-            return new Command(this, method);
+            return new Command(this, (MethodInfo) method);
         }
 
         static bool IsRelevant(MemberInfo m, string identifier)
@@ -43,26 +43,30 @@ namespace MmasfUI
         public bool CanExecute(MemberInfo method)
         {
             var target = ActiveObjects.FirstOrDefault(o => o.GetType().Is(method.DeclaringType));
-            Tracer.ConditionalBreak(ActiveObjects.Any());
             if(target == null)
                 return false;
 
             if(method.GetAttribute<CanExecute>(true) == null)
-                return false;
+                return true;
 
             NotImplementedMethod(method.Name);
             return false;
         }
-        internal void Execute(MemberInfo method) { NotImplementedMethod(method.Name); }
 
-        internal void Activate(object target)
+        internal void Execute(MethodInfo method)
         {
-            ActiveObjects.Insert(0, target);
-            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+            var target = ActiveObjects.First(o => o.GetType().Is(method.DeclaringType));
+
+            method.Invoke(target, null);
         }
-        internal void Deactivate(object target)
+
+        internal void Activate(object target , bool setIt = true)
         {
-            ActiveObjects.Remove(target);
+            if(setIt)
+                ActiveObjects.Insert(0, target);
+            else
+                ActiveObjects.Remove(target);
+
             System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
     }

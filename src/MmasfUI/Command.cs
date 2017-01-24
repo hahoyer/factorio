@@ -10,9 +10,9 @@ namespace MmasfUI
     sealed class Command : DumpableObject, ICommand
     {
         readonly CommandManager Parent;
-        readonly MemberInfo Method;
+        readonly MethodInfo Method;
 
-        internal Command(CommandManager parent, MemberInfo method)
+        internal Command(CommandManager parent, MethodInfo method)
         {
             Parent = parent;
             Method = method;

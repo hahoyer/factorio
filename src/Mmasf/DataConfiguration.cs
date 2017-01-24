@@ -28,7 +28,11 @@ namespace ManageModsAndSavefiles
         string FactorioStyleCurrentUserConfigurationPath
         {
             get { return IniFile[PathSectionName][WriteDataTag]; }
-            set { IniFile[PathSectionName][WriteDataTag] = value; }
+            set
+            {
+                IniFile[PathSectionName][WriteDataTag] = value;
+                IniFile.Persist();
+            }
         }
 
         public string RootUserConfigurationPath { get; }

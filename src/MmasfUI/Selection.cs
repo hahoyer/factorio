@@ -7,12 +7,12 @@ using hw.DebugFormatter;
 
 namespace MmasfUI
 {
-    abstract class Selection : DumpableObject
+    abstract partial class Selection : DumpableObject
     {
         internal interface IItemView
         {
-            bool Selection { set; }
-            Action OnMouseClick { set; }
+            bool IsSelected { set; }
+            void RegisterSelectionTrigger(Action value);
         }
 
         sealed class Item
@@ -32,13 +32,13 @@ namespace MmasfUI
         readonly List<Item> Items = new List<Item>();
         Item CurrentItem;
 
-        protected void Add(object target, int index, IItemView itemView)
+        protected void Add(int index, object target, IItemView itemView)
         {
             while(Items.Count <= index)
                 Items.Add(null);
             var item = new Item(target, itemView);
             Items[index] = item;
-            itemView.OnMouseClick = () => CurrentTarget = target;
+            itemView.RegisterSelectionTrigger(() => CurrentTarget = target);
         }
 
         internal object CurrentTarget
@@ -50,12 +50,12 @@ namespace MmasfUI
                     return;
 
                 if(CurrentItem != null)
-                    CurrentItem.ItemView.Selection = false;
+                    CurrentItem.ItemView.IsSelected = false;
 
                 CurrentItem = value == null ? null : Items.Single(i => i.Target.Equals(value));
 
                 if(CurrentItem != null)
-                    CurrentItem.ItemView.Selection = true;
+                    CurrentItem.ItemView.IsSelected = true;
             }
         }
 
@@ -98,6 +98,6 @@ namespace MmasfUI
         where T : class
     {
         internal T Current { get { return (T) CurrentTarget; } set { CurrentTarget = value; } }
-        internal void Add(T target, int index, IItemView itemView) { base.Add(target, index, itemView); }
+        internal void Add(int index, T target, IItemView itemView) => base.Add(index, target, itemView);
     }
 }

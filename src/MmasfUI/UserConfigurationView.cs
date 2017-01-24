@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Contexts;
 using System.Windows.Controls;
 using System.Windows.Media;
 using ManageModsAndSavefiles;
 
 namespace MmasfUI
 {
-    public sealed class UserConfigurationView : ContentControl
+    public sealed class UserConfigurationView : ContentControl, Selection.IItemView
     {
         readonly MmasfContext Context;
         readonly UserConfiguration Configuration;
@@ -34,7 +33,11 @@ namespace MmasfUI
             result.Children.Add(data);
             result.Children.Add(frame);
 
-            selection.Add(configuration, index, new SelectionViewByOpacity(frame));
+            selection.Add
+            (
+                index,
+                configuration,
+                new Selection.List(this, new Selection.ViewByOpacity(frame)));
             Content = result;
         }
 
@@ -43,5 +46,12 @@ namespace MmasfUI
         {
             Context.DataConfiguration.CurrentUserConfigurationPath = Configuration.Path;
         }
+
+        bool Selection.IItemView.IsSelected
+        {
+            set { MainContainer.Instance.CommandManager.Activate(this, value); }
+        }
+
+        void Selection.IItemView.RegisterSelectionTrigger(Action value) { }
     }
 }
