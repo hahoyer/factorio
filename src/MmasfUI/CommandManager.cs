@@ -22,11 +22,14 @@ namespace MmasfUI
                 .Where(t => TargetNamespace == null || TargetNamespace == t.Namespace)
                 .ToArray();
 
-            var method = types
+            var execute = types
                 .SelectMany(t => t.GetMembers().Where(m => IsRelevant(m, identifier)))
                 .Single();
 
-            return new Command(this, (MethodInfo) method);
+            var canExecute = execute.DeclaringType?.GetProperties().SingleOrDefault(p => IsRelevant(p, identifier));
+
+
+            return new Command(this, null, (MethodInfo) execute, canExecute);
         }
 
         static bool IsRelevant(MemberInfo m, string identifier)
@@ -40,17 +43,20 @@ namespace MmasfUI
             return mm != null && mm.ReturnType == typeof(void) && !mm.GetParameters().Any();
         }
 
-        public bool CanExecute(MemberInfo method)
+        static bool IsRelevant(PropertyInfo p, string identifier)
         {
-            var target = ActiveObjects.FirstOrDefault(o => o.GetType().Is(method.DeclaringType));
-            if(target == null)
+            var attribute = p.GetAttribute<CommandAttribute>(false);
+            if(attribute == null)
                 return false;
+            if(attribute.Name != identifier)
+                return false;
+            return p.PropertyType == typeof(bool) && p.CanRead;
+        }
 
-            if(method.GetAttribute<CanExecute>(true) == null)
-                return true;
-
-            NotImplementedMethod(method.Name);
-            return false;
+        public bool CanExecute(MethodInfo execute, PropertyInfo canExecute)
+        {
+            var target = ActiveObjects.FirstOrDefault(o => o.GetType().Is(execute.DeclaringType));
+            return target != null && (canExecute == null || (bool) canExecute.GetValue(target));
         }
 
         internal void Execute(MethodInfo method)
@@ -60,7 +66,7 @@ namespace MmasfUI
             method.Invoke(target, null);
         }
 
-        internal void Activate(object target , bool setIt = true)
+        internal void Activate(object target, bool setIt = true)
         {
             if(setIt)
                 ActiveObjects.Insert(0, target);
@@ -70,7 +76,4 @@ namespace MmasfUI
             System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
     }
-
-    class CanExecute : Attribute
-    {}
 }

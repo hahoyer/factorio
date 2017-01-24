@@ -6,7 +6,7 @@ using ManageModsAndSavefiles;
 
 namespace MmasfUI
 {
-    public sealed class ContextView : ContentControl
+    sealed class ContextView : ContentControl
     {
         readonly MmasfContext Context;
         internal readonly Selection<UserConfiguration> Selection
@@ -23,7 +23,7 @@ namespace MmasfUI
         [Command("UserConfigurations.New")]
         public void OnNew() { throw new NotImplementedException(); }
 
-        public void Refresh()
+        internal void Refresh()
         {
             Selection.Current = null;
             CreateView();

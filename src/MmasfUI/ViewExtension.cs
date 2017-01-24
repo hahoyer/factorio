@@ -34,13 +34,12 @@ namespace MmasfUI
             return data;
         }
 
-        internal static SolidColorBrush GetIndicatorColor
-            (this MmasfContext context, UserConfiguration configuration)
-            => context.DataConfiguration.RootUserConfigurationPath == configuration.Path
-                ? (context.DataConfiguration.CurrentUserConfigurationPath == configuration.Path
+        internal static SolidColorBrush GetIndicatorColor(this UserConfiguration configuration)
+            => configuration.IsRoot
+                ? (configuration.IsCurrent
                     ? Brushes.DarkBlue
                     : Brushes.LightBlue)
-                : (context.DataConfiguration.CurrentUserConfigurationPath == configuration.Path
+                : (configuration.IsCurrent
                     ? Brushes.Black
                     : Brushes.LightGray);
 
@@ -69,13 +68,13 @@ namespace MmasfUI
                     (configuration, index) =>
                         (UIElement) new UserConfigurationView
                         (
-                            data, 
-                            configuration, 
-                            selection, 
+                            data,
+                            configuration,
+                            selection,
                             index,
                             parent
-                            )
-                            );
+                        )
+                );
 
             foreach(var configuration in elements)
                 panel.Children.Add(configuration);

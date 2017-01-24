@@ -24,7 +24,7 @@ namespace MmasfUI
             Context = context;
             Configuration = configuration;
             Parent = parent;
-            var data = configuration.CreateView(context.GetIndicatorColor(configuration));
+            var data = Configuration.CreateView(Configuration.GetIndicatorColor());
 
             var frame = new Label
             {
@@ -39,10 +39,18 @@ namespace MmasfUI
             selection.Add
             (
                 index,
-                configuration,
-                new Selection.List(this, new Selection.ViewByOpacity(frame)));
+                Configuration,
+                Selection.List(this, Selection.ViewByOpacity(frame))
+            );
+
+            ContextMenu = CreateContextMenu();
+            this.ContextMenuOpening += (s, e) => System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             Content = result;
         }
+
+        
+        static ContextMenu CreateContextMenu()
+            => new ContextMenu {Items = {"Select".MenuItem("UserConfiguration.Select")}};
 
         [Command("UserConfiguration.Select")]
         public void OnSelect()
@@ -51,9 +59,9 @@ namespace MmasfUI
             Parent.Refresh();
         }
 
-        bool Selection.IAcceptor.IsSelected
-        {
-            set { MainContainer.Instance.CommandManager.Activate(this, value); }
-        }
+        [Command("UserConfiguration.Select")]
+        bool CanExecuteSelect => !Configuration.IsCurrent;
+
+        bool Selection.IAcceptor.IsSelected { set { MainContainer.Instance.CommandManager.Activate(this, value); } }
     }
 }

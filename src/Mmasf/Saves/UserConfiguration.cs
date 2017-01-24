@@ -50,6 +50,8 @@ namespace ManageModsAndSavefiles
         readonly MmasfContext Parent;
 
         public string Name => Path.Split('\\').Last();
+        public bool IsRoot => Path == Parent.DataConfiguration.RootUserConfigurationPath;
+        public bool IsCurrent => Path == Parent.DataConfiguration.CurrentUserConfigurationPath;
 
         UserConfiguration(string path, string[] allPaths, MmasfContext parent)
         {
@@ -125,5 +127,6 @@ namespace ManageModsAndSavefiles
             source.FilesPath(PlayerDataFileName).FileHandle().CopyTo(FilesPath(PlayerDataFileName));
 
         protected override string GetNodeDump() => Path.FileHandle().Name;
+
     }
 }

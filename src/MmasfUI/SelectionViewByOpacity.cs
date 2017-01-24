@@ -8,23 +8,27 @@ namespace MmasfUI
 {
     partial class Selection
     {
-        internal sealed class ViewByOpacity : DumpableObject, IAcceptor, IController
+        internal static IAcceptor ViewByOpacity(UIElement target) => new ViewByOpacityClass(target);
+        internal static IAcceptor List(params IAcceptor[] items) => new ListClass(items);
+
+        sealed class ViewByOpacityClass : DumpableObject, IAcceptor, IController
         {
             readonly UIElement Target;
-            public ViewByOpacity(UIElement target) { Target = target; }
+            public ViewByOpacityClass(UIElement target) { Target = target; }
 
             bool IAcceptor.IsSelected { set { Target.Opacity = value ? 0.2 : 0; } }
 
             void IController.RegisterSelectionTrigger(Action value)
             {
-                Target.MouseLeftButtonUp += (s, e) => value();
+                Target.MouseLeftButtonDown += (s, e) => value();
+                Target.MouseRightButtonDown += (s, e) => value();
             }
         }
 
-        internal sealed class List : DumpableObject, IAcceptor, IController
+        sealed class ListClass : DumpableObject, IAcceptor, IController
         {
             readonly IAcceptor[] Items;
-            public List(params IAcceptor[] items) { Items = items; }
+            public ListClass(IAcceptor[] items) { Items = items; }
 
             bool IAcceptor.IsSelected
             {
