@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using hw.DebugFormatter;
 
-namespace MmasfUI
+namespace MmasfUI.Common
 {
     abstract partial class Selection : DumpableObject
     {

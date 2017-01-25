@@ -4,7 +4,7 @@ using System.Linq;
 using System.Windows;
 using hw.DebugFormatter;
 
-namespace MmasfUI
+namespace MmasfUI.Common
 {
     partial class Selection
     {

@@ -6,7 +6,7 @@ using System.Windows.Input;
 using hw.DebugFormatter;
 using hw.Helper;
 
-namespace MmasfUI
+namespace MmasfUI.Common
 {
     sealed class CommandManager : DumpableObject
     {
@@ -27,7 +27,6 @@ namespace MmasfUI
                 .Single();
 
             var canExecute = execute.DeclaringType?.GetProperties().SingleOrDefault(p => IsRelevant(p, identifier));
-
 
             return new Command(this, (MethodInfo) execute, canExecute);
         }

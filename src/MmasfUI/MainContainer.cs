@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Markup;
-using System.Xml.Linq;
-using hw.DebugFormatter;
 using ManageModsAndSavefiles;
+using MmasfUI.Common;
 
 namespace MmasfUI
 {
@@ -51,7 +49,7 @@ namespace MmasfUI
                         {
                             //"_New".MenuItem("UserConfigurations.New"),
                             "_Select".MenuItem("UserConfiguration.Select"),
-                            "_Exit".MenuItem("Exit"),
+                            "_Exit".MenuItem("Exit")
                         }
                     }
                 }

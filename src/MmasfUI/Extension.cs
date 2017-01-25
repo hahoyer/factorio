@@ -1,131 +1,98 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using hw.DebugFormatter;
-using hw.Helper;
+using System.Windows.Media;
 using ManageModsAndSavefiles;
-using Newtonsoft.Json;
+using MmasfUI.Common;
 
 namespace MmasfUI
 {
     static class Extension
     {
-        internal static Rectangle ToRectangle(this Rect value)
-            => new Rectangle
+        internal static StackPanel CreateView
+            (this UserConfiguration content, SolidColorBrush getIndicatorColor)
+        {
+            var data = new StackPanel
             {
-                X = (int) value.X,
-                Y = (int) value.Y,
-                Height = (int) value.Height,
-                Width = (int) value.Width
+                Orientation = Orientation.Horizontal
+            };
+            var header = new Label
+            {
+                Background = getIndicatorColor,
+                MinHeight = 30,
+                MinWidth = 20
             };
 
-        public static byte[] AsciiToByteArray(this string value) => Encoding.ASCII.GetBytes(value);
-
-        public static void Sleep(this TimeSpan value) => Thread.Sleep(value);
-
-        public static TimeSpan MilliSeconds(this int value) => TimeSpan.FromMilliseconds(value);
-        public static TimeSpan Seconds(this int value) => TimeSpan.FromSeconds(value);
-        public static void WriteLine(this string value) => Tracer.Line(value);
-
-        public static T FromJson<T>(this string jsonText)
-            => JsonConvert.DeserializeObject<T>(jsonText);
-
-        public static object FromJson(this string jsonText, Type resultType)
-            => JsonConvert.DeserializeObject(jsonText, resultType);
-
-        public static string ToJson<T>(this T o)
-            => JsonConvert.SerializeObject(o, Formatting.Indented);
-
-        public static T FromJsonFile<T>(this string jsonFileName)
-            where T : class
-            => jsonFileName.FileHandle().String?.FromJson<T>();
-
-        public static void ToJsonFile<T>(this string jsonFileName, T o)
-            where T : class
-            => jsonFileName.FileHandle().String = o.ToJson();
-
-        public static string UnescapeComma(this string value)
-            => value
-                .Replace("&comma;", ",")
-                .Replace("&ampersant;", "&");
-
-        public static string EscapeComma(this string value)
-            => value
-                .Replace("&", "&ampersant;")
-                .Replace(",", "&comma;");
-
-        public static IEnumerable<T> EnsureAny<T>(this IEnumerable<T> value, Action onError)
-        {
-            var isAny = false;
-            foreach(var item in value)
+            var textBox = new Label
             {
-                yield return item;
+                Content = content.Name
+            };
 
-                isAny = true;
-            }
-
-            if(isAny)
-                yield break;
-
-            onError();
+            data.Children.Add(header);
+            data.Children.Add(textBox);
+            return data;
         }
 
-        public static IEnumerable<T> EnsureNoDuplicate<T>(this IEnumerable<T> value, Action onError)
+        internal static SolidColorBrush GetIndicatorColor(this UserConfiguration configuration)
+            => configuration.IsRoot
+                ? (configuration.IsCurrent
+                    ? Brushes.DarkBlue
+                    : Brushes.LightBlue)
+                : (configuration.IsCurrent
+                    ? Brushes.Black
+                    : Brushes.LightGray);
+
+
+        static void SimulateSelections(ContextView view)
         {
-            var isAny = false;
-            foreach(var item in value)
-            {
-                if(isAny)
+            while(true)
+                foreach(var configuration in MmasfContext.Instance.UserConfigurations)
                 {
-                    onError();
-                    yield break;
+                    view.Dispatcher.Invoke(() => view.Selection.Current = configuration);
+                    1.Seconds().Sleep();
                 }
-
-                yield return item;
-
-                isAny = true;
-            }
         }
 
-        internal static string ToValidFileChar(char c)
+
+        internal static ScrollViewer CreateView
+            (this MmasfContext context, Selection<UserConfiguration> selection, ContextView parent)
         {
-            if(Path.GetInvalidFileNameChars().Contains(c))
-                return "%" + (int) c;
+            var result = new ScrollViewer();
+            var panel = new StackPanel();
 
-            return "" + c;
+            var elements = context
+                .UserConfigurations
+                .Select
+                (
+                    (configuration, index) =>
+                        (UIElement) new UserConfigurationView
+                        (
+                            context,
+                            configuration,
+                            selection,
+                            index,
+                            parent
+                        )
+                );
+
+            foreach(var configuration in elements)
+                panel.Children.Add(configuration);
+
+            result.Content = panel;
+            result.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+            return result;
         }
 
-        internal static void InstallMainMenu(this Window container, Menu menu)
-        {
-            var content = (UIElement) container.Content;
-            var d = new DockPanel();
-            d.Children.Add(menu);
-            DockPanel.SetDock(menu, Dock.Top);
-            container.Content = d;
-            if(content == null)
-                return;
+        internal static ContextView CreateView(this MmasfContext context)
+            => new ContextView(context);
 
-            d.Children.Add(content);
-            DockPanel.SetDock(content, Dock.Bottom);
-        }
-
-        internal static void InstallPositionPersister(this Window main)
-        {
-            new PositionConfig
-                (() => main.Title.Select(ToValidFileChar).Aggregate("", (c, n) => c + n))
-                {
-                    Target = main
-                };
-        }
-
-
-        internal static ContextView CreateView(this MmasfContext instance)
-            => new ContextView(instance);
+        internal static MenuItem MenuItem(this string menuItemText, string commandIdentifier)
+            => new MenuItem
+            {
+                Header = menuItemText,
+                Command = MainContainer.Instance.CommandManager.ByName(commandIdentifier)
+            };
     }
 }

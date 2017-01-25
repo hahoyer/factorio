@@ -36,17 +36,17 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Command.cs" />
-    <Compile Include="CommandAttribute.cs" />
-    <Compile Include="CommandManager.cs" />
+    <Compile Include="Common\Command.cs" />
+    <Compile Include="Common\CommandAttribute.cs" />
+    <Compile Include="Common\CommandManager.cs" />
     <Compile Include="ContextView.cs" />
-    <Compile Include="Extension.cs" />
+    <Compile Include="Common\Extension.cs" />
     <Compile Include="MainContainer.cs" />
-    <Compile Include="PositionConfig.cs" />
-    <Compile Include="Selection.cs" />
-    <Compile Include="SelectionViewByOpacity.cs" />
+    <Compile Include="Common\PositionConfig.cs" />
+    <Compile Include="Common\Selection.cs" />
+    <Compile Include="Common\Selection.Util.cs" />
     <Compile Include="UserConfigurationView.cs" />
-    <Compile Include="ViewExtension.cs" />
+    <Compile Include="Extension.cs" />
     <Content Include="MmasfUI.ico" />
     <Content Include="Setup.iss">
       <AutoGen>True</AutoGen>

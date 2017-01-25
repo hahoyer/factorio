@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Windows.Input;
 using hw.DebugFormatter;
 
-namespace MmasfUI
+namespace MmasfUI.Common
 {
     sealed class Command : DumpableObject, ICommand
     {

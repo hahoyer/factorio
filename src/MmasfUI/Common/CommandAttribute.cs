@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 
-namespace MmasfUI
+namespace MmasfUI.Common
 {
     [MeansImplicitUse]
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property)]

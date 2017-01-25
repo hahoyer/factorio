@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
 using ManageModsAndSavefiles;
+using MmasfUI.Common;
 
 namespace MmasfUI
 {
@@ -18,7 +19,7 @@ namespace MmasfUI
             CreateView();
         }
 
-        void CreateView() { Content = Context.CreateContextView(Selection, this); }
+        void CreateView() { Content = Context.CreateView(Selection, this); }
 
         [Command("UserConfigurations.New")]
         public void OnNew() { throw new NotImplementedException(); }
