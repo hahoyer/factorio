@@ -21,9 +21,6 @@ namespace MmasfUI
 
         void CreateView() { Content = Context.CreateView(Selection, this); }
 
-        [Command("UserConfigurations.New")]
-        public void OnNew() { throw new NotImplementedException(); }
-
         internal void Refresh()
         {
             var oldSelection = Selection.Current;

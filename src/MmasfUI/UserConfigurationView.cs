@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using ManageModsAndSavefiles;
 using MmasfUI.Common;
@@ -44,11 +45,24 @@ namespace MmasfUI
                 Selection.List(this, Selection.ViewByOpacity(frame))
             );
 
+            
+
             ContextMenu = CreateContextMenu();
             Content = result;
         }
 
-        
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            if(e.Key == Key.Enter)
+            {
+                var command = MainContainer.Instance.CommandManager.ByName("UserConfiguration.OpenDetail");
+                command.Execute(null);
+            }
+            base.OnKeyUp(e);
+            
+        }
+
+
         static ContextMenu CreateContextMenu()
             => new ContextMenu {Items = {"Select".MenuItem("UserConfiguration.Select")}};
 

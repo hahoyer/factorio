@@ -47,7 +47,6 @@ namespace MmasfUI
                         Header = "_File",
                         Items =
                         {
-                            //"_New".MenuItem("UserConfigurations.New"),
                             "_Select".MenuItem("UserConfiguration.Select"),
                             "_Exit".MenuItem("Exit")
                         }
