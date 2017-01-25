@@ -44,6 +44,22 @@
     <Compile Include="SelectionViewByOpacity.cs" />
     <Compile Include="UserConfigurationView.cs" />
     <Compile Include="ViewExtension.cs" />
+    <Content Include="Setup.iss">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Setup.tt</DependentUpon>
+    </Content>
+    <Content Include="Setup.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Setup.iss</LastGenOutput>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="sys.targets" />
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Setup|AnyCPU' ">
+    <PostBuildEvent>echo "$(ProgramFiles)\Inno Setup 5\ISCC.exe" /DConfiguration=$(ConfigurationName) /O$(OutDir) $(ProjectDir)Setup.iss
+"$(ProgramFiles)\Inno Setup 5\ISCC.exe" /DConfiguration=$(ConfigurationName) /O$(OutDir) $(ProjectDir)Setup.iss</PostBuildEvent>
+  </PropertyGroup>
 </Project>
