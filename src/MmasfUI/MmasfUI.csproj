@@ -6,6 +6,9 @@
     <TargetTypeEx>CSharp.WinExe</TargetTypeEx>
     <AssemblyName>MmasfUI</AssemblyName>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>MmasfUI.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="sys.targets" />
@@ -44,6 +47,7 @@
     <Compile Include="SelectionViewByOpacity.cs" />
     <Compile Include="UserConfigurationView.cs" />
     <Compile Include="ViewExtension.cs" />
+    <Content Include="MmasfUI.ico" />
     <Content Include="Setup.iss">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
