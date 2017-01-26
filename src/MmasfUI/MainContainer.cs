@@ -47,8 +47,16 @@ namespace MmasfUI
                         Header = "_File",
                         Items =
                         {
-                            "_Select".MenuItem("UserConfiguration.Select"),
+                            "_Select".MenuItem(UserConfigurationView.Command.Select),
                             "_Exit".MenuItem("Exit")
+                        }
+                    },
+                    new MenuItem
+                    {
+                        Header = "_View",
+                        Items =
+                        {
+                            "_Saves".MenuItem(UserConfigurationView.Command.ViewSaves)
                         }
                     }
                 }
@@ -57,6 +65,7 @@ namespace MmasfUI
         [Command("Exit")]
         public void OnExit() => Shutdown();
 
-        internal readonly CommandManager CommandManager = new CommandManager(typeof(MainContainer).Namespace);
+        internal readonly CommandManager CommandManager = new CommandManager
+            (typeof(MainContainer).Namespace);
     }
 }

@@ -45,6 +45,7 @@
     <Compile Include="Common\PositionConfig.cs" />
     <Compile Include="Common\Selection.cs" />
     <Compile Include="Common\Selection.Util.cs" />
+    <Compile Include="UserConfigurationSavesWindow.cs" />
     <Compile Include="UserConfigurationView.cs" />
     <Compile Include="Extension.cs" />
     <Content Include="MmasfUI.ico" />

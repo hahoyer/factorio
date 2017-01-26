@@ -6,7 +6,7 @@ using JetBrains.Annotations;
 namespace MmasfUI.Common
 {
     [MeansImplicitUse]
-    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property,AllowMultiple = true)]
     sealed class CommandAttribute : Attribute
     {
         internal readonly string Name;

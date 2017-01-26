@@ -11,6 +11,11 @@ namespace MmasfUI
 {
     public sealed class UserConfigurationView : ContentControl, Selection.IAcceptor
     {
+        internal static class Command
+        {
+            internal const string Select = "UserConfiguration.Select";
+            internal const string ViewSaves = "UserConfiguration.ViewSaves";
+        }
         readonly MmasfContext Context;
         readonly UserConfiguration Configuration;
         new readonly ContextView Parent;
@@ -26,7 +31,7 @@ namespace MmasfUI
             Context = context;
             Configuration = configuration;
             Parent = parent;
-            var data = Configuration.CreateView(Configuration.GetIndicatorColor());
+            var data = Configuration.CreateTileView(Configuration.GetIndicatorColor());
 
             var frame = new Label
             {
@@ -45,37 +50,41 @@ namespace MmasfUI
                 Selection.List(this, Selection.ViewByOpacity(frame))
             );
 
-            
 
             ContextMenu = CreateContextMenu();
             Content = result;
         }
 
-        protected override void OnKeyUp(KeyEventArgs e)
-        {
-            if(e.Key == Key.Enter)
+        static ContextMenu CreateContextMenu()
+            => new ContextMenu
             {
-                var command = MainContainer.Instance.CommandManager.ByName("UserConfiguration.OpenDetail");
-                command.Execute(null);
-            }
-            base.OnKeyUp(e);
-            
+                Items =
+                {
+                    "Select".MenuItem(Command.Select),
+                    "Show Saves".MenuItem(Command.ViewSaves),
+                }
+            };
+
+        [Command(Command.ViewSaves)]
+        public void ViewSaves()
+        {
+            var view = Configuration.CreateSavesView();
+            view.Show();
         }
 
-
-        static ContextMenu CreateContextMenu()
-            => new ContextMenu {Items = {"Select".MenuItem("UserConfiguration.Select")}};
-
-        [Command("UserConfiguration.Select")]
+        [Command(Command.Select)]
         public void OnSelect()
         {
             Context.DataConfiguration.CurrentUserConfigurationPath = Configuration.Path;
             Parent.Refresh();
         }
 
-        [Command("UserConfiguration.Select")]
+        [Command(Command.Select)]
         public bool CanExecuteSelect => !Configuration.IsCurrent;
 
-        bool Selection.IAcceptor.IsSelected { set { MainContainer.Instance.CommandManager.Activate(this, value); } }
+        bool Selection.IAcceptor.IsSelected
+        {
+            set { MainContainer.Instance.CommandManager.Activate(this, value); }
+        }
     }
 }

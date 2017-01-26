@@ -11,7 +11,7 @@ namespace MmasfUI
 {
     static class Extension
     {
-        internal static StackPanel CreateView
+        internal static StackPanel CreateTileView
             (this UserConfiguration content, SolidColorBrush getIndicatorColor)
         {
             var data = new StackPanel
@@ -84,6 +84,9 @@ namespace MmasfUI
             result.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
             return result;
         }
+
+        internal static Window CreateSavesView(this UserConfiguration configuration)
+            => new UserConfigurationSavesWindow(configuration);
 
         internal static ContextView CreateView(this MmasfContext context)
             => new ContextView(context);

@@ -74,7 +74,9 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="sys.targets" />
+    <None Include="sys.targets">
+      <SubType>Designer</SubType>
+    </None>
     <Content Include="AssemblyInfo.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>AssemblyInfo.cs</LastGenOutput>
