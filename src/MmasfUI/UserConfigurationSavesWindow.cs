@@ -35,12 +35,12 @@ namespace MmasfUI
         static ColumnDefinition IndexColumn => new ColumnDefinition();
         static ColumnDefinition NameColumn => new ColumnDefinition();
 
-        static Menu CreateConfigurationMenu()
-            => new Menu
+        static System.Windows.Controls.Menu CreateConfigurationMenu()
+            => new System.Windows.Controls.Menu
             {
                 Items =
                 {
-                    new MenuItem
+                    new System.Windows.Controls.MenuItem
                     {
                         Header = "_File",
                         Items =
@@ -51,4 +51,5 @@ namespace MmasfUI
                 }
             };
     }
+
 }

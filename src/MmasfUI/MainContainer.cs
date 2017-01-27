@@ -19,6 +19,19 @@ namespace MmasfUI
         {
             base.OnStartup(e);
 
+            ShowContextView();
+
+            var editorViews = SystemConfiguration
+                .ActiveFileNames
+                .Select(file => file.CreateView(this))
+                .ToArray();
+
+            foreach(var editorView in editorViews)
+                editorView.Show();
+        }
+
+        void ShowContextView()
+        {
             var view = MmasfContext.Instance.CreateView();
             var main = new Window
             {
@@ -29,12 +42,8 @@ namespace MmasfUI
             view.Selection.RegisterKeyBoardHandler(main);
             main.InstallPositionPersister();
             main.InstallMainMenu(CreateMainMenu());
-            //Tracer.FlaggedLine("XAML: \n" + XDocument.Parse(XamlWriter.Save(main)));
             CommandManager.Activate(this);
             main.Show();
-
-
-            //new Task(() => SimulateSelections(view)).Start();
         }
 
         static Menu CreateMainMenu()

@@ -41,10 +41,15 @@
     <Compile Include="Common\CommandManager.cs" />
     <Compile Include="ContextView.cs" />
     <Compile Include="Common\Extension.cs" />
+    <Compile Include="FileConfiguration.cs" />
+    <Compile Include="FilePersistenceHandler.cs" />
+    <Compile Include="IPersitenceHandler.cs" />
     <Compile Include="MainContainer.cs" />
     <Compile Include="Common\PositionConfig.cs" />
     <Compile Include="Common\Selection.cs" />
     <Compile Include="Common\Selection.Util.cs" />
+    <Compile Include="Persister.cs" />
+    <Compile Include="SystemConfiguration.cs" />
     <Compile Include="UserConfigurationSavesWindow.cs" />
     <Compile Include="UserConfigurationView.cs" />
     <Compile Include="Extension.cs" />
