@@ -10,12 +10,12 @@ namespace MmasfUI
     sealed class FileConfiguration : DumpableObject
     {
         internal readonly string FileName;
-        readonly ValueCache<Persister> FilePersister;
+        readonly ValueCache<Persister> PersisterCache;
 
         public FileConfiguration(string fileName)
         {
             FileName = fileName;
-            FilePersister = new ValueCache<Persister>
+            PersisterCache = new ValueCache<Persister>
                 (() => new Persister(ItemFile("EditorConfiguration")));
         }
 
@@ -43,6 +43,35 @@ namespace MmasfUI
             return null;
         }
 
+        public Window CreateView(MainContainer parent)
+        {
+            NotImplementedMethod(parent);
+            return null;
+        }
+
+        internal void ConnectToEditor(Window editor)
+        {
+            Persister.Load();
+            Persister.Register("Type", OnLoadType, OnSaveType);
+            Status = "Open";
+        }
+
+        string OnSaveType()
+        {
+            NotImplementedMethod();
+            return null;
+        }
+
+        void OnLoadType(string obj) { NotImplementedMethod(obj); }
+
+        Persister Persister => PersisterCache.Value;
+
+        internal void ConnectToFrame(Window frame)
+        {
+            frame.Closing += (a, s) => OnClosing();
+            frame.Activated += (a, s) => OnActivated();
+        }
+
         File ItemFile(string itemName) => ItemFileName(itemName).FileHandle();
 
         string ItemFileName(string itemName)
@@ -54,11 +83,5 @@ namespace MmasfUI
         void OnActivated() { LastUsed = DateTime.Now; }
 
         internal string PositionPath => ItemFileName("Position");
-
-        public Window CreateView(MainContainer parent)
-        {
-            NotImplementedMethod(parent);
-            return null;
-        }
     }
 }

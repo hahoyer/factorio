@@ -27,7 +27,6 @@ namespace MmasfUI
                 .OrderBy(item => item.LastUsed)
                 .ToArray();
 
-
         internal static string GetConfigurationPath(string editorFileName)
         {
             var projectPath = ".".FileHandle().FullName + "\\";
@@ -43,7 +42,7 @@ namespace MmasfUI
         static string GetKnownConfigurationPath(string fileName, string fullFileName)
         {
             var fileHandle = EditorFilesPath.PathCombine(fileName).FileHandle();
-            fileHandle.AssumeDirectoryOfFileExists();
+            fileHandle.EnsureDirectoryOfFileExists();
 
             var result = ConfigurationPathsForAllKnownFiles
                 .SingleOrDefault
@@ -71,7 +70,7 @@ namespace MmasfUI
                 {
                     var result = EditorFilesPath.PathCombine(configurationFileName);
                     var nameFile = result.PathCombine("Name").FileHandle();
-                    nameFile.AssumeDirectoryOfFileExists();
+                    nameFile.EnsureDirectoryOfFileExists();
                     nameFile.String = fileName;
                     return result;
                 }
