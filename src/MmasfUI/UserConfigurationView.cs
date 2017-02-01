@@ -68,7 +68,7 @@ namespace MmasfUI
         [Command(Command.ViewSaves)]
         public void ViewSaves()
         {
-            var view = Configuration.CreateSavesView();
+            var view = Configuration.CreateSavesView(new FileConfiguration(Name));
             view.Show();
         }
 

@@ -26,7 +26,7 @@ namespace MmasfUI.Common
         /// </param>
         public PositionConfig(Func<string> getFileName = null)
         {
-            GetFileNameFunction = getFileName ?? (() => TargetValue?.Name);
+            GetFileNameFunction = getFileName ?? (() => TargetValue?.Name.ToValidFileName());
         }
 
         /// <summary>

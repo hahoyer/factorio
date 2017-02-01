@@ -114,13 +114,18 @@ namespace MmasfUI.Common
             DockPanel.SetDock(content, Dock.Bottom);
         }
 
-        internal static void InstallPositionPersister(this Window main)
+        internal static void InstallPositionPersister(this Window main, string configFileName)
         {
             new PositionConfig
-                (() => main.Title.Select(ToValidFileChar).Aggregate("", (c, n) => c + n))
+                (() => configFileName)
                 {
                     Target = main
                 };
+        }
+
+        internal static string ToValidFileName(this string value)
+        {
+            return value.Select(ToValidFileChar).Aggregate("", (c, n) => c + n);
         }
     }
 }

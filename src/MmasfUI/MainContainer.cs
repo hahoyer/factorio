@@ -40,7 +40,7 @@ namespace MmasfUI
             };
 
             view.Selection.RegisterKeyBoardHandler(main);
-            main.InstallPositionPersister();
+            main.InstallPositionPersister("Main");
             main.InstallMainMenu(CreateMainMenu());
             CommandManager.Activate(this);
             main.Show();

@@ -50,7 +50,7 @@ namespace MmasfUI
             return result;
         }
 
-        static string EditorFilesPath => ConfigRoot.PathCombine("EditorFiles");
+        internal static string EditorFilesPath => ConfigRoot.PathCombine("EditorFiles");
 
         static string OurFolder(string head) => head.PathCombine("HoyerWare");
 

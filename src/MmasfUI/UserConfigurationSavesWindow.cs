@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using hw.Helper;
 using ManageModsAndSavefiles;
 using MmasfUI.Common;
 
@@ -12,12 +13,12 @@ namespace MmasfUI
     {
         readonly UserConfiguration Configuration;
 
-        public UserConfigurationSavesWindow(UserConfiguration configuration)
+        public UserConfigurationSavesWindow(UserConfiguration configuration, FileConfiguration fileConfiguration)
         {
             Configuration = configuration;
             Content = CreateGrid();
             Title = "Configuration " + configuration.Name;
-            this.InstallPositionPersister();
+            this.InstallPositionPersister(fileConfiguration.PositionPath);
             this.InstallMainMenu(CreateConfigurationMenu());
         }
 
