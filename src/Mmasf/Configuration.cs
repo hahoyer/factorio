@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using hw.DebugFormatter;
 using hw.Helper;
 
 namespace ManageModsAndSavefiles
@@ -20,7 +21,7 @@ namespace ManageModsAndSavefiles
             var result = Path.FromJsonFile<Configuration>()
                 ?? new Configuration();
 
-            if (result.SystemPath == null)
+            if (result.SystemPath == null || !result.SystemPath.FileHandle().Exists)
                 result.SystemPath = SystemConfiguration.Path;
 
             if (result.UserConfigurationPaths == null)

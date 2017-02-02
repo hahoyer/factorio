@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using hw.DebugFormatter;
 using hw.Helper;
 using IniParser;
 using IniParser.Model;
@@ -21,9 +18,13 @@ namespace ManageModsAndSavefiles
                 .GetFolderPath(Environment.SpecialFolder.ApplicationData)
                 .PathCombine("Factorio");
 
-        internal static IEnumerable<hw.Helper.File> FindFilesThatEndsWith
-            (this hw.Helper.File root, string target)
-            => root.RecursiveItems()
+        internal static IEnumerable<File> FindFilesThatEndsWith
+            (this File root, string target)
+            => new[] {root}.FindFilesThatEndsWith(target);
+
+        internal static IEnumerable<File> FindFilesThatEndsWith
+            (this IEnumerable<File> root, string target)
+            => root.SelectMany(f => f.RecursiveItems())
                 .Where(item => item.FullName.EndsWith(target));
 
         static readonly FileIniDataParser IniParserInstance = CreateFileIniDataParser();
@@ -48,11 +49,11 @@ namespace ManageModsAndSavefiles
 
         internal static T FromJsonFile<T>(this string jsonFileName)
             where T : class
-        => jsonFileName.FileHandle().String?.FromJson<T>();
+            => jsonFileName.FileHandle().String?.FromJson<T>();
 
         internal static void ToJsonFile<T>(this string jsonFileName, T o)
             where T : class
-        => jsonFileName.FileHandle().String = o.ToJson();
+            => jsonFileName.FileHandle().String = o.ToJson();
 
         internal static string PathToFactorioStyle(this string name) =>
             name.Replace(SystemWriteDataDir, SystemWriteDataPlaceholder)
@@ -85,6 +86,5 @@ namespace ManageModsAndSavefiles
 
             return default(TValue);
         }
-
     }
 }
