@@ -23,7 +23,7 @@ namespace MmasfUI
 
             var editorViews = SystemConfiguration
                 .ActiveFileNames
-                .Select(file => file.CreateView(this))
+                .Select(file => file.CreateView())
                 .ToArray();
 
             foreach(var editorView in editorViews)

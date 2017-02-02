@@ -85,9 +85,6 @@ namespace MmasfUI
             return result;
         }
 
-        internal static Window CreateSavesView(this UserConfiguration configuration, FileConfiguration fileConfiguration)
-            => new UserConfigurationSavesWindow(configuration, fileConfiguration);
-
         internal static ContextView CreateView(this MmasfContext context)
             => new ContextView(context);
 

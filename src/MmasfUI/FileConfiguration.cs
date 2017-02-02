@@ -9,6 +9,8 @@ namespace MmasfUI
 {
     sealed class FileConfiguration : DumpableObject
     {
+        internal const string SavesType = "Saves";
+
         internal readonly string FileName;
         readonly ValueCache<Persister> PersisterCache;
 
@@ -16,7 +18,7 @@ namespace MmasfUI
         {
             FileName = fileName;
             PersisterCache = new ValueCache<Persister>
-                (() => new Persister(ItemFile("EditorConfiguration")));
+                (() => new Persister(ItemFile("View")));
         }
 
         internal string Status
@@ -31,6 +33,13 @@ namespace MmasfUI
             private set { ItemFile("LastUsed").String = value?.ToString("O"); }
         }
 
+        internal string Type
+        {
+            get { return ItemFile("Type").String; }
+            private set { ItemFile("Type").String = value; }
+        }
+
+
         static DateTime? FromDateTime(string value)
         {
             if(value == null)
@@ -43,17 +52,24 @@ namespace MmasfUI
             return null;
         }
 
-        public Window CreateView(MainContainer parent)
+        internal Window CreateView()
         {
-            NotImplementedMethod(parent);
-            return null;
+            Persister.Register("Type", OnLoadType, OnSaveType);
+            Persister.Load();
+
+            if(Type == null)
+                Type = SavesType;
+
+            var result = new UserConfigurationWindow(this);
+            ConnectToWindow(result);
+            return result;
         }
 
-        internal void ConnectToEditor(Window editor)
+        internal void ConnectToWindow(Window window)
         {
-            Persister.Load();
-            Persister.Register("Type", OnLoadType, OnSaveType);
             Status = "Open";
+            window.Closing += (a, s) => OnClosing();
+            window.Activated += (a, s) => OnActivated();
         }
 
         string OnSaveType()
@@ -65,12 +81,6 @@ namespace MmasfUI
         void OnLoadType(string obj) { NotImplementedMethod(obj); }
 
         Persister Persister => PersisterCache.Value;
-
-        internal void ConnectToFrame(Window frame)
-        {
-            frame.Closing += (a, s) => OnClosing();
-            frame.Activated += (a, s) => OnActivated();
-        }
 
         File ItemFile(string itemName) => ItemFileName(itemName).FileHandle();
 

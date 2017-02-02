@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using hw.DebugFormatter;
 using hw.Helper;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 
 namespace MmasfUI.Common

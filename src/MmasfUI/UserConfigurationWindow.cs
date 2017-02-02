@@ -9,15 +9,21 @@ using MmasfUI.Common;
 
 namespace MmasfUI
 {
-    sealed class UserConfigurationSavesWindow : Window
+    sealed class UserConfigurationWindow : Window
     {
         readonly UserConfiguration Configuration;
+        bool IsSaves;
 
-        public UserConfigurationSavesWindow(UserConfiguration configuration, FileConfiguration fileConfiguration)
+        public UserConfigurationWindow(FileConfiguration fileConfiguration)
         {
+            var configuration = MmasfContext
+                .Instance
+                .UserConfigurations.Single(u => u.Name == fileConfiguration.FileName);
+
+            IsSaves = fileConfiguration.Type == FileConfiguration.SavesType;
             Configuration = configuration;
             Content = CreateGrid();
-            Title = "Configuration " + configuration.Name;
+            Title = fileConfiguration.Type + " of " + configuration.Name.Quote();
             this.InstallPositionPersister(fileConfiguration.PositionPath);
             this.InstallMainMenu(CreateConfigurationMenu());
         }

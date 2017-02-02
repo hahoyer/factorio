@@ -50,7 +50,7 @@
     <Compile Include="Common\Selection.Util.cs" />
     <Compile Include="Persister.cs" />
     <Compile Include="SystemConfiguration.cs" />
-    <Compile Include="UserConfigurationSavesWindow.cs" />
+    <Compile Include="UserConfigurationWindow.cs" />
     <Compile Include="UserConfigurationView.cs" />
     <Compile Include="Extension.cs" />
     <Content Include="MmasfUI.ico" />
