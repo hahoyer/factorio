@@ -28,26 +28,56 @@ namespace MmasfUI
             this.InstallMainMenu(CreateConfigurationMenu());
         }
 
-        Grid CreateGrid()
+        ScrollViewer CreateGrid()
         {
             var result = new Grid();
             result.ColumnDefinitions.Add(IndexColumn);
             result.ColumnDefinitions.Add(NameColumn);
+
+            var index = 0;
             foreach(var save in Configuration.SaveFiles)
+            {
                 result.RowDefinitions.Add(new RowDefinition());
 
-            return result;
+                var indexCell = new TextBlock
+                {
+                    Text = index.ToString()
+                };
+
+                Grid.SetColumn(indexCell, 0);
+                Grid.SetRow(indexCell, index);
+
+                var nameCell = new TextBlock
+                {
+                    Text = save.Name
+                };
+
+                Grid.SetColumn(nameCell, 1);
+                Grid.SetRow(nameCell, index);
+
+                result.Children.Add(indexCell);
+                result.Children.Add(nameCell);
+
+                index++;
+            }
+
+            return new ScrollViewer
+            {
+                Content = result,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto
+            };
         }
 
         static ColumnDefinition IndexColumn => new ColumnDefinition();
         static ColumnDefinition NameColumn => new ColumnDefinition();
 
-        static System.Windows.Controls.Menu CreateConfigurationMenu()
-            => new System.Windows.Controls.Menu
+        static Menu CreateConfigurationMenu()
+            => new Menu
             {
                 Items =
                 {
-                    new System.Windows.Controls.MenuItem
+                    new MenuItem
                     {
                         Header = "_File",
                         Items =
@@ -58,5 +88,4 @@ namespace MmasfUI
                 }
             };
     }
-
 }

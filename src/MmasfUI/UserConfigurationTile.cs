@@ -9,7 +9,7 @@ using MmasfUI.Common;
 
 namespace MmasfUI
 {
-    public sealed class UserConfigurationView : ContentControl, Selection.IAcceptor
+    public sealed class UserConfigurationTile : ContentControl, Selection.IAcceptor
     {
         internal static class Command
         {
@@ -20,7 +20,7 @@ namespace MmasfUI
         readonly UserConfiguration Configuration;
         new readonly ContextView Parent;
 
-        internal UserConfigurationView
+        internal UserConfigurationTile
         (
             MmasfContext context,
             UserConfiguration configuration,

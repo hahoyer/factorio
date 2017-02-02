@@ -56,7 +56,7 @@ namespace MmasfUI
                         Header = "_File",
                         Items =
                         {
-                            "_Select".MenuItem(UserConfigurationView.Command.Select),
+                            "_Select".MenuItem(UserConfigurationTile.Command.Select),
                             "_Exit".MenuItem("Exit")
                         }
                     },
@@ -65,7 +65,7 @@ namespace MmasfUI
                         Header = "_View",
                         Items =
                         {
-                            "_Saves".MenuItem(UserConfigurationView.Command.ViewSaves)
+                            "_Saves".MenuItem(UserConfigurationTile.Command.ViewSaves)
                         }
                     }
                 }

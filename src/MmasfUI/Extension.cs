@@ -67,7 +67,7 @@ namespace MmasfUI
                 .Select
                 (
                     (configuration, index) =>
-                        (UIElement) new UserConfigurationView
+                        (UIElement) new UserConfigurationTile
                         (
                             context,
                             configuration,

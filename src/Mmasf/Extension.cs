@@ -90,14 +90,14 @@ namespace ManageModsAndSavefiles
 
         internal sealed class RegistryItem
         {
-            static IDictionary<string, RegistryKey> Map = new Dictionary<string, RegistryKey>
-            {
-                {"HKEY_CLASSES_ROOT", Microsoft.Win32.Registry.ClassesRoot},
-                {"HKEY_CURRENT_USER", Microsoft.Win32.Registry.CurrentUser},
-                {"HKEY_LOCAL_MACHINE", Microsoft.Win32.Registry.LocalMachine},
-                {"HKEY_CURRENT_CONFIG", Microsoft.Win32.Registry.CurrentConfig}
-            };
-
+            static readonly IDictionary<string, RegistryKey> Map
+                = new Dictionary<string, RegistryKey>
+                {
+                    {"HKEY_CLASSES_ROOT", Microsoft.Win32.Registry.ClassesRoot},
+                    {"HKEY_CURRENT_USER", Microsoft.Win32.Registry.CurrentUser},
+                    {"HKEY_LOCAL_MACHINE", Microsoft.Win32.Registry.LocalMachine},
+                    {"HKEY_CURRENT_CONFIG", Microsoft.Win32.Registry.CurrentConfig}
+                };
 
             readonly RegistryKey Root;
             readonly string Key;
@@ -108,12 +108,8 @@ namespace ManageModsAndSavefiles
                 Key = key;
             }
 
-            public RegistryItem(string fullKey)
-            {
-                var path = fullKey.Split('\\');
-                Root = Map[path[0]];
-                Key = path.Skip(1).Stringify("\\");
-            }
+            public RegistryItem(string[] path)
+                : this(Map[path[0]], path.Skip(1).Stringify("\\")) {}
 
             public T GetValue<T>()
             {
@@ -121,23 +117,38 @@ namespace ManageModsAndSavefiles
                 var key = path.Take(path.Length - 1).Stringify("\\");
                 var value = path.Last();
 
-                using (var item = Root.OpenSubKey(key))
-                    return (T)item?.GetValue(value);
+                using(var item = Root.OpenSubKey(key))
+                    return (T) item?.GetValue(value);
+            }
+
+            public bool IsValidSubKey
+            {
+                get
+                {
+                    using(var item = Root.OpenSubKey(Key))
+                        return item != null;
+                }
+            }
+
+            public bool IsValidValue
+            {
+                get
+                {
+                    var path = Key.Split('\\');
+                    var key = path.Take(path.Length - 1).Stringify("\\");
+                    var value = path.Last();
+
+                    using(var item = Root.OpenSubKey(key))
+                        return item != null 
+                            && item.GetValueNames().Any(name => name == value);
+                }
             }
         }
 
         internal static RegistryItem RegistryCurrentUser(this string fullKey)
-        {
-            return new RegistryItem(Microsoft.Win32.Registry.CurrentUser, fullKey);
-        }
+            => new RegistryItem(Microsoft.Win32.Registry.CurrentUser, fullKey);
 
         internal static RegistryItem Registry(this string fullKey)
-        {
-            var root = fullKey.Split('\\')[0];
-            var key = fullKey.Split('\\').Skip(1).Stringify("\\");
-
-
-            return new RegistryItem(Microsoft.Win32.Registry.CurrentUser, fullKey);
-        }
+            => new RegistryItem(fullKey.Split('\\'));
     }
 }

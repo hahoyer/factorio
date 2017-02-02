@@ -51,7 +51,7 @@
     <Compile Include="Persister.cs" />
     <Compile Include="SystemConfiguration.cs" />
     <Compile Include="UserConfigurationWindow.cs" />
-    <Compile Include="UserConfigurationView.cs" />
+    <Compile Include="UserConfigurationTile.cs" />
     <Compile Include="Extension.cs" />
     <Content Include="MmasfUI.ico" />
     <Content Include="Setup.iss">
