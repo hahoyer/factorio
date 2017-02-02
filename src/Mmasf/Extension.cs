@@ -4,6 +4,7 @@ using System.Linq;
 using hw.Helper;
 using IniParser;
 using IniParser.Model;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 
 namespace ManageModsAndSavefiles
@@ -85,6 +86,58 @@ namespace ManageModsAndSavefiles
                 return result;
 
             return default(TValue);
+        }
+
+        internal sealed class RegistryItem
+        {
+            static IDictionary<string, RegistryKey> Map = new Dictionary<string, RegistryKey>
+            {
+                {"HKEY_CLASSES_ROOT", Microsoft.Win32.Registry.ClassesRoot},
+                {"HKEY_CURRENT_USER", Microsoft.Win32.Registry.CurrentUser},
+                {"HKEY_LOCAL_MACHINE", Microsoft.Win32.Registry.LocalMachine},
+                {"HKEY_CURRENT_CONFIG", Microsoft.Win32.Registry.CurrentConfig}
+            };
+
+
+            readonly RegistryKey Root;
+            readonly string Key;
+
+            public RegistryItem(RegistryKey root, string key)
+            {
+                Root = root;
+                Key = key;
+            }
+
+            public RegistryItem(string fullKey)
+            {
+                var path = fullKey.Split('\\');
+                Root = Map[path[0]];
+                Key = path.Skip(1).Stringify("\\");
+            }
+
+            public T GetValue<T>()
+            {
+                var path = Key.Split('\\');
+                var key = path.Take(path.Length - 1).Stringify("\\");
+                var value = path.Last();
+
+                using (var item = Root.OpenSubKey(key))
+                    return (T)item?.GetValue(value);
+            }
+        }
+
+        internal static RegistryItem RegistryCurrentUser(this string fullKey)
+        {
+            return new RegistryItem(Microsoft.Win32.Registry.CurrentUser, fullKey);
+        }
+
+        internal static RegistryItem Registry(this string fullKey)
+        {
+            var root = fullKey.Split('\\')[0];
+            var key = fullKey.Split('\\').Skip(1).Stringify("\\");
+
+
+            return new RegistryItem(Microsoft.Win32.Registry.CurrentUser, fullKey);
         }
     }
 }

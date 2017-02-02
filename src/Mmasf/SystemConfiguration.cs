@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
-using Microsoft.Win32;
 
 namespace ManageModsAndSavefiles
 {
@@ -11,22 +10,20 @@ namespace ManageModsAndSavefiles
     {
         const string FileNameEnd = "Factorio\\config-path.cfg";
         const string ConfigPathTag = "config-path";
+        const string SteamPathInRegistry = @"HKEY_CURRENT_USER\Software\Valve\Steam\SteamPath";
 
         static readonly string SystemReadDataDir
             = Environment
                 .GetFolderPath(Environment.SpecialFolder.ProgramFiles);
 
-        static string SteamPath
-        {
-            get
-            {
-                using(var steam = Registry.CurrentUser.OpenSubKey("Software\\Valve\\Steam"))
-                    return (string) steam?.GetValue("SteamPath");
-            }
-        }
+        static readonly string SteamPath
+            = SteamPathInRegistry
+                .Registry()
+                .GetValue<string>();
 
         internal static string Path
             => new[] {SteamPath, SystemReadDataDir}
+                .Where(f => f != null)
                 .Select(f => f.FileHandle())
                 .FindFilesThatEndsWith(FileNameEnd).First()
                 .FullName;
