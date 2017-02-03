@@ -11,20 +11,22 @@ namespace ManageModsAndSavefiles
 {
     public sealed class ZipFileHandle : DumpableObject
     {
-        readonly string ArchivePath;
+        readonly ValueCache<ZipArchiveEntry> ZipArchiveEntryCache;
+        readonly ZipArchiveHandle Archive;
         readonly string ItemPath;
 
-        public string ItemName => ItemPath.Split('/').Last();
-        public int Depth => ItemPath.Split('/').Length;
+        internal string ItemName => ItemPath.Split('/').Last();
+        internal int Depth => ItemPath.Split('/').Length;
 
-        public ZipFileHandle(string archivePath, string itemPath = null)
+        internal ZipFileHandle(ZipArchiveHandle archive, string itemPath)
         {
-            ArchivePath = archivePath;
+            Archive = archive;
             ItemPath = itemPath;
+            ZipArchiveEntryCache = new ValueCache<ZipArchiveEntry>(GetZipArchiveEntry);
         }
 
         [DisableDump]
-        public string String
+        internal string String
         {
             get
             {
@@ -33,42 +35,28 @@ namespace ManageModsAndSavefiles
             }
         }
 
-        long Length
-        {
-            get
-            {
-                return
-                    ZipFile.OpenRead(ArchivePath)
-                        .Entries.Single(item => item.FullName == ItemPath)
-                        .Length;
-            }
-        }
+        long Length { get { return Profiler.Measure(() => ZipArchiveEntryCache.Value.Length); } }
 
-        public IEnumerable<ZipFileHandle> Items
-        {
-            get
-            {
-                using(var zipFile = ZipFile.OpenRead(ArchivePath))
-                {
-                    var readOnlyCollection = zipFile.Entries;
-                    return readOnlyCollection
-                        .Select(item => new ZipFileHandle(ArchivePath, item.FullName));
-                }
-            }
-        }
 
-        public Stream Reader
+        ZipArchiveEntry GetZipArchiveEntry() => Profiler.Measure(() => Archive.GetZipArchiveEntry(ItemPath));
+
+        internal Stream Reader
         {
             get
             {
-                var zipArchive = ZipFile.OpenRead(ArchivePath);
-                var zipEntry = zipArchive.Entries.Single(item => item.FullName == ItemPath);
+                var pi = Profiler.Start();
+                var zipEntry = ZipArchiveEntryCache.Value;
+                pi.Next();
                 var zipReader = zipEntry.Open();
+                pi.Next();
                 var reader = new SeekableReader(zipReader, Length);
+                pi.Next();
 
-                return new StreamWithCleanupList(reader, reader, zipReader, zipArchive);
+                var result = new StreamWithCleanupList(reader, reader, zipReader);
+                pi.End();
+                return result;
             }
         }
-        protected override string GetNodeDump() { return ArchivePath + "+" + ItemPath; }
+        protected override string GetNodeDump() { return Archive.Path + "+" + ItemPath; }
     }
 }

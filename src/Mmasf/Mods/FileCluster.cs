@@ -78,7 +78,7 @@ namespace ManageModsAndSavefiles.Mods
             var headerDir = modFileFile.Name.Substring(0, modFileFile.Name.Length - 4);
             return modFileFile
                 .FullName
-                .ZipFileHandle()
+                .ZipHandle()
                 .Items
                 .Single(item=>item.ItemName == FileNameInfoJson && item.Depth == 2)
                 .String;

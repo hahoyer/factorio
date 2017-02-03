@@ -70,6 +70,7 @@
     <Compile Include="StreamWithCleanupList.cs" />
     <Compile Include="SystemConfiguration.cs" />
     <Compile Include="Saves\UserConfiguration.cs" />
+    <Compile Include="ZipArchiveHandle.cs" />
     <Compile Include="ZipFileHandle.cs" />
     <None Include="packages.config">
       <SubType>Designer</SubType>

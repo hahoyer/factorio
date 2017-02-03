@@ -171,20 +171,32 @@ namespace ManageModsAndSavefiles.Saves
         {
             if(DataValue != null)
                 return;
-
-            var reader = LevelDatReader;
+            var pi = Profiler.Start();
+            var reader = Profiler.Measure(() => LevelDatReader);
+            pi.Next();
             reader.UserContext = new UserContext();
+            pi.Next();
             DataValue = reader.GetNext<BinaryData>();
+            pi.End();
         }
 
         [DisableDump]
         internal BinaryRead LevelInitDatReader => BinaryRead(LevelInitDat);
 
         BinaryRead BinaryRead(string fileName)
-            => new BinaryRead(GetFile(fileName).Reader);
+        {
+            var pi = Profiler.Start();
+            var handle = GetFile(fileName);
+            pi.Next();
+            var reader = handle.Reader;
+            pi.Next();
+            var result = new BinaryRead(reader);
+            pi.End();
+            return result;
+        }
 
         [DisableDump]
-        internal BinaryRead LevelDatReader => BinaryRead(LevelDat);
+        public BinaryRead LevelDatReader => BinaryRead(LevelDat);
 
         public sealed class SomeStruct
         {
@@ -219,12 +231,11 @@ namespace ManageModsAndSavefiles.Saves
 
         ZipFileHandle GetFile(string name)
         {
-            var zipFileHandles = Path
-                .ZipFileHandle()
-                .Items;
-            var zipFileHandle = zipFileHandles
-                .Where(item => item.ItemName == name && item.Depth == 2);
-            return zipFileHandle.Single();
+            var fileHandle = Profiler.Measure(() => Path.ZipHandle());
+            var zipFileHandles = Profiler.Measure(() => fileHandle.Items);
+            var zipFileHandle = Profiler.Measure
+                (() => zipFileHandles.Where(item => item.ItemName == name && item.Depth == 2));
+            return Profiler.Measure(() => zipFileHandle.Single());
         }
 
         public ModConflict GetConflict(ModDescription saveMod, Mods.FileCluster mod)

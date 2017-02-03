@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using hw.DebugFormatter;
 using hw.Helper;
 using ManageModsAndSavefiles;
 using ManageModsAndSavefiles.Saves;
@@ -32,26 +33,11 @@ namespace MmasfUI
 
         ScrollViewer CreateGrid()
         {
-            var result = new DataGrid();
+            var result = new DataGrid
+            {
+                ItemsSource = Profiler.Frame(() => Configuration.SaveFiles.Select(s => new FileCluster(s)).ToArray())
+            };
 
-            result.Columns.Add
-            (
-                new DataGridTextColumn
-                {
-                    Binding = new Binding("Name"),
-                    Header = "Name"
-                }
-            );
-            result.Columns.Add
-            (
-                new DataGridTextColumn
-                {
-                    Binding = new Binding("Version"),
-                    Header = "Version"
-                }
-            );
-
-            result.ItemsSource = Configuration.SaveFiles.Select(s => new FileCluster(s)).ToArray();
 
             return new ScrollViewer
             {
@@ -63,8 +49,8 @@ namespace MmasfUI
 
         sealed class FileCluster
         {
-            public string Name;
-            public Version Version;
+            public string Name { get; }
+            public Version Version { get; }
 
             public FileCluster(ManageModsAndSavefiles.Saves.FileCluster fileCluster)
             {

@@ -36,8 +36,11 @@ namespace ManageModsAndSavefiles.Reader
         {
             Tracer.Assert(count < 1000);
             var result = new byte[count];
+            var pi = Profiler.Start();
             Reader.Position = Position;
+            pi.Next();
             Reader.Read(result, 0, count);
+            pi.End();
             return result;
         }
 

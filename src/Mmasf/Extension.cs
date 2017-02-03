@@ -64,7 +64,7 @@ namespace ManageModsAndSavefiles
             name.Replace(SystemWriteDataPlaceholder, SystemWriteDataDir)
                 .Replace("/", "\\");
 
-        public static ZipFileHandle ZipFileHandle(this string name) => new ZipFileHandle(name, null);
+        public static ZipArchiveHandle ZipHandle(this string name) => new ZipArchiveHandle(name);
 
 
         public static TValue? GetValueOrNull<TKey, TValue>
