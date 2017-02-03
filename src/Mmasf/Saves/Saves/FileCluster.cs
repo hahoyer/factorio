@@ -178,13 +178,13 @@ namespace ManageModsAndSavefiles.Saves
         }
 
         [DisableDump]
-        public BinaryRead LevelInitDatReader => BinaryRead(LevelInitDat);
+        internal BinaryRead LevelInitDatReader => BinaryRead(LevelInitDat);
 
         BinaryRead BinaryRead(string fileName)
             => new BinaryRead(GetFile(fileName).Reader);
 
         [DisableDump]
-        public BinaryRead LevelDatReader => BinaryRead(LevelDat);
+        internal BinaryRead LevelDatReader => BinaryRead(LevelDat);
 
         public sealed class SomeStruct
         {
