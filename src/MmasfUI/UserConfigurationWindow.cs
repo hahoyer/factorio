@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Media.Animation;
+using hw.DebugFormatter;
 using hw.Helper;
+using JetBrains.Annotations;
 using ManageModsAndSavefiles;
 using ManageModsAndSavefiles.Saves;
 using MmasfUI.Common;
@@ -52,8 +54,12 @@ namespace MmasfUI
             (
                 () =>
                 {
-                    3000.MilliSeconds().Sleep();
-                //    RefreshData();
+                    Tracer.FlaggedLine("waiting");
+                    10.MilliSeconds().Sleep();
+
+                    Tracer.FlaggedLine("Refreshing");
+                    RefreshData();
+                    Tracer.FlaggedLine("Refreshed");
                 }
             );
 
@@ -67,36 +73,58 @@ namespace MmasfUI
 
         void RefreshData()
         {
-            if (!Dispatcher.CheckAccess()) 
-            {
-                Dispatcher.Invoke(RefreshData);
-                return;
-            }
-
-            foreach (var proxy in Data)
+            Tracer.FlaggedLine("loop");
+            foreach(var proxy in Data)
                 proxy.Refresh();
         }
 
-        sealed class FileClusterProxy
+        sealed class FileClusterProxy : INotifyPropertyChanged
         {
             readonly FileCluster FileCluster;
+            Version VersionValue;
+            TimeSpan DurationValue;
 
             public string Name => FileCluster.Name;
 
-            public Version Version { get; set; }
-            public TimeSpan Duration { get; set; }
+            public Version Version
+            {
+                get { return VersionValue; }
+                set
+                {
+                    VersionValue = value;
+                    OnPropertyChanged1();
+                }
+            }
+            public TimeSpan Duration
+            {
+                get { return DurationValue; }
+                set
+                {
+                    DurationValue = value;
+                    OnPropertyChanged1();
+                }
+            }
 
             public FileClusterProxy(FileCluster fileCluster)
             {
                 FileCluster = fileCluster;
-                Version = fileCluster.Version;
-                Duration = fileCluster.Duration;
+                //Version = fileCluster.Version;
+                //Duration = fileCluster.Duration;
             }
 
             public void Refresh()
             {
                 Version = FileCluster.Version;
                 Duration = FileCluster.Duration;
+                1000.MilliSeconds().Sleep();
+            }
+            public event PropertyChangedEventHandler PropertyChanged;
+            [NotifyPropertyChangedInvocator]
+            void OnPropertyChanged1([CallerMemberName] string propertyName = null)
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+                Tracer.FlaggedLine("waiting");
+                1000.MilliSeconds().Sleep();
             }
         }
 

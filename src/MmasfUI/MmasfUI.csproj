@@ -11,7 +11,9 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="sys.targets" />
+    <None Include="sys.targets">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Mmasf\ManageModsAndSavefiles.csproj">
