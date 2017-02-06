@@ -171,13 +171,10 @@ namespace ManageModsAndSavefiles.Saves
         {
             if(DataValue != null)
                 return;
-            var pi = Profiler.Start();
+
             var reader = Profiler.Measure(() => LevelDatReader);
-            pi.Next();
             reader.UserContext = new UserContext();
-            pi.Next();
             DataValue = reader.GetNext<BinaryData>();
-            pi.End();
         }
 
         [DisableDump]
@@ -185,13 +182,9 @@ namespace ManageModsAndSavefiles.Saves
 
         BinaryRead BinaryRead(string fileName)
         {
-            var pi = Profiler.Start();
             var handle = GetFile(fileName);
-            pi.Next();
             var reader = handle.Reader;
-            pi.Next();
             var result = new BinaryRead(reader);
-            pi.End();
             return result;
         }
 

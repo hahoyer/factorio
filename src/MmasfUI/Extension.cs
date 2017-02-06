@@ -44,18 +44,6 @@ namespace MmasfUI
                     ? Brushes.Black
                     : Brushes.LightGray);
 
-
-        static void SimulateSelections(ContextView view)
-        {
-            while(true)
-                foreach(var configuration in MmasfContext.Instance.UserConfigurations)
-                {
-                    view.Dispatcher.Invoke(() => view.Selection.Current = configuration);
-                    1.Seconds().Sleep();
-                }
-        }
-
-
         internal static ScrollViewer CreateView
             (this MmasfContext context, Selection<UserConfiguration> selection, ContextView parent)
         {

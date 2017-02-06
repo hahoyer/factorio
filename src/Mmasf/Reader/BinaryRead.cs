@@ -10,7 +10,7 @@ using hw.Helper;
 
 namespace ManageModsAndSavefiles.Reader
 {
-    public class BinaryRead : DumpableObject
+    public sealed class BinaryRead : DumpableObject
     {
         readonly Stream Reader;
         public long Position;
@@ -36,11 +36,8 @@ namespace ManageModsAndSavefiles.Reader
         {
             Tracer.Assert(count < 1000);
             var result = new byte[count];
-            var pi = Profiler.Start();
             Reader.Position = Position;
-            pi.Next();
             Reader.Read(result, 0, count);
-            pi.End();
             return result;
         }
 
@@ -123,9 +120,9 @@ namespace ManageModsAndSavefiles.Reader
 
             var accessors = propertyInfo.GetAccessors();
             return accessors.Length == 2
-                   && accessors.All(a => !a.IsPrivate)
-                   && accessors.Any(a => a.ReturnType != typeof(void))
-                   && accessors.Any(a => a.ReturnType == typeof(void));
+                && accessors.All(a => !a.IsPrivate)
+                && accessors.Any(a => a.ReturnType != typeof(void))
+                && accessors.Any(a => a.ReturnType == typeof(void));
         }
 
 
@@ -233,8 +230,7 @@ namespace ManageModsAndSavefiles.Reader
         sealed class InvalidException : Exception
         {
             public InvalidException(string message)
-                : base(message)
-            {}
+                : base(message) { }
         }
 
         object GetNextArray(Type type, MemberInfo member, int level)
@@ -247,10 +243,11 @@ namespace ManageModsAndSavefiles.Reader
 
             if(arraySetup?.MaxCount > 0 && count > arraySetup.MaxCount)
                 throw new InvalidArrayException("Too big array encountered");
+
             var readerType = arraySetup?.Reader;
 
             var elementType = type.GetElementType();
-            var array = System.Array.CreateInstance(elementType, count);
+            var array = Array.CreateInstance(elementType, count);
             foreach(var o in count.Select
             (
                 i => new
@@ -272,8 +269,7 @@ namespace ManageModsAndSavefiles.Reader
         public sealed class InvalidArrayException : Exception
         {
             public InvalidArrayException(string message)
-                : base(message)
-            {}
+                : base(message) { }
         }
 
         internal interface IAdvancer

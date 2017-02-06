@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using hw.DebugFormatter;
+using System.Windows.Media.Animation;
 using hw.Helper;
 using ManageModsAndSavefiles;
 using ManageModsAndSavefiles.Saves;
@@ -16,6 +17,7 @@ namespace MmasfUI
     {
         readonly UserConfiguration Configuration;
         bool IsSaves;
+        readonly FileClusterProxy[] Data;
 
         public UserConfigurationWindow(FileConfiguration fileConfiguration)
         {
@@ -25,7 +27,15 @@ namespace MmasfUI
 
             IsSaves = fileConfiguration.Type == FileConfiguration.SavesType;
             Configuration = configuration;
+
+            Data = Configuration
+                .SaveFiles
+                .Take(10)
+                .Select(s => new FileClusterProxy(s))
+                .ToArray();
+
             Content = CreateGrid();
+
             Title = fileConfiguration.Type + " of " + configuration.Name.Quote();
             this.InstallPositionPersister(fileConfiguration.PositionPath);
             this.InstallMainMenu(CreateConfigurationMenu());
@@ -35,9 +45,17 @@ namespace MmasfUI
         {
             var result = new DataGrid
             {
-                ItemsSource = Profiler.Frame(() => Configuration.SaveFiles.Select(s => new FileCluster(s)).ToArray())
+                ItemsSource = Data
             };
 
+            Task.Factory.StartNew
+            (
+                () =>
+                {
+                    3000.MilliSeconds().Sleep();
+                //    RefreshData();
+                }
+            );
 
             return new ScrollViewer
             {
@@ -47,15 +65,38 @@ namespace MmasfUI
             };
         }
 
-        sealed class FileCluster
+        void RefreshData()
         {
-            public string Name { get; }
-            public Version Version { get; }
-
-            public FileCluster(ManageModsAndSavefiles.Saves.FileCluster fileCluster)
+            if (!Dispatcher.CheckAccess()) 
             {
-                Name = fileCluster.Name;
+                Dispatcher.Invoke(RefreshData);
+                return;
+            }
+
+            foreach (var proxy in Data)
+                proxy.Refresh();
+        }
+
+        sealed class FileClusterProxy
+        {
+            readonly FileCluster FileCluster;
+
+            public string Name => FileCluster.Name;
+
+            public Version Version { get; set; }
+            public TimeSpan Duration { get; set; }
+
+            public FileClusterProxy(FileCluster fileCluster)
+            {
+                FileCluster = fileCluster;
                 Version = fileCluster.Version;
+                Duration = fileCluster.Duration;
+            }
+
+            public void Refresh()
+            {
+                Version = FileCluster.Version;
+                Duration = FileCluster.Duration;
             }
         }
 

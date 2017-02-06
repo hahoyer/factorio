@@ -44,17 +44,11 @@ namespace ManageModsAndSavefiles
         {
             get
             {
-                var pi = Profiler.Start();
                 var zipEntry = ZipArchiveEntryCache.Value;
-                pi.Next();
                 var zipReader = zipEntry.Open();
-                pi.Next();
                 var reader = new SeekableReader(zipReader, Length);
-                pi.Next();
 
-                var result = new StreamWithCleanupList(reader, reader, zipReader);
-                pi.End();
-                return result;
+                return new StreamWithCleanupList(reader, reader, zipReader);
             }
         }
         protected override string GetNodeDump() { return Archive.Path + "+" + ItemPath; }

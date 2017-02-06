@@ -29,16 +29,13 @@ namespace ManageModsAndSavefiles
 
         protected override string GetNodeDump() { return Path; }
 
-        internal ZipArchiveEntry GetZipArchiveEntry(string itemPath) => Profiler.Measure
-        (
-            () =>
-            {
-                var zipArchive = ZipArchive;
-                return zipArchive.GetEntry(itemPath);
-            });
+        internal ZipArchiveEntry GetZipArchiveEntry(string itemPath)
+            => Profiler.Measure(() => ZipArchive.GetEntry(itemPath));
 
-
-        internal ZipArchive ZipArchive => ZipArchiveValue ?? (ZipArchiveValue = ZipFile.OpenRead(Path));
+        ZipArchive ZipArchive
+            => ZipArchiveValue ??
+                (ZipArchiveValue = Profiler.Measure(() => ZipFile.OpenRead(Path)))
+        ;
 
         void IDisposable.Dispose() => ZipArchiveValue?.Dispose();
     }
