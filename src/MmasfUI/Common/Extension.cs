@@ -32,6 +32,7 @@ namespace MmasfUI.Common
         public static TimeSpan MilliSeconds(this int value) => TimeSpan.FromMilliseconds(value);
         public static TimeSpan Seconds(this int value) => TimeSpan.FromSeconds(value);
         public static void WriteLine(this string value) => Tracer.Line(value);
+        public static void WriteFlaggedLine(this string value) => Tracer.FlaggedLine(value);
 
         public static T FromJson<T>(this string jsonText)
             => JsonConvert.DeserializeObject<T>(jsonText);
