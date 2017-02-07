@@ -1,17 +1,17 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
+using ICSharpCode.SharpZipLib.Zip;
 using ManageModsAndSavefiles.Reader;
 
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSavefiles.Compression.Nuget
 {
     public sealed class ZipFileHandle : DumpableObject
     {
-        readonly ValueCache<ZipArchiveEntry> ZipArchiveEntryCache;
+        readonly ValueCache<ZipEntry> ZipArchiveEntryCache;
         readonly ZipArchiveHandle Archive;
         readonly string ItemPath;
 
@@ -22,7 +22,7 @@ namespace ManageModsAndSavefiles
         {
             Archive = archive;
             ItemPath = itemPath;
-            ZipArchiveEntryCache = new ValueCache<ZipArchiveEntry>(GetZipArchiveEntry);
+            ZipArchiveEntryCache = new ValueCache<ZipEntry>(GetZipArchiveEntry);
         }
 
         [DisableDump]
@@ -31,26 +31,28 @@ namespace ManageModsAndSavefiles
             get
             {
                 Tracer.Assert(!string.IsNullOrEmpty(ItemPath));
-                return new BinaryRead(Reader).GetNextString((int) Length);
+                return new BinaryRead(Reader).GetNextString((int)Length);
             }
         }
 
-        long Length { get { return Profiler.Measure(() => ZipArchiveEntryCache.Value.Length); } }
+        long Length { get { return Profiler.Measure(() => ZipArchiveEntryCache.Value.Size); } }
 
 
-        ZipArchiveEntry GetZipArchiveEntry() => Profiler.Measure(() => Archive.GetZipArchiveEntry(ItemPath));
+        ZipEntry GetZipArchiveEntry()
+            => Profiler.Measure(() => Archive.GetZipArchiveEntry(ItemPath));
 
         internal Stream Reader
         {
             get
             {
                 var zipEntry = ZipArchiveEntryCache.Value;
-                var zipReader = zipEntry.Open();
+                var zipReader = Archive.ZipArchive.GetInputStream(zipEntry);
                 var reader = new SeekableReader(zipReader, Length);
 
                 return new StreamWithCleanupList(reader, reader, zipReader);
             }
         }
-        protected override string GetNodeDump() { return Archive.Path + "+" + ItemPath; }
+
+        protected override string GetNodeDump() => Archive.Path + "+" + ItemPath;
     }
 }

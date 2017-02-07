@@ -4,6 +4,7 @@ using System.Linq;
 using hw.Helper;
 using IniParser;
 using IniParser.Model;
+using ManageModsAndSavefiles.Compression.Nuget;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 

@@ -4,8 +4,9 @@ using System.IO.Compression;
 using System.Linq;
 using hw.DebugFormatter;
 
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSavefiles.Compression.Microsoft
 {
+    [Obsolete("",true)]
     public sealed class ZipArchiveHandle : DumpableObject, IDisposable
     {
         IEnumerable<ZipFileHandle> ItemsValue;
@@ -27,7 +28,7 @@ namespace ManageModsAndSavefiles
                 .ToArray();
         }
 
-        protected override string GetNodeDump() { return Path; }
+        protected override string GetNodeDump() => Path;
 
         internal ZipArchiveEntry GetZipArchiveEntry(string itemPath)
             => Profiler.Measure(() => ZipArchive.GetEntry(itemPath));

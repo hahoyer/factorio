@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using hw.DebugFormatter;
 using hw.Helper;
+using ManageModsAndSavefiles.Compression.Nuget;
 using ManageModsAndSavefiles.Mods;
 using ManageModsAndSavefiles.Reader;
 

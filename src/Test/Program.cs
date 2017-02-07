@@ -28,8 +28,15 @@ namespace Test
                 //.ToArray()
                 ;
 
-            Tracer.Line
-                (saveFiles.Select(i => i.ToString()).Stringify("\n").Format(100.StringAligner()));
+            var format = Profiler.Frame
+            (
+                ()=>saveFiles
+                    .Select(i => i.ToString())
+                    .Stringify("\n")
+                    .Format(100.StringAligner())
+            );
+
+            Tracer.Line(format);
 
             //FindDifference(saveFiles);
 
