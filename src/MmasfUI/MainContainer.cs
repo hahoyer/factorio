@@ -18,16 +18,7 @@ namespace MmasfUI
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-
             ShowContextView();
-
-            var editorViews = SystemConfiguration
-                .ActiveFileNames
-                .Select(file => file.CreateView())
-                .ToArray();
-
-            foreach(var editorView in editorViews)
-                editorView.Show();
         }
 
         void ShowContextView()

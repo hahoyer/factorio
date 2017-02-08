@@ -21,13 +21,13 @@ namespace MmasfUI
         bool IsSaves;
         readonly FileClusterProxy[] Data;
 
-        public UserConfigurationWindow(FileConfiguration fileConfiguration)
+        public UserConfigurationWindow(ViewConfiguration viewConfiguration)
         {
             var configuration = MmasfContext
                 .Instance
-                .UserConfigurations.Single(u => u.Name == fileConfiguration.FileName);
+                .UserConfigurations.Single(u => u.Name == viewConfiguration.Name);
 
-            IsSaves = fileConfiguration.Type == FileConfiguration.SavesType;
+            IsSaves = viewConfiguration.Type == ViewConfiguration.SavesType;
             Configuration = configuration;
 
             Data = Configuration
@@ -37,8 +37,8 @@ namespace MmasfUI
 
             Content = CreateGrid();
 
-            Title = fileConfiguration.Type + " of " + configuration.Name.Quote();
-            this.InstallPositionPersister(fileConfiguration.PositionPath);
+            Title = viewConfiguration.Type + " of " + configuration.Name.Quote();
+            this.InstallPositionPersister(viewConfiguration.PositionPath);
             this.InstallMainMenu(CreateConfigurationMenu());
         }
 

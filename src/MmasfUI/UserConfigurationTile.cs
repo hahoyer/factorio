@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 using ManageModsAndSavefiles;
 using MmasfUI.Common;
@@ -16,9 +15,11 @@ namespace MmasfUI
             internal const string Select = "UserConfiguration.Select";
             internal const string ViewSaves = "UserConfiguration.ViewSaves";
         }
+
         readonly MmasfContext Context;
         readonly UserConfiguration Configuration;
         new readonly ContextView Parent;
+        readonly ViewConfiguration ViewConfiguration;
 
         internal UserConfigurationTile
         (
@@ -50,9 +51,12 @@ namespace MmasfUI
                 Selection.List(this, Selection.ViewByOpacity(frame))
             );
 
-
             ContextMenu = CreateContextMenu();
             Content = result;
+
+            ViewConfiguration = new ViewConfiguration(Configuration.Name, ViewConfiguration.SavesType);
+            if(ViewConfiguration.Status == "Open")
+                ViewSaves();
         }
 
         static ContextMenu CreateContextMenu()
@@ -61,15 +65,16 @@ namespace MmasfUI
                 Items =
                 {
                     "Select".MenuItem(Command.Select),
-                    "Show Saves".MenuItem(Command.ViewSaves),
+                    "Show Saves".MenuItem(Command.ViewSaves)
                 }
             };
 
         [Command(Command.ViewSaves)]
         public void ViewSaves()
         {
-            var view = new FileConfiguration(Configuration.Name).CreateView();
-            view.Show();
+            var fileConfigurationView = ViewConfiguration.View;
+            fileConfigurationView.Show();
+            fileConfigurationView.Activate();
         }
 
         [Command(Command.Select)]

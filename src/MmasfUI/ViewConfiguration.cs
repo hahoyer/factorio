@@ -7,18 +7,22 @@ using hw.Helper;
 
 namespace MmasfUI
 {
-    sealed class FileConfiguration : DumpableObject
+    sealed class ViewConfiguration : DumpableObject
     {
         internal const string SavesType = "Saves";
 
-        internal readonly string FileName;
+        internal readonly string Name;
+        internal readonly string Type;
         readonly ValueCache<Persister> PersisterCache;
+        readonly ValueCache<Window> ViewCache;
 
-        public FileConfiguration(string fileName)
+        public ViewConfiguration(string name, string type)
         {
-            FileName = fileName;
+            Name = name;
+            Type = type;
             PersisterCache = new ValueCache<Persister>
                 (() => new Persister(ItemFile("View")));
+            ViewCache = new ValueCache<Window>(CreateView);
         }
 
         internal string Status
@@ -33,13 +37,6 @@ namespace MmasfUI
             private set { ItemFile("LastUsed").String = value?.ToString("O"); }
         }
 
-        internal string Type
-        {
-            get { return ItemFile("Type").String; }
-            private set { ItemFile("Type").String = value; }
-        }
-
-
         static DateTime? FromDateTime(string value)
         {
             if(value == null)
@@ -52,14 +49,10 @@ namespace MmasfUI
             return null;
         }
 
-        internal Window CreateView()
+        internal Window View => ViewCache.Value;
+
+        Window CreateView()
         {
-            Persister.Register("Type", OnLoadType, OnSaveType);
-            Persister.Load();
-
-            if(Type == null)
-                Type = SavesType;
-
             var result = new UserConfigurationWindow(this);
             ConnectToWindow(result);
             return result;
@@ -72,24 +65,21 @@ namespace MmasfUI
             window.Activated += (a, s) => OnActivated();
         }
 
-        string OnSaveType()
-        {
-            NotImplementedMethod();
-            return null;
-        }
-
-        void OnLoadType(string obj) { NotImplementedMethod(obj); }
-
-        Persister Persister => PersisterCache.Value;
+        Persister ViewPersister => PersisterCache.Value;
 
         File ItemFile(string itemName) => ItemFileName(itemName).FileHandle();
 
         string ItemFileName(string itemName)
             => SystemConfiguration
-                .GetConfigurationPath(FileName)
+                .GetConfigurationPath(Name + "." + Type)
                 .PathCombine(itemName);
 
-        void OnClosing() { Status = "Closed"; }
+        void OnClosing()
+        {
+            Status = "Closed";
+            ViewCache.IsValid = false;
+        }
+
         void OnActivated() { LastUsed = DateTime.Now; }
 
         internal string PositionPath => ItemFileName("Position");

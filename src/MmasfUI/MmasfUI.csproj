@@ -43,7 +43,7 @@
     <Compile Include="Common\CommandManager.cs" />
     <Compile Include="ContextView.cs" />
     <Compile Include="Common\Extension.cs" />
-    <Compile Include="FileConfiguration.cs" />
+    <Compile Include="ViewConfiguration.cs" />
     <Compile Include="FilePersistenceHandler.cs" />
     <Compile Include="IPersitenceHandler.cs" />
     <Compile Include="MainContainer.cs" />
