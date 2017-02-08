@@ -146,7 +146,7 @@ namespace MmasfUI.Common
         }
 
 
-        internal static void InvokeIfRequired(this DispatcherObject control, Action action)
+        internal static void SynchronizedInvoke(this DispatcherObject control, Action action)
         {
             if(control.Dispatcher.CheckAccess())
                 action();

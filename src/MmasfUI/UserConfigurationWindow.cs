@@ -21,7 +21,7 @@ namespace MmasfUI
         readonly UserConfiguration Configuration;
         bool IsSaves;
         readonly FileClusterProxy[] Data;
-        TextBlock StatusTextControl;
+        readonly StatusBar StatusBar = new StatusBar();
 
         public UserConfigurationWindow(ViewConfiguration viewConfiguration)
         {
@@ -30,7 +30,6 @@ namespace MmasfUI
                 .UserConfigurations.Single(u => u.Name == viewConfiguration.Name);
 
             IsSaves = viewConfiguration.Type == ViewConfiguration.SavesType;
-            StatusTextControl = new TextBlock();
             Configuration = configuration;
 
             Data = Configuration
@@ -43,7 +42,7 @@ namespace MmasfUI
             Title = viewConfiguration.Type + " of " + configuration.Name.Quote();
             this.InstallPositionPersister(viewConfiguration.PositionPath);
             this.InstallMainMenu(CreateMenu());
-            this.InstallStatusLine(CreateStatusLine());
+            this.InstallStatusLine(StatusBar);
         }
 
         ScrollViewer CreateGrid()
@@ -106,17 +105,10 @@ namespace MmasfUI
                 {
                     proxy.Refresh();
                     current++;
-                    RefreshStatus(current + " of " + count);
+                    StatusBar.Text = current + " of " + count;
                 });
 
-            RefreshStatus(count.ToString());
-        }
-
-
-
-        void RefreshStatus(string text)
-        {
-            this.InvokeIfRequired(()=>StatusTextControl.Text = text);
+            StatusBar.Text = count.ToString();
         }
 
         public sealed class MyTimeSpan : DumpableObject, INotifyPropertyChanged
@@ -160,14 +152,6 @@ namespace MmasfUI
 
             void OnPropertyChanged()
                 => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
-        }
-
-        UIElement CreateStatusLine()
-        {
-            var result = new StatusBar();
-            StatusTextControl = new TextBlock();
-            result.Items.Add(StatusTextControl);
-            return result;
         }
 
 
