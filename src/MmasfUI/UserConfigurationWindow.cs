@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using hw.DebugFormatter;
 using hw.Helper;
@@ -20,6 +21,7 @@ namespace MmasfUI
         readonly UserConfiguration Configuration;
         bool IsSaves;
         readonly FileClusterProxy[] Data;
+        TextBlock StatusTextControl;
 
         public UserConfigurationWindow(ViewConfiguration viewConfiguration)
         {
@@ -28,6 +30,7 @@ namespace MmasfUI
                 .UserConfigurations.Single(u => u.Name == viewConfiguration.Name);
 
             IsSaves = viewConfiguration.Type == ViewConfiguration.SavesType;
+            StatusTextControl = new TextBlock();
             Configuration = configuration;
 
             Data = Configuration
@@ -39,7 +42,8 @@ namespace MmasfUI
 
             Title = viewConfiguration.Type + " of " + configuration.Name.Quote();
             this.InstallPositionPersister(viewConfiguration.PositionPath);
-            this.InstallMainMenu(CreateConfigurationMenu());
+            this.InstallMainMenu(CreateMenu());
+            this.InstallStatusLine(CreateStatusLine());
         }
 
         ScrollViewer CreateGrid()
@@ -94,7 +98,25 @@ namespace MmasfUI
         void RefreshData()
         {
             Tracer.FlaggedLine("loop");
-            Parallel.ForEach(Data, proxy => proxy.Refresh());
+            var count = Data.Length;
+            var current = 0;
+            Parallel.ForEach
+            (
+                Data, proxy =>
+                {
+                    proxy.Refresh();
+                    current++;
+                    RefreshStatus(current + " of " + count);
+                });
+
+            RefreshStatus(count.ToString());
+        }
+
+
+
+        void RefreshStatus(string text)
+        {
+            this.InvokeIfRequired(()=>StatusTextControl.Text = text);
         }
 
         public sealed class MyTimeSpan : DumpableObject, INotifyPropertyChanged
@@ -140,7 +162,16 @@ namespace MmasfUI
                 => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
         }
 
-        static Menu CreateConfigurationMenu()
+        UIElement CreateStatusLine()
+        {
+            var result = new StatusBar();
+            StatusTextControl = new TextBlock();
+            result.Items.Add(StatusTextControl);
+            return result;
+        }
+
+
+        static Menu CreateMenu()
             => new Menu
             {
                 Items =

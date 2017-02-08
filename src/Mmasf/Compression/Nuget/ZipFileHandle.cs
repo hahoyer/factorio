@@ -31,15 +31,13 @@ namespace ManageModsAndSavefiles.Compression.Nuget
             get
             {
                 Tracer.Assert(!string.IsNullOrEmpty(ItemPath));
-                return new BinaryRead(Reader).GetNextString((int)Length);
+                return new BinaryRead(Reader).GetNextString((int) Length);
             }
         }
 
-        long Length { get { return Profiler.Measure(() => ZipArchiveEntryCache.Value.Size); } }
+        long Length => ZipArchiveEntryCache.Value.Size;
 
-
-        ZipEntry GetZipArchiveEntry()
-            => Profiler.Measure(() => Archive.GetZipArchiveEntry(ItemPath));
+        ZipEntry GetZipArchiveEntry() => Archive.GetZipArchiveEntry(ItemPath);
 
         internal Stream Reader
         {
@@ -48,7 +46,6 @@ namespace ManageModsAndSavefiles.Compression.Nuget
                 var zipEntry = ZipArchiveEntryCache.Value;
                 var zipReader = Archive.ZipArchive.GetInputStream(zipEntry);
                 var reader = new SeekableReader(zipReader, Length);
-
                 return new StreamWithCleanupList(reader, reader, zipReader);
             }
         }

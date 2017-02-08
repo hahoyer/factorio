@@ -30,10 +30,11 @@ namespace Test
 
             var format = Profiler.Frame
             (
-                ()=>saveFiles
-                    .Select(i => i.ToString())
-                    .Stringify("\n")
-                    .Format(100.StringAligner())
+                () =>
+                    saveFiles
+                        .Select(i => i.ToString())
+                        .Stringify("\n")
+                        .Format(100.StringAligner())
             );
 
             Tracer.Line(format);

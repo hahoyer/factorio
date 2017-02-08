@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using hw.DebugFormatter;
 using hw.Helper;
 using Microsoft.Win32;
@@ -116,6 +117,20 @@ namespace MmasfUI.Common
             DockPanel.SetDock(content, Dock.Bottom);
         }
 
+        internal static void InstallStatusLine(this Window container, UIElement line)
+        {
+            var content = (UIElement)container.Content;
+            var d = new DockPanel();
+            d.Children.Add(line);
+            DockPanel.SetDock(line, Dock.Bottom);
+            container.Content = d;
+            if (content == null)
+                return;
+
+            d.Children.Add(content);
+            DockPanel.SetDock(content, Dock.Top);
+        }
+
         internal static void InstallPositionPersister(this Window main, string configFileName)
         {
             new PositionConfig
@@ -129,5 +144,15 @@ namespace MmasfUI.Common
         {
             return value.Select(ToValidFileChar).Aggregate("", (c, n) => c + n);
         }
+
+
+        internal static void InvokeIfRequired(this DispatcherObject control, Action action)
+        {
+            if(control.Dispatcher.CheckAccess())
+                action();
+            else
+                control.Dispatcher.Invoke(action);
+        }
+
     }
 }
