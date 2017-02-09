@@ -11,29 +11,27 @@ using hw.DebugFormatter;
 using hw.Helper;
 using JetBrains.Annotations;
 using ManageModsAndSavefiles;
-using ManageModsAndSavefiles.Saves;
+using ManageModsAndSavefiles.Mods;
 using MmasfUI.Common;
 
 namespace MmasfUI
 {
-    sealed class UserConfigurationWindow : Window
+    sealed class ModsWindow : Window
     {
         readonly UserConfiguration Configuration;
-        bool IsSaves;
         readonly FileClusterProxy[] Data;
         readonly StatusBar StatusBar = new StatusBar();
 
-        public UserConfigurationWindow(ViewConfiguration viewConfiguration)
+        public ModsWindow(ViewConfiguration viewConfiguration)
         {
             var configuration = MmasfContext
                 .Instance
                 .UserConfigurations.Single(u => u.Name == viewConfiguration.Name);
 
-            IsSaves = viewConfiguration.Type == ViewConfiguration.SavesType;
             Configuration = configuration;
 
             Data = Configuration
-                .SaveFiles
+                .ModFiles
                 .Select(s => new FileClusterProxy(s))
                 .ToArray();
 
@@ -56,20 +54,6 @@ namespace MmasfUI
 
             result.ItemsSource = Data;
 
-            Task.Factory.StartNew
-            (
-                () =>
-                {
-                    Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
-                    "waiting".WriteFlaggedLine();
-                    100.MilliSeconds().Sleep();
-
-                    Tracer.FlaggedLine("Refreshing");
-                    RefreshData();
-                    Tracer.FlaggedLine("Refreshed");
-                }
-            );
-
             return new ScrollViewer
             {
                 Content = result,
@@ -84,18 +68,13 @@ namespace MmasfUI
 
         static void OnAutoGeneratingColumns(DataGridAutoGeneratingColumnEventArgs args)
         {
-            var column = (DataGridTextColumn)args.Column;
-            var binding = ((Binding) column.Binding);
+            var column = args.Column as DataGridTextColumn;
 
-            if (args.PropertyType == typeof(TimeSpanProxy))
-            {
-                binding.Path.Path += ".DisplayValue";
+            if(column == null)
+                return;
 
-                column.SortMemberPath += ".Value";
-                column.CanUserSort = true;
-            }
-
-            if(args.PropertyType == typeof(DateTime))
+            var binding = (Binding)column.Binding;
+            if (args.PropertyType == typeof(DateTime))
             {
                 binding.StringFormat = "u";
                 column.CanUserSort = true;
@@ -108,72 +87,22 @@ namespace MmasfUI
             }
         }
 
-        void RefreshData()
-        {
-            Tracer.FlaggedLine("loop");
-            var count = Data.Length;
-            var current = 0;
-            Parallel.ForEach
-            (
-                Data,
-                proxy =>
-                {
-                    proxy.Refresh();
-                    current++;
-                    StatusBar.Text = current + " of " + count;
-                });
-
-            StatusBar.Text = count.ToString();
-        }
-
-        public sealed class TimeSpanProxy : DumpableObject, INotifyPropertyChanged
-        {
-            [UsedImplicitly]
-            public TimeSpan Value { get; }
-
-            public TimeSpanProxy(TimeSpan value)
-            {
-                Value = value;
-                OnPropertyChanged();
-            }
-
-            [UsedImplicitly]
-            public string DisplayValue => Value.Format3Digits();
-
-            public override string ToString() => Value.Format3Digits();
-
-            public event PropertyChangedEventHandler PropertyChanged;
-
-            void OnPropertyChanged()
-                => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
-        }
-
         sealed class FileClusterProxy : INotifyPropertyChanged
         {
             readonly FileCluster Data;
-            FileCluster DataIfRead => Data.IsDataRead ? Data : null;
 
             [UsedImplicitly]
-            public DateTime Created => Data.Created;
+            public bool IsEnabled => Data.IsEnabled == true;
             [UsedImplicitly]
             public string Name => Data.Name;
             [UsedImplicitly]
-            public TimeSpanProxy Duration { get; set; }
+            public string Title=> Data.Title;
             [UsedImplicitly]
-            public Version Version => DataIfRead?.Version;
-            [UsedImplicitly]
-            public string ScenarioName => DataIfRead?.ScenarioName;
-            [UsedImplicitly]
-            public string MapName => DataIfRead?.MapName;
-            [UsedImplicitly]
-            public string CampaignName => DataIfRead?.CampaignName;
+            public Version Version => Data.Version;
 
-            public FileClusterProxy(FileCluster data) { Data = data; }
-
-            public void Refresh()
+            public FileClusterProxy(FileCluster data)
             {
-                Data.IsDataRead = true;
-                Duration = new TimeSpanProxy(Data.Duration);
+                Data = data;
                 OnPropertyChanged();
             }
 

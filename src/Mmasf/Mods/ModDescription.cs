@@ -24,8 +24,8 @@ namespace ManageModsAndSavefiles.Mods
                         reader.GetNextString<int>(),
                         new Version
                         (
-                            reader.GetNext<short>(), 
-                            reader.GetNext<short>(), 
+                            reader.GetNext<short>(),
+                            reader.GetNext<short>(),
                             reader.GetNext<short>()
                         )
                     );

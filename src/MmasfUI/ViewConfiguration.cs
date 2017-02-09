@@ -9,20 +9,24 @@ namespace MmasfUI
 {
     sealed class ViewConfiguration : DumpableObject
     {
-        internal const string SavesType = "Saves";
+        internal enum TypeEnum
+        {
+            Saves,
+            Mods
+        }
 
         internal readonly string Name;
-        internal readonly string Type;
+        internal readonly TypeEnum Type;
         readonly ValueCache<Persister> PersisterCache;
         readonly ValueCache<Window> ViewCache;
 
-        public ViewConfiguration(string name, string type)
+        public ViewConfiguration(string name, TypeEnum type)
         {
             Name = name;
             Type = type;
             PersisterCache = new ValueCache<Persister>
                 (() => new Persister(ItemFile("View")));
-            ViewCache = new ValueCache<Window>(CreateView);
+            ViewCache = new ValueCache<Window>(CreateAndConnectView);
         }
 
         internal string Status
@@ -51,11 +55,24 @@ namespace MmasfUI
 
         internal Window View => ViewCache.Value;
 
-        Window CreateView()
+        Window CreateAndConnectView()
         {
-            var result = new UserConfigurationWindow(this);
+            var result = CreateView();
             ConnectToWindow(result);
             return result;
+        }
+
+        Window CreateView()
+        {
+            switch(Type)
+            {
+                case TypeEnum.Saves:
+                    return new SavesWindow(this);
+                case TypeEnum.Mods:
+                    return new ModsWindow(this);
+            }
+
+            return null;
         }
 
         internal void ConnectToWindow(Window window)

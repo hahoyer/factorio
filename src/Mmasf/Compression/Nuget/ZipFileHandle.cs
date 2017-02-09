@@ -9,14 +9,14 @@ using ManageModsAndSavefiles.Reader;
 
 namespace ManageModsAndSavefiles.Compression.Nuget
 {
-    public sealed class ZipFileHandle : DumpableObject
+    public sealed class ZipFileHandle : DumpableObject, IZipFileHandle
     {
         readonly ValueCache<ZipEntry> ZipArchiveEntryCache;
         readonly ZipArchiveHandle Archive;
         readonly string ItemPath;
 
-        internal string ItemName => ItemPath.Split('/').Last();
-        internal int Depth => ItemPath.Split('/').Length;
+        string IZipFileHandle.ItemName => ItemPath.Split('/').Last();
+        int IZipFileHandle.Depth => ItemPath.Split('/').Length;
 
         internal ZipFileHandle(ZipArchiveHandle archive, string itemPath)
         {
@@ -25,8 +25,7 @@ namespace ManageModsAndSavefiles.Compression.Nuget
             ZipArchiveEntryCache = new ValueCache<ZipEntry>(GetZipArchiveEntry);
         }
 
-        [DisableDump]
-        internal string String
+        string IZipFileHandle.String
         {
             get
             {
@@ -39,7 +38,9 @@ namespace ManageModsAndSavefiles.Compression.Nuget
 
         ZipEntry GetZipArchiveEntry() => Archive.GetZipArchiveEntry(ItemPath);
 
-        internal Stream Reader
+        Stream IZipFileHandle.Reader => Reader;
+
+        Stream Reader
         {
             get
             {

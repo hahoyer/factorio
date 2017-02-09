@@ -4,6 +4,7 @@ using System.Linq;
 using hw.Helper;
 using IniParser;
 using IniParser.Model;
+using ManageModsAndSavefiles.Compression;
 using ManageModsAndSavefiles.Compression.Nuget;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -65,8 +66,11 @@ namespace ManageModsAndSavefiles
             name.Replace(SystemWriteDataPlaceholder, SystemWriteDataDir)
                 .Replace("/", "\\");
 
-        public static ZipArchiveHandle ZipHandle(this string name) => new ZipArchiveHandle(name);
-
+        public static IZipArchiveHandle ZipHandle(this string name, bool quirks = false)
+            =>
+                quirks
+                    ? (IZipArchiveHandle) new Compression.Microsoft.ZipArchiveHandle(name)
+                    : new ZipArchiveHandle(name);
 
         public static TValue? GetValueOrNull<TKey, TValue>
             (this IDictionary<TKey, TValue> dictionary, TKey target)
@@ -110,7 +114,7 @@ namespace ManageModsAndSavefiles
             }
 
             public RegistryItem(string[] path)
-                : this(Map[path[0]], path.Skip(1).Stringify("\\")) {}
+                : this(Map[path[0]], path.Skip(1).Stringify("\\")) { }
 
             public T GetValue<T>()
             {
@@ -140,8 +144,8 @@ namespace ManageModsAndSavefiles
                     var value = path.Last();
 
                     using(var item = Root.OpenSubKey(key))
-                        return item != null 
-                            && item.GetValueNames().Any(name => name == value);
+                        return item != null
+                               && item.GetValueNames().Any(name => name == value);
                 }
             }
         }

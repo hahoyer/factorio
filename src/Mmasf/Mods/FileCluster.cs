@@ -75,12 +75,24 @@ namespace ManageModsAndSavefiles.Mods
 
         static string GetInfoJSonFromZipFile(File modFileFile)
         {
+            try
+            {
+                return GetInfoJSonFromZipFile(modFileFile, false);
+            }
+            catch
+            {
+                return GetInfoJSonFromZipFile(modFileFile, true);
+            }
+        }
+
+        static string GetInfoJSonFromZipFile(File modFileFile, bool quirks)
+        {
             var headerDir = modFileFile.Name.Substring(0, modFileFile.Name.Length - 4);
             return modFileFile
                 .FullName
-                .ZipHandle()
+                .ZipHandle(quirks)
                 .Items
-                .Single(item=>item.ItemName == FileNameInfoJson && item.Depth == 2)
+                .Single(item => item.ItemName == FileNameInfoJson && item.Depth == 2)
                 .String;
         }
 
@@ -94,6 +106,10 @@ namespace ManageModsAndSavefiles.Mods
         public readonly ModDescription Description;
         public readonly InfoJSon InfoJSon;
         public readonly bool? IsEnabled;
+
+        public string Name =>InfoJSon.Name;
+        public string Title=> InfoJSon.Title;
+        public Version Version => new Version(InfoJSon.Version);
 
         FileCluster(File fileHandle, bool? isEnabled, int configIndex, ModDescription description, InfoJSon infoJSon)
         {

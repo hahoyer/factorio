@@ -14,15 +14,31 @@ namespace ManageModsAndSavefiles.Mods
             if(ReferenceEquals(this, other))
                 return true;
 
-            return string.Equals(Author, other.Author)
-                && string.Equals(Contact, other.Contact)
-                && Equals(Dependencies, other.Dependencies)
-                && string.Equals(Description, other.Description)
-                && string.Equals(FactorioVersion, other.FactorioVersion)
-                && string.Equals(Homepage, other.Homepage)
-                && string.Equals(Name, other.Name)
-                && string.Equals(Title, other.Title)
-                && string.Equals(Version, other.Version);
+            if(!string.Equals(Author, other.Author))
+                return false;
+            if(!string.Equals(Contact, other.Contact))
+                return false;
+
+            if(Dependencies != other.Dependencies)
+            {
+                if (Dependencies.Length != other.Dependencies.Length)
+                    return false;
+                if (Dependencies.Any(d => !other.Dependencies.Contains(d)))
+                    return false;
+
+            }
+
+            if (!string.Equals(Description, other.Description))
+                return false;
+            if(!string.Equals(FactorioVersion, other.FactorioVersion))
+                return false;
+            if(!string.Equals(Homepage, other.Homepage))
+                return false;
+            if(!string.Equals(Name, other.Name))
+                return false;
+            if(!string.Equals(Title, other.Title))
+                return false;
+            return string.Equals(Version, other.Version);
         }
 
         public override bool Equals(object obj)

@@ -43,6 +43,7 @@
     <Compile Include="Common\CommandManager.cs" />
     <Compile Include="ContextView.cs" />
     <Compile Include="Common\Extension.cs" />
+    <Compile Include="ModsWindow.cs" />
     <Compile Include="StatusBar.cs" />
     <Compile Include="ViewConfiguration.cs" />
     <Compile Include="FilePersistenceHandler.cs" />
@@ -53,7 +54,7 @@
     <Compile Include="Common\Selection.Util.cs" />
     <Compile Include="Persister.cs" />
     <Compile Include="SystemConfiguration.cs" />
-    <Compile Include="UserConfigurationWindow.cs" />
+    <Compile Include="SavesWindow.cs" />
     <Compile Include="UserConfigurationTile.cs" />
     <Compile Include="Extension.cs" />
     <Content Include="MmasfUI.ico" />

@@ -3,22 +3,22 @@ using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
 using hw.DebugFormatter;
+using ManageModsAndSavefiles.Compression.Nuget;
 
 namespace ManageModsAndSavefiles.Compression.Microsoft
 {
-    [Obsolete("",true)]
-    public sealed class ZipArchiveHandle : DumpableObject, IDisposable
+    public sealed class ZipArchiveHandle : DumpableObject, IDisposable, IZipArchiveHandle
     {
-        IEnumerable<ZipFileHandle> ItemsValue;
+        IEnumerable<IZipFileHandle> ItemsValue;
         ZipArchive ZipArchiveValue;
 
         internal readonly string Path;
 
         internal ZipArchiveHandle(string path) { Path = path; }
 
-        internal IEnumerable<ZipFileHandle> Items => ItemsValue ?? (ItemsValue = GetItems());
+        IEnumerable<IZipFileHandle> IZipArchiveHandle.Items => ItemsValue ?? (ItemsValue = GetItems());
 
-        IEnumerable<ZipFileHandle> GetItems()
+        IEnumerable<IZipFileHandle> GetItems()
         {
             var zipFile = ZipArchive;
             // ReSharper disable once AccessToDisposedClosure

@@ -3,14 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
+using ICSharpCode.SharpZipLib.Zip;
 using ManageModsAndSavefiles;
+using ManageModsAndSavefiles.Compression.Microsoft;
 using ManageModsAndSavefiles.Saves;
 
 namespace Test
 {
     class Program
     {
-        public static void Main(string[] args)
+        public static void Main(string[] args) { Error788(); }
+
+        static void Error788()
+        {
+            var f = System.IO.File.OpenRead(@"c:\Users\hoyer\AppData\Roaming\Factorio\plain\mods\autofill_1.4.6.zip");
+            var z = new ZipFile(f);
+            var ze = z.GetEntry("autofill_1.4.6/info.json");
+            var r = z.GetInputStream(ze);
+
+        }
+
+        static void AllSorts()
         {
             var context = MmasfContext.Instance;
             Tracer.Line(context.FactorioInformation);

@@ -11,6 +11,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AssemblyInfo.tt</DependentUpon>
     </Compile>
+    <Compile Include="Compression\IZipArchiveHandle.cs" />
+    <Compile Include="Compression\IZipFileHandle.cs" />
     <Compile Include="Compression\Nuget\ZipArchiveHandle.cs" />
     <Compile Include="Compression\Nuget\ZipFileHandle.cs" />
     <Compile Include="Reader\ArrayItem.cs" />

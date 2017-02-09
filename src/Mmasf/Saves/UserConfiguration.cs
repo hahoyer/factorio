@@ -74,7 +74,7 @@ namespace ManageModsAndSavefiles
             return fileHandle
                 .Items
                 .Where(item => !item.IsDirectory && item.Extension.ToLower() == ".zip")
-                .Select(item => new Saves.FileCluster(item.FullName, Parent))
+                .Select(item => new Saves.FileCluster(item.FullName, this))
                 .ToArray();
         }
 
@@ -114,13 +114,7 @@ namespace ManageModsAndSavefiles
 
         public IEnumerable<ModConflict> SaveFileConflicts 
             => SaveFiles
-            .SelectMany(GetConflicts);
-
-        IEnumerable<ModConflict> GetConflicts(Saves.FileCluster save)
-            => save
-                .Mods
-                .Merge(ModFiles, arg => arg.Name, arg => arg.Description.Name)
-                .SelectMany(item => save.GetConflict(item.Item2, item.Item3).NullableToArray());
+            .SelectMany(save => save.GetConflicts());
 
         public void InitializeFrom(UserConfiguration source)
             =>

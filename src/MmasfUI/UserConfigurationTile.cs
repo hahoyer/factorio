@@ -14,12 +14,14 @@ namespace MmasfUI
         {
             internal const string Select = "UserConfiguration.Select";
             internal const string ViewSaves = "UserConfiguration.ViewSaves";
+            internal const string ViewMods = "UserConfiguration.ViewMods";
         }
 
         readonly MmasfContext Context;
         readonly UserConfiguration Configuration;
         new readonly ContextView Parent;
-        readonly ViewConfiguration ViewConfiguration;
+        readonly ViewConfiguration SavesConfiguration;
+        readonly ViewConfiguration ModsConfiguration;
 
         internal UserConfigurationTile
         (
@@ -54,9 +56,13 @@ namespace MmasfUI
             ContextMenu = CreateContextMenu();
             Content = result;
 
-            ViewConfiguration = new ViewConfiguration(Configuration.Name, ViewConfiguration.SavesType);
-            if(ViewConfiguration.Status == "Open")
+            SavesConfiguration = new ViewConfiguration(Configuration.Name, ViewConfiguration.TypeEnum.Saves);
+            if(SavesConfiguration.Status == "Open")
                 ViewSaves();
+
+            ModsConfiguration = new ViewConfiguration(Configuration.Name, ViewConfiguration.TypeEnum.Mods);
+            if (ModsConfiguration.Status == "Open")
+                ViewMods();
         }
 
         static ContextMenu CreateContextMenu()
@@ -64,15 +70,24 @@ namespace MmasfUI
             {
                 Items =
                 {
-                    "Select".MenuItem(Command.Select),
-                    "Show Saves".MenuItem(Command.ViewSaves)
+                    "S_elect".MenuItem(Command.Select),
+                    "Show _Saves".MenuItem(Command.ViewSaves),
+                    "Show _Mods".MenuItem(Command.ViewMods)
                 }
             };
 
         [Command(Command.ViewSaves)]
         public void ViewSaves()
         {
-            var fileConfigurationView = ViewConfiguration.View;
+            var fileConfigurationView = SavesConfiguration.View;
+            fileConfigurationView.Show();
+            fileConfigurationView.Activate();
+        }
+
+        [Command(Command.ViewMods)]
+        public void ViewMods()
+        {
+            var fileConfigurationView = ModsConfiguration.View;
             fileConfigurationView.Show();
             fileConfigurationView.Activate();
         }

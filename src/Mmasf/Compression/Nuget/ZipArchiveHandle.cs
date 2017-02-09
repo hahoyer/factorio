@@ -7,18 +7,19 @@ using ICSharpCode.SharpZipLib.Zip;
 
 namespace ManageModsAndSavefiles.Compression.Nuget
 {
-    public sealed class ZipArchiveHandle : DumpableObject
+    public sealed class ZipArchiveHandle : DumpableObject, IZipArchiveHandle
+
     {
-        IEnumerable<ZipFileHandle> ItemsValue;
+        IEnumerable<IZipFileHandle> ItemsValue;
         ZipFile ZipArchiveValue;
 
         internal readonly string Path;
 
         internal ZipArchiveHandle(string path) { Path = path; }
 
-        internal IEnumerable<ZipFileHandle> Items => ItemsValue ?? (ItemsValue = GetItems());
+        IEnumerable<IZipFileHandle> IZipArchiveHandle.Items => ItemsValue ?? (ItemsValue = GetItems());
 
-        IEnumerable<ZipFileHandle> GetItems()
+        IEnumerable<IZipFileHandle> GetItems()
         {
             return ZipArchive
                 .Cast<ZipEntry>()

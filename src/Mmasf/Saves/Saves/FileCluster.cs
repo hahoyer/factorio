@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
+using ManageModsAndSavefiles.Compression;
 using ManageModsAndSavefiles.Compression.Nuget;
 using ManageModsAndSavefiles.Mods;
 using ManageModsAndSavefiles.Reader;
@@ -15,11 +16,11 @@ namespace ManageModsAndSavefiles.Saves
         const string LevelDat = "level.dat";
 
         readonly string Path;
-        readonly MmasfContext Parent;
+        readonly UserConfiguration Parent;
 
         BinaryData DataValue;
 
-        public FileCluster(string path, MmasfContext parent)
+        public FileCluster(string path, UserConfiguration parent)
         {
             Path = path;
             Parent = parent;
@@ -118,7 +119,7 @@ namespace ManageModsAndSavefiles.Saves
             return result;
         }
 
-        ZipFileHandle GetFile(string name)
+        IZipFileHandle GetFile(string name)
         {
             var fileHandle = Profiler.Measure(() => Path.ZipHandle());
             var zipFileHandles = Profiler.Measure(() => fileHandle.Items);
@@ -126,5 +127,10 @@ namespace ManageModsAndSavefiles.Saves
                 (() => zipFileHandles.Where(item => item.ItemName == name && item.Depth == 2));
             return Profiler.Measure(() => zipFileHandle.Single());
         }
+
+        internal IEnumerable<ModConflict> GetConflicts()
+            => Mods
+                .Merge(Parent.ModFiles, arg => arg.Name, arg => arg.Description.Name)
+                .SelectMany(item => GetConflict(item.Item2, item.Item3).NullableToArray());
     }
 }

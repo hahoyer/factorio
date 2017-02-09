@@ -56,7 +56,8 @@ namespace MmasfUI
                         Header = "_View",
                         Items =
                         {
-                            "_Saves".MenuItem(UserConfigurationTile.Command.ViewSaves)
+                            "_Saves".MenuItem(UserConfigurationTile.Command.ViewSaves),
+                            "_Mods".MenuItem(UserConfigurationTile.Command.ViewMods),
                         }
                     }
                 }
