@@ -26,44 +26,44 @@ namespace ManageModsAndSavefiles.Saves
             Tracer.Line(Path);
         }
 
+        BinaryData Data
+        {
+            get
+            {
+                EnsureDataRead();
+                return DataValue;
+            }
+        }
+
         public string Name => Path.FileHandle().Name;
         public DateTime Created => Path.FileHandle().ModifiedDate;
+        public Version Version => Data.Version;
+        public string ScenarioName => Data.ScenarioName;
+        public string MapName => Data.MapName;
+        public string CampaignName => Data.CampaignName;
+        public TimeSpan Duration => Data.Duration;
+        public ModDescription[] Mods => Data.Mods;
 
-        public Version Version
+        public bool IsDataRead
         {
-            get
+            get { return DataValue != null; }
+            set
             {
-                EnsureDataRead();
-                return DataValue.Version;
-            }
-        }
-
-        public TimeSpan Duration
-        {
-            get
-            {
-                EnsureDataRead();
-                return DataValue.Duration;
-            }
-        }
-
-        public ModDescription[] Mods
-        {
-            get
-            {
-                EnsureDataRead();
-                return DataValue.Mods;
+                if(value)
+                    EnsureDataRead();
+                else
+                    DataValue = null;
             }
         }
 
         public override string ToString()
             => Name.Quote() + "  " +
-               Version + "  " +
-               DataValue.MapName.Quote() + "  " +
-               DataValue.ScenarioName.Quote() + "  " +
-               DataValue.CampaignName.Quote() + "  " +
-               DataValue.Difficulty + "  " +
-               Duration.Format3Digits();
+                Version + "  " +
+                Data.MapName.Quote() + "  " +
+                Data.ScenarioName.Quote() + "  " +
+                Data.CampaignName.Quote() + "  " +
+                Data.Difficulty + "  " +
+                Duration.Format3Digits();
 
         protected override string GetNodeDump() => Name;
 
@@ -72,7 +72,7 @@ namespace ManageModsAndSavefiles.Saves
 
         public ModConflict GetConflict(ModDescription saveMod, Mods.FileCluster mod)
         {
-            if (mod == null)
+            if(mod == null)
                 return
                     new ModConflict.RemovedMod
                     {
@@ -80,14 +80,14 @@ namespace ManageModsAndSavefiles.Saves
                         SaveMod = saveMod
                     };
 
-            if (saveMod == null)
+            if(saveMod == null)
                 return new ModConflict.AddedMod
                 {
                     Save = this,
                     Mod = mod
                 };
 
-            if (saveMod.Version == mod.Description.Version)
+            if(saveMod.Version == mod.Description.Version)
                 return null;
 
             return
@@ -101,13 +101,14 @@ namespace ManageModsAndSavefiles.Saves
 
         void EnsureDataRead()
         {
-            if(DataValue != null)
+            if(IsDataRead)
                 return;
 
             var reader = Profiler.Measure(() => LevelDatReader);
             reader.UserContext = new UserContext();
             DataValue = reader.GetNext<BinaryData>();
         }
+
 
         BinaryRead BinaryRead(string fileName)
         {
