@@ -10,7 +10,6 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using hw.DebugFormatter;
 using hw.Helper;
-using Microsoft.Win32;
 using Newtonsoft.Json;
 
 namespace MmasfUI.Common
@@ -119,12 +118,12 @@ namespace MmasfUI.Common
 
         internal static void InstallStatusLine(this Window container, UIElement line)
         {
-            var content = (UIElement)container.Content;
+            var content = (UIElement) container.Content;
             var d = new DockPanel();
             d.Children.Add(line);
             DockPanel.SetDock(line, Dock.Bottom);
             container.Content = d;
-            if (content == null)
+            if(content == null)
                 return;
 
             d.Children.Add(content);
@@ -146,7 +145,7 @@ namespace MmasfUI.Common
         }
 
 
-        internal static void SynchronizedInvoke(this DispatcherObject control, Action action)
+        internal static void Synchronized(this DispatcherObject control, Action action)
         {
             if(control.Dispatcher.CheckAccess())
                 action();
@@ -154,5 +153,9 @@ namespace MmasfUI.Common
                 control.Dispatcher.Invoke(action);
         }
 
+        internal static T Synchronized<T>(this DispatcherObject control, Func<T> action)
+            => control.Dispatcher.CheckAccess()
+                ? action()
+                : control.Dispatcher.Invoke(action);
     }
 }

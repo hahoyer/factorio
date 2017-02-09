@@ -25,11 +25,11 @@ namespace MmasfUI
             get { return TextValue; }
             set
             {
-                lock(this)
-                {
-                    if(TextValue == value)
-                        return;
+                if (TextValue == value)
+                    return;
 
+                lock (this)
+                {
                     TextValue = value;
                     IsDirty = true;
 
@@ -51,7 +51,7 @@ namespace MmasfUI
             if(!IsDirty)
                 return;
 
-            this.SynchronizedInvoke
+            this.Synchronized
                 (
                     () =>
                     {
