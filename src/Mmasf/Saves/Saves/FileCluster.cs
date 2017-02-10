@@ -4,7 +4,6 @@ using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
 using ManageModsAndSavefiles.Compression;
-using ManageModsAndSavefiles.Compression.Nuget;
 using ManageModsAndSavefiles.Mods;
 using ManageModsAndSavefiles.Reader;
 
@@ -71,7 +70,13 @@ namespace ManageModsAndSavefiles.Saves
         [DisableDump]
         public BinaryRead LevelDatReader => BinaryRead(LevelDat);
 
-        public ModConflict GetConflict(ModDescription saveMod, Mods.FileCluster mod)
+        [DisableDump]
+        public IEnumerable<ModConflict> Conflicts
+            => Mods
+                .Merge(Parent.ModFiles, arg => arg.Name, arg => arg.Description.Name)
+                .SelectMany(item => GetConflict(item.Item2, item.Item3).NullableToArray());
+
+        ModConflict GetConflict(ModDescription saveMod, Mods.FileCluster mod)
         {
             if(mod == null)
                 return
@@ -85,18 +90,18 @@ namespace ManageModsAndSavefiles.Saves
                 return new ModConflict.AddedMod
                 {
                     Save = this,
-                    Mod = mod
+                    CurrentMod = mod
                 };
 
             if(saveMod.Version == mod.Description.Version)
                 return null;
 
             return
-                new ModConflict.UpdatedMod
+                new ModConflict.LegacyMod
                 {
                     Save = this,
                     SaveMod = saveMod,
-                    ModVersion = mod.Description.Version
+                    CurrentModVersion = mod.Description.Version
                 };
         }
 
@@ -127,10 +132,5 @@ namespace ManageModsAndSavefiles.Saves
                 (() => zipFileHandles.Where(item => item.ItemName == name && item.Depth == 2));
             return Profiler.Measure(() => zipFileHandle.Single());
         }
-
-        internal IEnumerable<ModConflict> GetConflicts()
-            => Mods
-                .Merge(Parent.ModFiles, arg => arg.Name, arg => arg.Description.Name)
-                .SelectMany(item => GetConflict(item.Item2, item.Item3).NullableToArray());
     }
 }

@@ -114,7 +114,7 @@ namespace ManageModsAndSavefiles
 
         public IEnumerable<ModConflict> SaveFileConflicts 
             => SaveFiles
-            .SelectMany(save => save.GetConflicts());
+            .SelectMany(save => save.Conflicts);
 
         public void InitializeFrom(UserConfiguration source)
             =>

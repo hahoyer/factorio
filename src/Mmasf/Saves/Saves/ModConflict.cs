@@ -14,15 +14,15 @@ namespace ManageModsAndSavefiles.Saves
             public ModDescription SaveMod;
         }
 
-        public sealed class UpdatedMod : ModConflict
+        public sealed class LegacyMod : ModConflict
         {
             public ModDescription SaveMod;
-            public Version ModVersion;
+            public Version CurrentModVersion;
         }
 
         public sealed class AddedMod : ModConflict
         {
-            public Mods.FileCluster Mod;
+            public Mods.FileCluster CurrentMod;
         }
     }
 }
