@@ -7,25 +7,42 @@ using hw.Helper;
 
 namespace MmasfUI
 {
-    sealed class ViewConfiguration : DumpableObject
+    public sealed class ViewConfiguration : DumpableObject
     {
-        internal enum TypeEnum
+        internal interface IData
         {
-            Saves,
-            Mods
+            Window CreateView(ViewConfiguration viewConfiguration);
+            string Name { get; }
         }
 
         internal readonly string Name;
-        internal readonly TypeEnum Type;
+        internal readonly IData Data;
         readonly ValueCache<Persister> PersisterCache;
         readonly ValueCache<Window> ViewCache;
+        internal static readonly IData Saves = new SavesType();
+        internal static readonly IData Mods = new ModsType();
 
-        public ViewConfiguration(string name, TypeEnum type)
+        sealed class SavesType : DumpableObject, IData
+        {
+            Window IData.CreateView(ViewConfiguration viewConfiguration)
+                => new SavesWindow(viewConfiguration);
+
+            string IData.Name => "Saves";
+        }
+
+        sealed class ModsType : DumpableObject, IData
+        {
+            Window IData.CreateView(ViewConfiguration viewConfiguration)
+                => new ModsWindow(viewConfiguration);
+
+            string IData.Name => "Mods";
+        }
+
+        internal ViewConfiguration(string name, IData data)
         {
             Name = name;
-            Type = type;
-            PersisterCache = new ValueCache<Persister>
-                (() => new Persister(ItemFile("View")));
+            Data = data;
+            PersisterCache = new ValueCache<Persister>(() => new Persister(ItemFile("View")));
             ViewCache = new ValueCache<Window>(CreateAndConnectView);
         }
 
@@ -62,18 +79,7 @@ namespace MmasfUI
             return result;
         }
 
-        Window CreateView()
-        {
-            switch(Type)
-            {
-                case TypeEnum.Saves:
-                    return new SavesWindow(this);
-                case TypeEnum.Mods:
-                    return new ModsWindow(this);
-            }
-
-            return null;
-        }
+        Window CreateView() => Data.CreateView(this);
 
         internal void ConnectToWindow(Window window)
         {
@@ -88,7 +94,7 @@ namespace MmasfUI
 
         string ItemFileName(string itemName)
             => SystemConfiguration
-                .GetConfigurationPath(Name + "." + Type)
+                .GetConfigurationPath(Name + "." + Data.Name)
                 .PathCombine(itemName);
 
         void OnClosing()
@@ -100,5 +106,11 @@ namespace MmasfUI
         void OnActivated() { LastUsed = DateTime.Now; }
 
         internal string PositionPath => ItemFileName("Position");
+
+        internal void ShowAndActivate()
+        {
+            View.Show();
+            View.Activate();
+        }
     }
 }

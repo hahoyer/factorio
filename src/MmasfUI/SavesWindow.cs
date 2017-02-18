@@ -7,19 +7,15 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using hw.DebugFormatter;
 using hw.Helper;
-using JetBrains.Annotations;
 using ManageModsAndSavefiles;
-using ManageModsAndSavefiles.Saves;
 using MmasfUI.Common;
 
 namespace MmasfUI
 {
     sealed class SavesWindow : Window
     {
-        readonly UserConfiguration Configuration;
-        readonly FileClusterProxy[] Data;
+        readonly SaveFileClusterProxy[] Data;
         readonly StatusBar StatusBar = new StatusBar();
         DataGrid DataGrid;
 
@@ -29,16 +25,14 @@ namespace MmasfUI
                 .Instance
                 .UserConfigurations.Single(u => u.Name == viewConfiguration.Name);
 
-            Configuration = configuration;
-
-            Data = Configuration
+            Data = configuration
                 .SaveFiles
-                .Select(s => new FileClusterProxy(s))
+                .Select(s => new SaveFileClusterProxy(s, configuration.Name))
                 .ToArray();
 
             Content = CreateGrid();
 
-            Title = viewConfiguration.Type + " of " + configuration.Name.Quote();
+            Title = viewConfiguration.Data.Name + " of " + configuration.Name.Quote();
             this.InstallPositionPersister(viewConfiguration.PositionPath);
             this.InstallMainMenu(CreateMenu());
             this.InstallStatusLine(StatusBar);
@@ -50,8 +44,11 @@ namespace MmasfUI
             {
                 IsReadOnly = true
             };
+
             DataGrid.AutoGeneratingColumn += (s, e) => OnAutoGeneratingColumns(e);
             DataGrid.SelectionChanged += (s, e) => OnSelectionChanged(e);
+
+            TimeSpanProxy.Register(DataGrid);
 
             DataGrid.ItemsSource = Data;
 
@@ -84,16 +81,11 @@ namespace MmasfUI
 
         static void OnAutoGeneratingColumns(DataGridAutoGeneratingColumnEventArgs args)
         {
-            var column = (DataGridTextColumn) args.Column;
+            var column = args.Column as DataGridTextColumn;
+            if(column == null)
+                return;
+
             var binding = (Binding) column.Binding;
-
-            if(args.PropertyType == typeof(TimeSpanProxy))
-            {
-                binding.Path.Path += ".DisplayValue";
-
-                column.SortMemberPath += ".Value";
-                column.CanUserSort = true;
-            }
 
             if(args.PropertyType == typeof(DateTime))
             {
@@ -125,74 +117,6 @@ namespace MmasfUI
             StatusBar.Text = count.ToString();
         }
 
-        public sealed class TimeSpanProxy : DumpableObject, INotifyPropertyChanged
-        {
-            [UsedImplicitly]
-            public TimeSpan Value { get; }
-
-            public TimeSpanProxy(TimeSpan value)
-            {
-                Value = value;
-                OnPropertyChanged();
-            }
-
-            [UsedImplicitly]
-            public string DisplayValue => Value.Format3Digits();
-
-            public override string ToString() => Value.Format3Digits();
-
-            public event PropertyChangedEventHandler PropertyChanged;
-
-            void OnPropertyChanged()
-                => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
-        }
-
-        sealed class FileClusterProxy : INotifyPropertyChanged
-        {
-            internal static class Command
-            {
-                internal const string Conflicts = "Save.ViewConflicts";
-            }
-
-            readonly FileCluster Data;
-            FileCluster DataIfRead => Data.IsDataRead ? Data : null;
-
-            [UsedImplicitly]
-            public DateTime Created => Data.Created;
-            [UsedImplicitly]
-            public string Name => Data.Name;
-            [UsedImplicitly]
-            public TimeSpanProxy Duration { get; set; }
-            [UsedImplicitly]
-            public Version Version => DataIfRead?.Version;
-            [UsedImplicitly]
-            public string ScenarioName => DataIfRead?.ScenarioName;
-            [UsedImplicitly]
-            public string MapName => DataIfRead?.MapName;
-            [UsedImplicitly]
-            public string CampaignName => DataIfRead?.CampaignName;
-
-            public FileClusterProxy(FileCluster data) { Data = data; }
-
-            public void Refresh()
-            {
-                Data.IsDataRead = true;
-                Duration = new TimeSpanProxy(Data.Duration);
-                OnPropertyChanged();
-            }
-
-            public event PropertyChangedEventHandler PropertyChanged;
-
-            void OnPropertyChanged()
-                => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
-
-            [Command(Command.Conflicts)]
-            public void ViewConflicts()
-            {
-                var current = Data.Conflicts;
-            }
-        }
-
 
         static Menu CreateMenu()
             => new Menu
@@ -212,7 +136,7 @@ namespace MmasfUI
                         Header = "_View",
                         Items =
                         {
-                            "Show _Conflicts".MenuItem(FileClusterProxy.Command.Conflicts)
+                            "Show _Conflicts".MenuItem(SaveFileClusterProxy.Command.ViewConflicts)
                         }
                     }
                 }

@@ -78,30 +78,15 @@ namespace ManageModsAndSavefiles.Saves
 
         ModConflict GetConflict(ModDescription saveMod, Mods.FileCluster mod)
         {
-            if(mod == null)
-                return
-                    new ModConflict.RemovedMod
-                    {
-                        Save = this,
-                        SaveMod = saveMod
-                    };
-
-            if(saveMod == null)
-                return new ModConflict.AddedMod
-                {
-                    Save = this,
-                    CurrentMod = mod
-                };
-
-            if(saveMod.Version == mod.Description.Version)
+            if(saveMod?.Version == mod?.Description.Version)
                 return null;
 
             return
-                new ModConflict.LegacyMod
+                new ModConflict
                 {
                     Save = this,
                     SaveMod = saveMod,
-                    CurrentModVersion = mod.Description.Version
+                    Mod = mod?.Description
                 };
         }
 

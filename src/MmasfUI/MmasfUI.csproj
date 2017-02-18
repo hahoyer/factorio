@@ -38,13 +38,16 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ModConflictsWindow.cs" />
     <Compile Include="Common\Command.cs" />
     <Compile Include="Common\CommandAttribute.cs" />
     <Compile Include="Common\CommandManager.cs" />
     <Compile Include="ContextView.cs" />
     <Compile Include="Common\Extension.cs" />
     <Compile Include="ModsWindow.cs" />
+    <Compile Include="SaveFileClusterProxy.cs" />
     <Compile Include="StatusBar.cs" />
+    <Compile Include="TimeSpanProxy.cs" />
     <Compile Include="ViewConfiguration.cs" />
     <Compile Include="FilePersistenceHandler.cs" />
     <Compile Include="IPersitenceHandler.cs" />

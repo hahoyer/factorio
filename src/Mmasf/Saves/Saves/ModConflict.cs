@@ -5,24 +5,10 @@ using ManageModsAndSavefiles.Mods;
 
 namespace ManageModsAndSavefiles.Saves
 {
-    public abstract class ModConflict
+    public sealed class ModConflict
     {
         public FileCluster Save;
-
-        public sealed class RemovedMod : ModConflict
-        {
-            public ModDescription SaveMod;
-        }
-
-        public sealed class LegacyMod : ModConflict
-        {
-            public ModDescription SaveMod;
-            public Version CurrentModVersion;
-        }
-
-        public sealed class AddedMod : ModConflict
-        {
-            public Mods.FileCluster CurrentMod;
-        }
+        public ModDescription SaveMod;
+        public ModDescription Mod;
     }
 }

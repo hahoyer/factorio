@@ -82,5 +82,13 @@ namespace MmasfUI
                 Header = menuItemText,
                 Command = MainContainer.Instance.CommandManager.ByName(commandIdentifier)
             };
+
+        internal static ViewConfiguration SmartCreate(this ViewConfiguration.IData data, string userConfigurationName)
+        {
+            var modsConfiguration = new ViewConfiguration(userConfigurationName, data);
+            if(modsConfiguration.Status == "Open")
+                modsConfiguration.ShowAndActivate();
+            return modsConfiguration;
+        }
     }
 }

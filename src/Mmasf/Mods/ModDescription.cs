@@ -12,13 +12,13 @@ namespace ManageModsAndSavefiles.Mods
     {
         public sealed class ModsReader : DumpableObject, BinaryRead.IReaderProvider
         {
-            object BinaryRead.IReaderProvider.ReadAndAdvance(BinaryRead reader, Type type, MemberInfo member)
+            object BinaryRead.IReaderProvider.ReadAndAdvance
+                (BinaryRead reader, Type type, MemberInfo member)
             {
                 var x = reader.GetBytes(100);
                 var isBefore01414 = ((UserContext) reader.UserContext).IsBefore01414;
 
                 if(isBefore01414)
-                {
                     return new ModDescription
                     (
                         reader.GetNextString<int>(),
@@ -29,7 +29,6 @@ namespace ManageModsAndSavefiles.Mods
                             reader.GetNext<short>()
                         )
                     );
-                }
 
                 return new ModDescription
                 (
@@ -46,6 +45,7 @@ namespace ManageModsAndSavefiles.Mods
 
         public readonly string Name;
         public readonly Version Version;
+        public string FullName => Name + " " + Version;
 
         InfoJSon InfoJSonValue;
 

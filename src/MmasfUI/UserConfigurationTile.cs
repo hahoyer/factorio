@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using ManageModsAndSavefiles;
@@ -56,13 +57,8 @@ namespace MmasfUI
             ContextMenu = CreateContextMenu();
             Content = result;
 
-            SavesConfiguration = new ViewConfiguration(Configuration.Name, ViewConfiguration.TypeEnum.Saves);
-            if(SavesConfiguration.Status == "Open")
-                ViewSaves();
-
-            ModsConfiguration = new ViewConfiguration(Configuration.Name, ViewConfiguration.TypeEnum.Mods);
-            if (ModsConfiguration.Status == "Open")
-                ViewMods();
+            SavesConfiguration = ViewConfiguration.Saves.SmartCreate(Configuration.Name);
+            ModsConfiguration = ViewConfiguration.Mods.SmartCreate(Configuration.Name);
         }
 
         static ContextMenu CreateContextMenu()
@@ -77,20 +73,10 @@ namespace MmasfUI
             };
 
         [Command(Command.ViewSaves)]
-        public void ViewSaves()
-        {
-            var fileConfigurationView = SavesConfiguration.View;
-            fileConfigurationView.Show();
-            fileConfigurationView.Activate();
-        }
+        public void ViewSaves() => SavesConfiguration.ShowAndActivate();
 
         [Command(Command.ViewMods)]
-        public void ViewMods()
-        {
-            var fileConfigurationView = ModsConfiguration.View;
-            fileConfigurationView.Show();
-            fileConfigurationView.Activate();
-        }
+        public void ViewMods() => ModsConfiguration.ShowAndActivate();
 
         [Command(Command.Select)]
         public void OnSelect()
