@@ -21,11 +21,12 @@ namespace MmasfUI
         readonly ValueCache<Window> ViewCache;
         internal static readonly IData Saves = new SavesType();
         internal static readonly IData Mods = new ModsType();
+        internal static readonly IData ModDescriptions = new ModDescriptionsType();
 
         sealed class SavesType : DumpableObject, IData
         {
             Window IData.CreateView(ViewConfiguration viewConfiguration)
-                => new SavesWindow(viewConfiguration);
+                => new SavesView(viewConfiguration);
 
             string IData.Name => "Saves";
         }
@@ -33,9 +34,17 @@ namespace MmasfUI
         sealed class ModsType : DumpableObject, IData
         {
             Window IData.CreateView(ViewConfiguration viewConfiguration)
-                => new ModsWindow(viewConfiguration);
+                => new ModsView(viewConfiguration);
 
             string IData.Name => "Mods";
+        }
+
+        sealed class ModDescriptionsType : DumpableObject, IData
+        {
+            Window IData.CreateView(ViewConfiguration viewConfiguration)
+                => new ModDictionaryView(viewConfiguration);
+
+            string IData.Name => "ModDescriptions";
         }
 
         internal ViewConfiguration(string name, IData data)

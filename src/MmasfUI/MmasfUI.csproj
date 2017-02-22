@@ -38,13 +38,14 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ModConflictsWindow.cs" />
+    <Compile Include="ModConflictsView.cs" />
     <Compile Include="Common\Command.cs" />
     <Compile Include="Common\CommandAttribute.cs" />
     <Compile Include="Common\CommandManager.cs" />
     <Compile Include="ContextView.cs" />
     <Compile Include="Common\Extension.cs" />
-    <Compile Include="ModsWindow.cs" />
+    <Compile Include="ModDictionaryView.cs" />
+    <Compile Include="ModsView.cs" />
     <Compile Include="SaveFileClusterProxy.cs" />
     <Compile Include="StatusBar.cs" />
     <Compile Include="TimeSpanProxy.cs" />
@@ -57,7 +58,7 @@
     <Compile Include="Common\Selection.Util.cs" />
     <Compile Include="Persister.cs" />
     <Compile Include="SystemConfiguration.cs" />
-    <Compile Include="SavesWindow.cs" />
+    <Compile Include="SavesView.cs" />
     <Compile Include="UserConfigurationTile.cs" />
     <Compile Include="Extension.cs" />
     <Content Include="MmasfUI.ico" />

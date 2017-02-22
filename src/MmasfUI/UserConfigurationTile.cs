@@ -67,8 +67,8 @@ namespace MmasfUI
                 Items =
                 {
                     "S_elect".MenuItem(Command.Select),
-                    "Show _Saves".MenuItem(Command.ViewSaves),
-                    "Show _Mods".MenuItem(Command.ViewMods)
+                    "View _Saves".MenuItem(Command.ViewSaves),
+                    "View _Mods".MenuItem(Command.ViewMods)
                 }
             };
 

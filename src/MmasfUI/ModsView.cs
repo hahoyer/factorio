@@ -13,11 +13,11 @@ using MmasfUI.Common;
 
 namespace MmasfUI
 {
-    sealed class ModsWindow : Window
+    sealed class ModsView : Window
     {
         readonly StatusBar StatusBar = new StatusBar();
 
-        public ModsWindow(ViewConfiguration viewConfiguration)
+        public ModsView(ViewConfiguration viewConfiguration)
         {
             var configuration = MmasfContext
                 .Instance

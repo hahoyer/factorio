@@ -3,17 +3,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using ManageModsAndSavefiles;
+using hw.DebugFormatter;
+using ManageModsAndSavefiles.Mods;
 using MmasfUI.Common;
 
 namespace MmasfUI
 {
     public sealed class MainContainer : Application
     {
+        internal static class Command
+        {
+            internal const string ViewModDictionary = "ViewModDictionary";
+        }
+
+
         internal static readonly MainContainer Instance = new MainContainer();
 
         [STAThread]
         public static void Main() => Instance.Run();
+
+        ViewConfiguration ModDescriptionsValue;
+
+        public ViewConfiguration ModDescriptions
+            =>
+                ModDescriptionsValue
+                ?? (ModDescriptionsValue = ViewConfiguration.ModDescriptions.SmartCreate(""));
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -23,7 +37,7 @@ namespace MmasfUI
 
         void ShowContextView()
         {
-            var view = MmasfContext.Instance.CreateView();
+            var view = new ContextView();
             var main = new Window
             {
                 Content = view,
@@ -58,10 +72,21 @@ namespace MmasfUI
                         {
                             "_Saves".MenuItem(UserConfigurationTile.Command.ViewSaves),
                             "_Mods".MenuItem(UserConfigurationTile.Command.ViewMods),
+                            "Mod _dictionary".MenuItem(Command.ViewModDictionary)
                         }
                     }
                 }
             };
+
+        [Command(Command.ViewModDictionary)]
+        public void ViewModDictionary() => ModDescriptions.ShowAndActivate();
+
+        [Command(Command.ViewModDictionary)]
+        public void ViewModDictionary(ModDescription currentItem)
+        {
+            ((ModDictionaryView)ModDescriptions.View).Select(currentItem);
+            ModDescriptions.ShowAndActivate();
+        }
 
         [Command("Exit")]
         public void OnExit() => Shutdown();

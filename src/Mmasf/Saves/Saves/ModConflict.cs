@@ -9,6 +9,8 @@ namespace ManageModsAndSavefiles.Saves
     {
         public FileCluster Save;
         public ModDescription SaveMod;
-        public ModDescription Mod;
+        public ModDescription GameMod;
+        public ModDescription Mod => GameMod ?? SaveMod;
+
     }
 }

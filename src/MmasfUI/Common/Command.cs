@@ -10,34 +10,35 @@ namespace MmasfUI.Common
     sealed class Command : DumpableObject, ICommand
     {
         readonly CommandManager Parent;
-        readonly MethodInfo Execute;
+        readonly MethodInfo FlatExecute;
+        readonly MethodInfo ParamterizedExecute;
         readonly PropertyInfo CanExecute;
 
-        internal Command(CommandManager parent, MethodInfo execute, PropertyInfo canExecute)
+        internal Command
+        (
+            CommandManager parent,
+            MethodInfo flatExecute,
+            MethodInfo paramterizedExecute,
+            PropertyInfo canExecute)
         {
             Parent = parent;
-            Execute = execute;
+            FlatExecute = flatExecute;
+            ParamterizedExecute = paramterizedExecute;
             CanExecute = canExecute;
         }
 
         bool ICommand.CanExecute(object parameter)
         {
-            if(parameter == null)
-                return Parent.CanExecute(Execute, CanExecute);
-
-            NotImplementedMethod(parameter);
-            return false;
+            var execute = parameter == null ? FlatExecute : ParamterizedExecute;
+            return Parent.CanExecute(execute, CanExecute);
         }
 
         void ICommand.Execute(object parameter)
         {
             if(parameter == null)
-            {
-                Parent.Execute(Execute);
-                return;
-            }
-
-            NotImplementedMethod(parameter);
+                Parent.Execute(FlatExecute);
+            else
+                Parent.Execute(ParamterizedExecute, parameter);
         }
 
         event EventHandler ICommand.CanExecuteChanged

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using hw.DebugFormatter;
+using hw.Helper;
 using JetBrains.Annotations;
 using ManageModsAndSavefiles.Saves;
 using MmasfUI.Common;
@@ -26,6 +27,8 @@ namespace MmasfUI
         [UsedImplicitly]
         public string Name => Data.Name;
         [UsedImplicitly]
+        public string FirstConflict => DataIfRead?.Conflicts.FirstOrDefault()?.Mod.FullName;
+        [UsedImplicitly]
         public TimeSpanProxy Duration { get; set; }
         [UsedImplicitly]
         public Version Version => DataIfRead?.Version;
@@ -35,6 +38,7 @@ namespace MmasfUI
         public string MapName => DataIfRead?.MapName;
         [UsedImplicitly]
         public string CampaignName => DataIfRead?.CampaignName;
+
 
         public SaveFileClusterProxy(FileCluster data, string name)
         {
@@ -58,13 +62,13 @@ namespace MmasfUI
         [Command(Command.ViewConflicts)]
         public void ViewConflicts() => ConflictConfiguration.ShowAndActivate();
 
-        internal sealed class ModConflicts : DumpableObject, ViewConfiguration.IData
+        sealed class ModConflicts : DumpableObject, ViewConfiguration.IData
         {
             readonly FileCluster Data;
             public ModConflicts(FileCluster data) { Data = data; }
 
             Window ViewConfiguration.IData.CreateView(ViewConfiguration viewConfiguration)
-                => new ModConflictsWindow(viewConfiguration, Data);
+                => new ModConflictsView(viewConfiguration, Data);
 
             string ViewConfiguration.IData.Name => "ModConflicts";
         }

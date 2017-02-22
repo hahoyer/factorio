@@ -9,17 +9,16 @@ namespace MmasfUI
 {
     sealed class ContextView : ContentControl
     {
-        readonly MmasfContext Context;
+
         internal readonly Selection<UserConfiguration> Selection
             = new Selection<UserConfiguration>();
 
-        internal ContextView(MmasfContext context)
+        internal ContextView()
         {
-            Context = context;
             CreateView();
         }
 
-        void CreateView() { Content = Context.CreateView(Selection, this); }
+        void CreateView() { Content = MmasfContext.Instance.CreateView(Selection, this); }
 
         internal void Refresh()
         {
@@ -28,5 +27,6 @@ namespace MmasfUI
             CreateView();
             Selection.Current = oldSelection;
         }
+
     }
 }

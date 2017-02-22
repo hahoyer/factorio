@@ -13,13 +13,13 @@ using MmasfUI.Common;
 
 namespace MmasfUI
 {
-    sealed class SavesWindow : Window
+    sealed class SavesView : Window
     {
         readonly SaveFileClusterProxy[] Data;
         readonly StatusBar StatusBar = new StatusBar();
         DataGrid DataGrid;
 
-        public SavesWindow(ViewConfiguration viewConfiguration)
+        public SavesView(ViewConfiguration viewConfiguration)
         {
             var configuration = MmasfContext
                 .Instance
@@ -38,7 +38,7 @@ namespace MmasfUI
             this.InstallStatusLine(StatusBar);
         }
 
-        ScrollViewer CreateGrid()
+        DataGrid CreateGrid()
         {
             DataGrid = new DataGrid
             {
@@ -62,12 +62,7 @@ namespace MmasfUI
                 }
             );
 
-            return new ScrollViewer
-            {
-                Content = DataGrid,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto
-            };
+            return DataGrid;
         }
 
         static void OnSelectionChanged(SelectionChangedEventArgs args)

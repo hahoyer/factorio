@@ -15,7 +15,7 @@ namespace ManageModsAndSavefiles.Saves
         const string LevelDat = "level.dat";
 
         readonly string Path;
-        readonly UserConfiguration Parent;
+        public readonly UserConfiguration Parent;
 
         BinaryData DataValue;
 
@@ -72,13 +72,18 @@ namespace ManageModsAndSavefiles.Saves
 
         [DisableDump]
         public IEnumerable<ModConflict> Conflicts
-            => Mods
-                .Merge(Parent.ModFiles, arg => arg.Name, arg => arg.Description.Name)
+            => Mods.Where(m=>m.Name != "base")
+                .Merge
+                (
+                    Parent.ModFiles.Where(m => m.IsEnabled == true),
+                    arg => arg.Name,
+                    arg => arg.Description.Name
+                )
                 .SelectMany(item => GetConflict(item.Item2, item.Item3).NullableToArray());
 
-        ModConflict GetConflict(ModDescription saveMod, Mods.FileCluster mod)
+        ModConflict GetConflict(ModDescription saveMod, Mods.FileCluster gameMod)
         {
-            if(saveMod?.Version == mod?.Description.Version)
+            if(saveMod?.Version == gameMod?.Version)
                 return null;
 
             return
@@ -86,7 +91,7 @@ namespace ManageModsAndSavefiles.Saves
                 {
                     Save = this,
                     SaveMod = saveMod,
-                    Mod = mod?.Description
+                    GameMod = gameMod?.Description
                 };
         }
 

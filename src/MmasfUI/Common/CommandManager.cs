@@ -22,24 +22,36 @@ namespace MmasfUI.Common
                 .Where(t => TargetNamespace == null || TargetNamespace == t.Namespace)
                 .ToArray();
 
-            var execute = types
-                .SelectMany(t => t.GetMembers().Where(m => IsRelevant(m, identifier)))
-                .Single();
+            var flatExecute = types
+                .SelectMany(t => t.GetMembers().Where(m => IsRelevant(m, identifier, 0)))
+                .SingleOrDefault();
 
-            var canExecute = execute.DeclaringType?.GetProperties().SingleOrDefault(p => IsRelevant(p, identifier));
+            var paramterizedExecute = types
+                .SelectMany
+                (t => t.GetMembers().Where(m => IsRelevant(m, identifier, 1)))
+                .SingleOrDefault();
 
-            return new Command(this, (MethodInfo) execute, canExecute);
+            var canExecute = (flatExecute ?? paramterizedExecute)?
+                .DeclaringType?
+                .GetProperties()
+                .SingleOrDefault(p => IsRelevant(p, identifier));
+
+            return new Command
+                (this, (MethodInfo) flatExecute, (MethodInfo) paramterizedExecute, canExecute);
         }
 
-        static bool IsRelevant(MemberInfo m, string identifier)
+        static bool IsRelevant(MemberInfo m, string identifier, int parameterCount)
         {
             var commandAttribute = m.GetAttribute<CommandAttribute>(false);
             if(commandAttribute == null)
                 return false;
             if(commandAttribute.Name != identifier)
                 return false;
+
             var mm = m as MethodInfo;
-            return mm != null && mm.ReturnType == typeof(void) && !mm.GetParameters().Any();
+            return mm != null
+                && mm.ReturnType == typeof(void)
+                && mm.GetParameters().Length == parameterCount;
         }
 
         static bool IsRelevant(PropertyInfo p, string identifier)
@@ -49,6 +61,7 @@ namespace MmasfUI.Common
                 return false;
             if(attribute.Name != identifier)
                 return false;
+
             return p.PropertyType == typeof(bool) && p.CanRead;
         }
 
@@ -61,8 +74,13 @@ namespace MmasfUI.Common
         internal void Execute(MethodInfo method)
         {
             var target = ActiveObjects.First(o => o.GetType().Is(method.DeclaringType));
-
             method.Invoke(target, null);
+        }
+
+        internal void Execute(MethodInfo method, object parameter)
+        {
+            var target = ActiveObjects.First(o => o.GetType().Is(method.DeclaringType));
+            method.Invoke(target, new[] {parameter});
         }
 
         internal void Activate(object target, bool setIt = true)

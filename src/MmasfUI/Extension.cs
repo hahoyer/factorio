@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using ManageModsAndSavefiles;
+using ManageModsAndSavefiles.Mods;
 using MmasfUI.Common;
 
 namespace MmasfUI
@@ -73,9 +74,6 @@ namespace MmasfUI
             return result;
         }
 
-        internal static ContextView CreateView(this MmasfContext context)
-            => new ContextView(context);
-
         internal static MenuItem MenuItem(this string menuItemText, string commandIdentifier)
             => new MenuItem
             {
@@ -83,9 +81,9 @@ namespace MmasfUI
                 Command = MainContainer.Instance.CommandManager.ByName(commandIdentifier)
             };
 
-        internal static ViewConfiguration SmartCreate(this ViewConfiguration.IData data, string userConfigurationName)
+        internal static ViewConfiguration SmartCreate(this ViewConfiguration.IData data, string name)
         {
-            var modsConfiguration = new ViewConfiguration(userConfigurationName, data);
+            var modsConfiguration = new ViewConfiguration(name, data);
             if(modsConfiguration.Status == "Open")
                 modsConfiguration.ShowAndActivate();
             return modsConfiguration;

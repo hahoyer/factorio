@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using hw.DebugFormatter;
@@ -41,13 +42,18 @@ namespace MmasfUI
             if(args.PropertyType != typeof(TimeSpanProxy))
                 return;
 
-            var column = (DataGridTextColumn)args.Column;
-            var binding = (Binding)column.Binding;
+            var column = (DataGridTextColumn) args.Column;
+            var binding = (Binding) column.Binding;
             binding.Path.Path += ".DisplayValue";
-
+            args.Column.CellStyle = new Style
+            {
+                Setters =
+                {
+                    new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Right)
+                }
+            };
             column.SortMemberPath += ".Value";
             column.CanUserSort = true;
         }
-
     }
 }
