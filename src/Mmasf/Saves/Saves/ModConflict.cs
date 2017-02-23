@@ -12,5 +12,9 @@ namespace ManageModsAndSavefiles.Saves
         public ModDescription GameMod;
         public ModDescription Mod => GameMod ?? SaveMod;
 
+        internal bool IsRelevantConflict
+            => GameMod == null
+                || SaveMod == null
+                || !GameMod.IsCompatible(SaveMod.Version);
     }
 }

@@ -72,16 +72,20 @@ namespace ManageModsAndSavefiles.Saves
 
         [DisableDump]
         public IEnumerable<ModConflict> Conflicts
-            => Mods.Where(m=>m.Name != "base")
+            => Mods.Where(m => m.Name != "base")
                 .Merge
                 (
                     Parent.ModFiles.Where(m => m.IsEnabled == true),
                     arg => arg.Name,
                     arg => arg.Description.Name
                 )
-                .SelectMany(item => GetConflict(item.Item2, item.Item3).NullableToArray());
+                .SelectMany(item => CreateConflict(item.Item2, item.Item3).NullableToArray());
 
-        ModConflict GetConflict(ModDescription saveMod, Mods.FileCluster gameMod)
+        [DisableDump]
+        public IEnumerable<ModConflict> RelevantConflicts
+            => Conflicts.Where(c => c.IsRelevantConflict);
+
+        ModConflict CreateConflict(ModDescription saveMod, Mods.FileCluster gameMod)
         {
             if(saveMod?.Version == gameMod?.Version)
                 return null;

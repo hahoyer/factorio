@@ -14,18 +14,19 @@ namespace ManageModsAndSavefiles
         public static readonly MmasfContext Instance = new MmasfContext();
 
         readonly CompoundCache<Configuration> ConfigurationCache;
+        readonly CompoundCache<ModConfiguration> ModConfigurationCache;
         readonly CompoundCache<SystemConfiguration> SystemConfigurationCache;
         readonly CompoundCache<DataConfiguration> DataConfigurationCache;
         readonly CompoundCache<UserConfiguration[]> UserConfigurationsCache;
-        readonly CompoundCache<ModMatrix> ModMatrixCache;
         public readonly FunctionCache<string, FunctionCache<Version, ModDescription>> ModDictionary;
 
         MmasfContext()
         {
             ConfigurationCache = new CompoundCache<Configuration>(Configuration.Create);
+            ModConfigurationCache = new CompoundCache<ModConfiguration>(ModConfiguration.Create);
 
             ModDictionary = new FunctionCache<string, FunctionCache<Version, ModDescription>>
-                (GetMod);
+                (GetModDescription);
 
             SystemConfigurationCache = new CompoundCache<SystemConfiguration>
             (
@@ -52,9 +53,6 @@ namespace ManageModsAndSavefiles
                     .ToArray(),
                 UserConfigurationsCache
             );
-
-            ModMatrixCache = new CompoundCache<ModMatrix>
-                (() => new ModMatrix(UserConfigurations), UserConfigurationsCache);
         }
 
         [DisableDump]
@@ -65,8 +63,6 @@ namespace ManageModsAndSavefiles
         public DataConfiguration DataConfiguration => DataConfigurationCache.Value;
         [DisableDump]
         public UserConfiguration[] UserConfigurations => UserConfigurationsCache.Value;
-        [DisableDump]
-        public ModMatrix ModMatrix => ModMatrixCache.Value;
 
         [DisableDump]
         public string FactorioInformation
@@ -89,11 +85,17 @@ namespace ManageModsAndSavefiles
             }
         }
 
-        static FunctionCache<Version, ModDescription> GetMod(string name)
-            => new FunctionCache<Version, ModDescription>(version => GetMod(name, version));
+        FunctionCache<Version, ModDescription> GetModDescription(string name)
+            => new FunctionCache<Version, ModDescription>(version => GetModDescription(name, version));
 
-        static ModDescription GetMod(string name, Version version)
-            => new ModDescription(name, version);
+        internal ModDescription GetModDescription(string name, Version version)
+        {
+
+            return new ModDescription(name, version);
+
+
+
+        }
 
         public void RenewUserConfigurationPaths()
         {

@@ -56,7 +56,7 @@ namespace MmasfUI
             (
                 () =>
                 {
-                    Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
+                    Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
                     100.MilliSeconds().Sleep();
                     RefreshData();
                 }

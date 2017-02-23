@@ -36,7 +36,7 @@ namespace MmasfUI
             this.InstallStatusLine(StatusBar);
         }
 
-        static ScrollViewer CreateGrid(IEnumerable<FileClusterProxy> data)
+        static DataGrid CreateGrid(IEnumerable<FileClusterProxy> data)
         {
             var result = new DataGrid
             {
@@ -44,15 +44,9 @@ namespace MmasfUI
             };
 
             result.AutoGeneratingColumn += (s, e) => OnAutoGeneratingColumns(e);
-
             result.ItemsSource = data;
 
-            return new ScrollViewer
-            {
-                Content = result,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto
-            };
+            return result;
         }
 
         static void OnAutoGeneratingColumns(DataGridAutoGeneratingColumnEventArgs args)

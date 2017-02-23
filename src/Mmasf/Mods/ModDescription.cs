@@ -19,7 +19,7 @@ namespace ManageModsAndSavefiles.Mods
                 var isBefore01414 = ((UserContext) reader.UserContext).IsBefore01414;
 
                 if(isBefore01414)
-                    return new ModDescription
+                    return MmasfContext.Instance.GetModDescription
                     (
                         reader.GetNextString<int>(),
                         new Version
@@ -30,7 +30,7 @@ namespace ManageModsAndSavefiles.Mods
                         )
                     );
 
-                return new ModDescription
+                return MmasfContext.Instance.GetModDescription
                 (
                     reader.GetNextString<byte>(),
                     new Version
@@ -43,16 +43,37 @@ namespace ManageModsAndSavefiles.Mods
             }
         }
 
+        readonly ModConfiguration Configuration;
+
         public readonly string Name;
         public readonly Version Version;
         public string FullName => Name + " " + Version;
 
+        public bool HasConfiguration
+        {
+            get { return ConfigurationItem != null; }
+            set
+            {
+                if (HasConfiguration == value)
+                    return;
+
+                if(value)
+                    Configuration.Add(Name);
+                else
+                    Configuration.Remove(Name);
+            }
+        }
+
+        ModConfiguration.Item ConfigurationItem
+            => Configuration.Data.SingleOrDefault(data => data.Name == Name);
+
         InfoJSon InfoJSonValue;
 
-        public ModDescription(string name, Version version)
+        public ModDescription(string name, Version version, ModConfiguration configuration)
         {
             Name = name;
             Version = version;
+            Configuration = configuration;
             Tracer.Assert(!string.IsNullOrEmpty(Name));
         }
 
@@ -73,5 +94,7 @@ namespace ManageModsAndSavefiles.Mods
                 NotImplementedMethod(value);
             }
         }
+
+        public bool IsCompatible(Version saveModVersion) => true;
     }
 }

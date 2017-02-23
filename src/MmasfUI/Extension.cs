@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using ManageModsAndSavefiles;
-using ManageModsAndSavefiles.Mods;
+using ManageModsAndSavefiles.Saves;
 using MmasfUI.Common;
 
 namespace MmasfUI
@@ -81,7 +81,8 @@ namespace MmasfUI
                 Command = MainContainer.Instance.CommandManager.ByName(commandIdentifier)
             };
 
-        internal static ViewConfiguration SmartCreate(this ViewConfiguration.IData data, string name)
+        internal static ViewConfiguration SmartCreate
+            (this ViewConfiguration.IData data, string name)
         {
             var modsConfiguration = new ViewConfiguration(name, data);
             if(modsConfiguration.Status == "Open")
@@ -89,4 +90,4 @@ namespace MmasfUI
             return modsConfiguration;
         }
     }
-}
+}                                           

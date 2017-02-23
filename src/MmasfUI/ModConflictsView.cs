@@ -52,8 +52,7 @@ namespace MmasfUI
         public ModConflictsView
             (ViewConfiguration viewConfiguration, ManageModsAndSavefiles.Saves.FileCluster parent)
         {
-            Data = parent
-                .Conflicts
+            Data = parent.RelevantConflicts
                 .Select(s => new Proxy(s))
                 .ToArray();
 
@@ -69,7 +68,7 @@ namespace MmasfUI
             this.InstallStatusLine(StatusBar);
         }
 
-        ScrollViewer CreateGrid()
+        DataGrid CreateGrid()
         {
             DataGrid = new DataGrid
             {
@@ -82,12 +81,7 @@ namespace MmasfUI
 
             DataGrid.ItemsSource = Data;
 
-            return new ScrollViewer
-            {
-                Content = DataGrid,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto
-            };
+            return DataGrid;
         }
 
         static void OnSelectionChanged(SelectionChangedEventArgs args)

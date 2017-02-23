@@ -15,6 +15,7 @@
     <Compile Include="Compression\IZipFileHandle.cs" />
     <Compile Include="Compression\Nuget\ZipArchiveHandle.cs" />
     <Compile Include="Compression\Nuget\ZipFileHandle.cs" />
+    <Compile Include="ModConfiguration.cs" />
     <Compile Include="Reader\ArrayItem.cs" />
     <Compile Include="Reader\BinaryRead.cs" />
     <Compile Include="BooleanJsonConverter.cs" />
@@ -63,7 +64,6 @@
     <Compile Include="Mods\ModListJSon.cs" />
     <Compile Include="Mods\FileCluster.cs" />
     <Compile Include="Mods\InfoJSon.cs" />
-    <Compile Include="Mods\ModMatrix.cs" />
     <Compile Include="Reader\DataItem.cs" />
     <Compile Include="Reader\Ignore.cs" />
     <Compile Include="Reader\StringSetup.cs" />

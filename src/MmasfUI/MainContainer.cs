@@ -27,7 +27,7 @@ namespace MmasfUI
         public ViewConfiguration ModDescriptions
             =>
                 ModDescriptionsValue
-                ?? (ModDescriptionsValue = ViewConfiguration.ModDescriptions.SmartCreate(""));
+                ?? (ModDescriptionsValue = ViewConfiguration.ModDictionary.SmartCreate(""));
 
         protected override void OnStartup(StartupEventArgs e)
         {

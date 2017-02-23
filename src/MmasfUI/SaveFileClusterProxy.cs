@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using hw.DebugFormatter;
-using hw.Helper;
 using JetBrains.Annotations;
 using ManageModsAndSavefiles.Saves;
 using MmasfUI.Common;
@@ -21,13 +20,15 @@ namespace MmasfUI
         readonly FileCluster Data;
         readonly ViewConfiguration ConflictConfiguration;
         FileCluster DataIfRead => Data.IsDataRead ? Data : null;
+        IEnumerable<ModConflict> Conflicts => DataIfRead?.RelevantConflicts;
 
         [UsedImplicitly]
         public DateTime Created => Data.Created;
         [UsedImplicitly]
         public string Name => Data.Name;
         [UsedImplicitly]
-        public string FirstConflict => DataIfRead?.Conflicts.FirstOrDefault()?.Mod.FullName;
+        public string FirstConflict => Conflicts.FirstOrDefault()?.Mod.FullName;
+
         [UsedImplicitly]
         public TimeSpanProxy Duration { get; set; }
         [UsedImplicitly]

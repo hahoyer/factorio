@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using hw.Helper;
 using JetBrains.Annotations;
 using ManageModsAndSavefiles;
 using ManageModsAndSavefiles.Mods;
@@ -18,7 +19,11 @@ namespace MmasfUI
         {
             internal readonly ModDescription Data;
 
-            public Proxy(ModDescription data) { Data = data; }
+            public Proxy(ModDescription data, IEnumerable<Version> moreVersions)
+            {
+                Data = data;
+                MoreVersions = moreVersions.Stringify(" ");
+            }
 
             public event PropertyChangedEventHandler PropertyChanged;
 
@@ -26,8 +31,12 @@ namespace MmasfUI
             void OnPropertyChanged([CallerMemberName] string propertyName = null)
                 => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
+            [UsedImplicitly]
             public string Name => Data.Name;
+            [UsedImplicitly]
             public string Version => Data.Version.ToString();
+            [UsedImplicitly]
+            public string MoreVersions { get; }
         }
 
         readonly Proxy[] Data;
@@ -39,18 +48,25 @@ namespace MmasfUI
             Data = MmasfContext
                 .Instance
                 .ModDictionary
-                .SelectMany(mod => mod.Value.Select(version => new Proxy(version.Value)))
+                .Select(mods => CreateProxy(mods.Value))
                 .ToArray();
 
             Content = CreateGrid();
 
-            Title = viewConfiguration.Name;
+            Title = viewConfiguration.Data.Name;
             this.InstallPositionPersister(viewConfiguration.PositionPath);
             this.InstallMainMenu(CreateMenu());
             this.InstallStatusLine(StatusBar);
         }
 
-        ScrollViewer CreateGrid()
+        static Proxy CreateProxy(FunctionCache<Version, ModDescription> modVersions)
+        {
+            var value = modVersions.OrderByDescending(mod => mod.Key).First().Value;
+            var moreVersions = modVersions.Select(v => v.Key).Where(v => v != value.Version);
+            return new Proxy(value, moreVersions);
+        }
+
+        DataGrid CreateGrid()
         {
             DataGrid = new DataGrid
             {
@@ -59,15 +75,8 @@ namespace MmasfUI
             };
 
             TimeSpanProxy.Register(DataGrid);
-
             DataGrid.ItemsSource = Data;
-
-            return new ScrollViewer
-            {
-                Content = DataGrid,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto
-            };
+            return DataGrid;
         }
 
         static Menu CreateMenu()
