@@ -27,8 +27,7 @@ namespace ManageModsAndSavefiles.Mods
                             reader.GetNext<short>(),
                             reader.GetNext<short>(),
                             reader.GetNext<short>()
-                        )
-                    );
+                        ));
 
                 return MmasfContext.Instance.GetModDescription
                 (
@@ -38,12 +37,11 @@ namespace ManageModsAndSavefiles.Mods
                         reader.GetNext<byte>(),
                         reader.GetNext<byte>(),
                         reader.GetNext<byte>()
-                    )
-                );
+                    ));
             }
         }
 
-        readonly ModConfiguration Configuration;
+        internal ModConfiguration Configuration;
 
         public readonly string Name;
         public readonly Version Version;
@@ -69,11 +67,10 @@ namespace ManageModsAndSavefiles.Mods
 
         InfoJSon InfoJSonValue;
 
-        public ModDescription(string name, Version version, ModConfiguration configuration)
+        public ModDescription(string name, Version version, ModConfiguration value)
         {
             Name = name;
             Version = version;
-            Configuration = configuration;
             Tracer.Assert(!string.IsNullOrEmpty(Name));
         }
 

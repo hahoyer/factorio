@@ -11,6 +11,7 @@ namespace hw.Helper
         readonly Func<TValueType> _createValue;
         bool _isValid;
         TValueType _value;
+        object Mutex = new Object();
 
         public ValueCache(Func<TValueType> createValue) { _createValue = createValue; }
 
@@ -25,19 +26,23 @@ namespace hw.Helper
 
         void Ensure()
         {
-            Tracer.Assert(!IsBusy, "Recursive attemt to get value.");
-            if (_isValid)
-                return;
+            lock (Mutex)
+            {
+                Tracer.Assert(!IsBusy, "Recursive attemt to get value.");
 
-            IsBusy = true;
-            try
-            {
-                _value = _createValue();
-                _isValid = true;
-            }
-            finally
-            {
-                IsBusy = false;
+                if (_isValid)
+                    return;
+
+                IsBusy = true;
+                try
+                {
+                    _value = _createValue();
+                    _isValid = true;
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
             }
         }
 
