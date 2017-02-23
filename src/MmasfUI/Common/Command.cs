@@ -4,41 +4,54 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Input;
 using hw.DebugFormatter;
+using hw.Helper;
 
 namespace MmasfUI.Common
 {
     sealed class Command : DumpableObject, ICommand
     {
         readonly CommandManager Parent;
-        readonly MethodInfo FlatExecute;
-        readonly MethodInfo ParamterizedExecute;
+        readonly MethodInfo[] Executes;
         readonly PropertyInfo CanExecute;
 
         internal Command
         (
             CommandManager parent,
-            MethodInfo flatExecute,
-            MethodInfo paramterizedExecute,
+            MethodInfo[] executes,
             PropertyInfo canExecute)
         {
             Parent = parent;
-            FlatExecute = flatExecute;
-            ParamterizedExecute = paramterizedExecute;
+            Executes = executes;
             CanExecute = canExecute;
         }
 
         bool ICommand.CanExecute(object parameter)
         {
-            var execute = parameter == null ? FlatExecute : ParamterizedExecute;
+            var execute = FindExecutor(parameter);
             return Parent.CanExecute(execute, CanExecute);
+        }
+
+        MethodInfo FindExecutor(object parameter)
+            => Executes.Single(x => IsMatch(parameter, x.GetParameters()));
+
+        static bool IsMatch(object parameter, ParameterInfo[] parameterInfos)
+        {
+            switch(parameterInfos.Length)
+            {
+                case 0:
+                    return parameter == null;
+                case 1:
+                    return parameter.GetType().Is(parameterInfos[0].ParameterType);
+                default:
+                    Tracer.Assert(false, "Too much parameters");
+                    return false;
+            }
         }
 
         void ICommand.Execute(object parameter)
         {
-            if(parameter == null)
-                Parent.Execute(FlatExecute);
-            else
-                Parent.Execute(ParamterizedExecute, parameter);
+            var execute = FindExecutor(parameter);
+            Parent.Execute(execute, parameter);
         }
 
         event EventHandler ICommand.CanExecuteChanged

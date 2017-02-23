@@ -22,25 +22,22 @@ namespace MmasfUI.Common
                 .Where(t => TargetNamespace == null || TargetNamespace == t.Namespace)
                 .ToArray();
 
-            var flatExecute = types
-                .SelectMany(t => t.GetMembers().Where(m => IsRelevant(m, identifier, 0)))
-                .SingleOrDefault();
+            var executes = types
+                .SelectMany(t => t.GetMembers().Where(m => IsRelevant(m, identifier)))
+                .OfType<MethodInfo>()
+                .ToArray();
 
-            var paramterizedExecute = types
-                .SelectMany
-                (t => t.GetMembers().Where(m => IsRelevant(m, identifier, 1)))
-                .SingleOrDefault();
-
-            var canExecute = (flatExecute ?? paramterizedExecute)?
-                .DeclaringType?
+            var canExecute = executes
+                .Select(x => x.DeclaringType)
+                .Distinct()
+                .Single()
                 .GetProperties()
                 .SingleOrDefault(p => IsRelevant(p, identifier));
 
-            return new Command
-                (this, (MethodInfo) flatExecute, (MethodInfo) paramterizedExecute, canExecute);
+            return new Command(this, executes, canExecute);
         }
 
-        static bool IsRelevant(MemberInfo m, string identifier, int parameterCount)
+        static bool IsRelevant(MemberInfo m, string identifier)
         {
             var commandAttribute = m.GetAttribute<CommandAttribute>(false);
             if(commandAttribute == null)
@@ -50,8 +47,8 @@ namespace MmasfUI.Common
 
             var mm = m as MethodInfo;
             return mm != null
-                && mm.ReturnType == typeof(void)
-                && mm.GetParameters().Length == parameterCount;
+                   && mm.ReturnType == typeof(void)
+                   && mm.GetParameters().Length <= 1;
         }
 
         static bool IsRelevant(PropertyInfo p, string identifier)
@@ -71,16 +68,10 @@ namespace MmasfUI.Common
             return target != null && (canExecute == null || (bool) canExecute.GetValue(target));
         }
 
-        internal void Execute(MethodInfo method)
-        {
-            var target = ActiveObjects.First(o => o.GetType().Is(method.DeclaringType));
-            method.Invoke(target, null);
-        }
-
         internal void Execute(MethodInfo method, object parameter)
         {
             var target = ActiveObjects.First(o => o.GetType().Is(method.DeclaringType));
-            method.Invoke(target, new[] {parameter});
+            method.Invoke(target, parameter == null ? null : new[] {parameter});
         }
 
         internal void Activate(object target, bool setIt = true)
