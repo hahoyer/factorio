@@ -39,24 +39,33 @@ namespace MmasfUI
             public string MoreVersions { get; }
         }
 
-        readonly Proxy[] Data;
+        Proxy[] Data;
         DataGrid DataGrid;
         readonly StatusBar StatusBar = new StatusBar();
 
         public ModDictionaryView(ViewConfiguration viewConfiguration)
         {
-            Data = MmasfContext
-                .Instance
-                .ModDictionary
-                .Select(mods => CreateProxy(mods.Value))
-                .ToArray();
-
             Content = CreateGrid();
 
+            RefreshData();
             Title = viewConfiguration.Data.Name;
             this.InstallPositionPersister(viewConfiguration.PositionPath);
             this.InstallMainMenu(CreateMenu());
             this.InstallStatusLine(StatusBar);
+        }
+
+        internal void RefreshData()
+        {
+            var formerSelection = ((Proxy) DataGrid.SelectedItem)?.Data;
+            DataGrid.ItemsSource = null;
+            Data = MmasfContext
+                .Instance
+                .ModDictionary
+                .Where(mods => mods.Key != "base")
+                .Select(mods => CreateProxy(mods.Value))
+                .ToArray();
+            DataGrid.ItemsSource = Data;
+            Select(formerSelection);
         }
 
         static Proxy CreateProxy(FunctionCache<Version, ModDescription> modVersions)
@@ -75,7 +84,6 @@ namespace MmasfUI
             };
 
             TimeSpanProxy.Register(DataGrid);
-            DataGrid.ItemsSource = Data;
             return DataGrid;
         }
 
@@ -97,7 +105,7 @@ namespace MmasfUI
 
         internal void Select(ModDescription item)
         {
-            var proxyItem = Data.Single(p => p.Data == item);
+            var proxyItem = item == null ? null : Data.Single(p => p.Data.Name == item.Name);
             DataGrid.SelectedItem = proxyItem;
         }
     }

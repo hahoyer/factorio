@@ -25,7 +25,7 @@ namespace ManageModsAndSavefiles
             ConfigurationCache = new CompoundCache<Configuration>(Configuration.Create);
             ModConfigurationCache = new CompoundCache<ModConfiguration>(ModConfiguration.Create);
 
-            ModDictionary = new FunctionCache<string, FunctionCache<Version, ModDescription>>(GetModDescription);
+            ModDictionary = new FunctionCache<string, FunctionCache<Version, ModDescription>>(CreateModDescription);
 
             SystemConfigurationCache = new CompoundCache<SystemConfiguration>
             (
@@ -57,6 +57,8 @@ namespace ManageModsAndSavefiles
         [DisableDump]
         public Configuration Configuration => ConfigurationCache.Value;
         [DisableDump]
+        public ModConfiguration ModConfiguration => ModConfigurationCache.Value;
+        [DisableDump]
         public SystemConfiguration SystemConfiguration => SystemConfigurationCache.Value;
         [DisableDump]
         public DataConfiguration DataConfiguration => DataConfigurationCache.Value;
@@ -84,11 +86,8 @@ namespace ManageModsAndSavefiles
             }
         }
 
-        FunctionCache<Version, ModDescription> GetModDescription(string name)
-            => new FunctionCache<Version, ModDescription>(version => GetModDescription(name, version));
-
-        internal ModDescription GetModDescription(string name, Version version) 
-            => new ModDescription(name, version, ModConfigurationCache.Value);
+        static FunctionCache<Version, ModDescription> CreateModDescription(string name)
+            => new FunctionCache<Version, ModDescription>(version => new ModDescription(name, version));
 
         public void RenewUserConfigurationPaths()
         {
@@ -116,5 +115,6 @@ namespace ManageModsAndSavefiles
                 (reader.GetNext<byte>(), reader.GetNext<byte>(), reader.GetNext<byte>());
             return ModDictionary[name][version];
         }
+
     }
 }

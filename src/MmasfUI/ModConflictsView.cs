@@ -42,7 +42,7 @@ namespace MmasfUI
                     .Instance
                     .CommandManager
                     .ByName(MainContainer.Command.ViewModDictionary)
-                    .Execute(Data.GameMod);
+                    .Execute(Mod);
         }
 
         readonly Proxy[] Data;

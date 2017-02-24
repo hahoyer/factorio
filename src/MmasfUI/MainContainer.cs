@@ -22,12 +22,7 @@ namespace MmasfUI
         [STAThread]
         public static void Main() => Instance.Run();
 
-        ViewConfiguration ModDescriptionsValue;
-
-        public ViewConfiguration ModDescriptions
-            =>
-                ModDescriptionsValue
-                ?? (ModDescriptionsValue = ViewConfiguration.ModDictionary.SmartCreate(""));
+        ViewConfiguration ModDescriptions;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -49,6 +44,7 @@ namespace MmasfUI
             main.InstallMainMenu(CreateMainMenu());
             CommandManager.Activate(this);
             main.Show();
+            ModDescriptions = ViewConfiguration.ModDictionary.SmartCreate("");
         }
 
         static Menu CreateMainMenu()
@@ -79,13 +75,17 @@ namespace MmasfUI
             };
 
         [Command(Command.ViewModDictionary)]
-        public void ViewModDictionary() => ModDescriptions.ShowAndActivate();
+        public void ViewModDictionary()
+        {
+            ((ModDictionaryView)ModDescriptions.View).RefreshData();
+            ModDescriptions.ShowAndActivate();
+        }
 
         [Command(Command.ViewModDictionary)]
         public void ViewModDictionary(ModDescription currentItem)
         {
             ((ModDictionaryView)ModDescriptions.View).Select(currentItem);
-            ModDescriptions.ShowAndActivate();
+            ViewModDictionary();
         }
 
         [Command("Exit")]

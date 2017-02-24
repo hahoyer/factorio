@@ -18,30 +18,33 @@ namespace ManageModsAndSavefiles.Mods
                 var x = reader.GetBytes(100);
                 var isBefore01414 = ((UserContext) reader.UserContext).IsBefore01414;
 
-                if(isBefore01414)
-                    return MmasfContext.Instance.GetModDescription
-                    (
-                        reader.GetNextString<int>(),
-                        new Version
+                var result = isBefore01414
+                    ? new
+                    {
+                        name = reader.GetNextString<int>(),
+                        version = new Version
                         (
                             reader.GetNext<short>(),
                             reader.GetNext<short>(),
                             reader.GetNext<short>()
-                        ));
+                        )
+                    }
+                    : new
+                    {
+                        name = reader.GetNextString<byte>(),
+                        version = new Version
+                        (
+                            reader.GetNext<byte>(),
+                            reader.GetNext<byte>(),
+                            reader.GetNext<byte>()
+                        )
+                    };
 
-                return MmasfContext.Instance.GetModDescription
-                (
-                    reader.GetNextString<byte>(),
-                    new Version
-                    (
-                        reader.GetNext<byte>(),
-                        reader.GetNext<byte>(),
-                        reader.GetNext<byte>()
-                    ));
+                return MmasfContext.Instance.ModDictionary[result.name][result.version];
             }
         }
 
-        internal ModConfiguration Configuration;
+        static ModConfiguration Configuration => MmasfContext.Instance.ModConfiguration;
 
         public readonly string Name;
         public readonly Version Version;
@@ -52,7 +55,7 @@ namespace ManageModsAndSavefiles.Mods
             get { return ConfigurationItem != null; }
             set
             {
-                if (HasConfiguration == value)
+                if(HasConfiguration == value)
                     return;
 
                 if(value)
@@ -67,7 +70,7 @@ namespace ManageModsAndSavefiles.Mods
 
         InfoJSon InfoJSonValue;
 
-        public ModDescription(string name, Version version, ModConfiguration value)
+        public ModDescription(string name, Version version)
         {
             Name = name;
             Version = version;

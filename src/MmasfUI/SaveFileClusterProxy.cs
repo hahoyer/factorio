@@ -27,7 +27,7 @@ namespace MmasfUI
         [UsedImplicitly]
         public string Name => Data.Name;
         [UsedImplicitly]
-        public string FirstConflict => Conflicts.FirstOrDefault()?.Mod.FullName;
+        public string FirstConflict => Conflicts?.FirstOrDefault()?.Mod.FullName;
 
         [UsedImplicitly]
         public TimeSpanProxy Duration { get; set; }
