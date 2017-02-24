@@ -15,17 +15,10 @@
     <Compile Include="Compression\IZipFileHandle.cs" />
     <Compile Include="Compression\Nuget\ZipArchiveHandle.cs" />
     <Compile Include="Compression\Nuget\ZipFileHandle.cs" />
-    <Compile Include="ModConfiguration.cs" />
-    <Compile Include="Reader\ArrayItem.cs" />
-    <Compile Include="Reader\BinaryRead.cs" />
-    <Compile Include="BooleanJsonConverter.cs" />
-    <Compile Include="CompoundCache.cs" />
-    <Compile Include="Configuration.cs" />
     <Compile Include="hw\DebugFormatter\Configuration.cs" />
     <Compile Include="hw\DebugFormatter\DebugTextWriter.cs" />
     <Compile Include="hw\DebugFormatter\DisableDumpAttribute.cs" />
     <Compile Include="hw\DebugFormatter\Dumpable.cs" />
-    <Compile Include="hw\DebugFormatter\DumpableObject.cs" />
     <Compile Include="hw\DebugFormatter\DumpAttribute.cs" />
     <Compile Include="hw\DebugFormatter\DumpClassAttribute.cs" />
     <Compile Include="hw\DebugFormatter\DumpDataClassAttribute.cs" />
@@ -46,15 +39,22 @@
     <Compile Include="hw\Helper\File.cs" />
     <Compile Include="hw\Helper\FunctionCache.cs" />
     <Compile Include="hw\Helper\IUniqueIdProvider.cs" />
-    <Compile Include="hw\Helper\LinqExtension.cs" />
     <Compile Include="hw\Helper\LongExtender.cs" />
-    <Compile Include="hw\Helper\ReflectionExtender.cs" />
     <Compile Include="hw\Helper\StringAligner.cs" />
     <Compile Include="hw\Helper\StringExtender.cs" />
     <Compile Include="hw\Helper\TypeLibrary.cs" />
     <Compile Include="hw\Helper\TypeNameExtender.cs" />
-    <Compile Include="hw\Helper\ValueCache.cs" />
     <Compile Include="hw\Helper\ValueCacheExtension.cs" />
+    <Compile Include="ModConfiguration.cs" />
+    <Compile Include="Reader\ArrayItem.cs" />
+    <Compile Include="Reader\BinaryRead.cs" />
+    <Compile Include="BooleanJsonConverter.cs" />
+    <Compile Include="CompoundCache.cs" />
+    <Compile Include="Configuration.cs" />
+    <Compile Include="hw\DebugFormatter\DumpableObject.cs" />
+    <Compile Include="hw\Helper\LinqExtension.cs" />
+    <Compile Include="hw\Helper\ReflectionExtender.cs" />
+    <Compile Include="hw\Helper\ValueCache.cs" />
     <Compile Include="MmasfContext.cs" />
     <Compile Include="DataConfiguration.cs" />
     <Compile Include="Extension.cs" />
@@ -93,8 +93,8 @@
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="INIFileParser, Version=2.3.0.0, Culture=neutral, PublicKeyToken=79af7b307b65cf3c, processorArchitecture=MSIL">
-      <HintPath>..\packages\ini-parser.2.3.0\lib\net20\INIFileParser.dll</HintPath>
+    <Reference Include="INIFileParser, Version=2.4.0.0, Culture=neutral, PublicKeyToken=79af7b307b65cf3c, processorArchitecture=MSIL">
+      <HintPath>..\packages\ini-parser.3.4.0\lib\net20\INIFileParser.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="JetBrains.Annotations, Version=10.2.1.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">

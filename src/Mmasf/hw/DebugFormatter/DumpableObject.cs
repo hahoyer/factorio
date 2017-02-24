@@ -19,7 +19,7 @@ namespace hw.DebugFormatter
         protected DumpableObject(int? nextObjectId) { _objectId = nextObjectId; }
 
         [DisableDump]
-        public int ObjectId
+        internal int ObjectId
         {
             get
             {
@@ -42,15 +42,15 @@ namespace hw.DebugFormatter
 
         protected virtual string GetNodeDump() { return GetType().PrettyName(); }
 
-        public string NodeDumpForDebug()
+        internal string NodeDumpForDebug()
         {
-            if (Debugger.IsAttached)
+            if(Debugger.IsAttached)
                 return GetNodeDump();
             return "";
         }
 
         [DisableDump]
-        public bool IsStopByObjectIdActive { get; private set; }
+        internal bool IsStopByObjectIdActive { get; private set; }
 
         protected static string CallingMethodName
         {
@@ -75,9 +75,9 @@ namespace hw.DebugFormatter
         public override string DebuggerDump() { return base.DebuggerDump() + " ObjectId=" + ObjectId; }
 
         [DebuggerHidden]
-        public void StopByObjectIds(params int[] objectIds)
+        internal void StopByObjectIds(params int[] objectIds)
         {
-            foreach (var objectId in objectIds)
+            foreach(var objectId in objectIds)
                 StopByObjectId(1, objectId);
         }
 

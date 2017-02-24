@@ -362,7 +362,7 @@ namespace hw.Helper
 
         public static bool In<T>(this T a, params T[] b) { return b.Contains(a); }
 
-        public static IEnumerable<T> SelectHierachical<T>
+        internal static IEnumerable<T> SelectHierachical<T>
             (this T root, Func<T, IEnumerable<T>> getChildren)
         {
             yield return root;
