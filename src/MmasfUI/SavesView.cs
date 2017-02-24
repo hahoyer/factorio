@@ -30,6 +30,7 @@ namespace MmasfUI
                 .Select(s => new SaveFileClusterProxy(s, configuration.Name))
                 .ToArray();
 
+            ContextMenu = CreateContextMenu();
             Content = CreateGrid();
 
             Title = viewConfiguration.Data.Name + " of " + configuration.Name.Quote();
@@ -64,6 +65,15 @@ namespace MmasfUI
 
             return DataGrid;
         }
+
+        static ContextMenu CreateContextMenu()
+            => new ContextMenu
+            {
+                Items =
+                {
+                    "View _Conflicts".MenuItem(SaveFileClusterProxy.Command.ViewConflicts),
+                }
+            };
 
         static void OnSelectionChanged(SelectionChangedEventArgs args)
         {
@@ -131,7 +141,7 @@ namespace MmasfUI
                         Header = "_View",
                         Items =
                         {
-                            "Show _Conflicts".MenuItem(SaveFileClusterProxy.Command.ViewConflicts)
+                            "View _Conflicts".MenuItem(SaveFileClusterProxy.Command.ViewConflicts)
                         }
                     }
                 }

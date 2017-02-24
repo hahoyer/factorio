@@ -56,6 +56,7 @@ namespace MmasfUI
                 .Select(s => new Proxy(s))
                 .ToArray();
 
+            ContextMenu = CreateContextMenu();
             Content = CreateGrid();
 
             Title = viewConfiguration.Data.Name
@@ -67,6 +68,15 @@ namespace MmasfUI
             this.InstallMainMenu(CreateMenu());
             this.InstallStatusLine(StatusBar);
         }
+
+        static ContextMenu CreateContextMenu()
+            => new ContextMenu
+            {
+                Items =
+                {
+                    "View _Mod descriptions".MenuItem(Proxy.Command.ViewModDescriptions)
+                }
+            };
 
         DataGrid CreateGrid()
         {
@@ -111,7 +121,7 @@ namespace MmasfUI
                         Header = "_View",
                         Items =
                         {
-                            "Show _Mod descriptions".MenuItem(Proxy.Command.ViewModDescriptions)
+                            "View _Mod descriptions".MenuItem(Proxy.Command.ViewModDescriptions)
                         }
                     }
                 }
