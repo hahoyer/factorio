@@ -78,6 +78,7 @@ namespace MmasfUI
             DataGrid = CreateGrid();
             Content = DataGrid;
             DataGrid.CellEditEnding += (sender, args) => OnEndEdit();
+            DataGrid.View.CurrentCellDirtyStateChanged += (sender, args) => OnCurrentCellChanged();
 
             RefreshData();
             RawTitle = viewConfiguration.Data.Name;
@@ -86,6 +87,16 @@ namespace MmasfUI
             this.InstallMainMenu(CreateMenu());
             this.InstallStatusLine(StatusBar);
             MainContainer.Instance.CommandManager.Activate(this);
+        }
+
+        void OnCurrentCellChanged()
+        {
+            (
+                "IsValid=" + DataGrid.CurrentCell.IsValid +
+                "Column.DisplayIndex=" + DataGrid.CurrentCell.Column.DisplayIndex 
+                )
+                .WriteLine();
+
         }
 
         protected override void OnClosed(EventArgs e)

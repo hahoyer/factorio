@@ -19,7 +19,7 @@ namespace ManageModsAndSavefiles
         internal static ModConfiguration Create()
         {
             var result = Path.FromJsonFile<ModConfiguration>()
-                ?? new ModConfiguration();
+                         ?? new ModConfiguration();
 
             result.Persist();
             return result;
@@ -45,9 +45,17 @@ namespace ManageModsAndSavefiles
         [DisableDump]
         [JsonIgnore]
         public bool IsDirty
-            => Path.FileHandle().Exists
-                ? this.ToJson() != Path.FileHandle().String
-                : Data.Any();
+        {
+            get
+            {
+                if(!Path.FileHandle().Exists)
+                    return Data.Any();
+
+                var internalVersion = this.ToJson();
+                var persistentVersion = Path.FileHandle().String;
+                return internalVersion != persistentVersion;
+            }
+        }
 
         internal void Add(string name)
             => Data.Add
