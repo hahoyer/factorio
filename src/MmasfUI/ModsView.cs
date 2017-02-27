@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using hw.Helper;
 using JetBrains.Annotations;
 using ManageModsAndSavefiles;
@@ -44,6 +43,8 @@ namespace MmasfUI
             };
 
             result.AutoGeneratingColumn += (s, e) => OnAutoGeneratingColumns(e);
+            result.ConfigurateDefaultColumns();
+            result.ActivateSelectedItems();
             result.ItemsSource = data;
 
             return result;
@@ -51,23 +52,15 @@ namespace MmasfUI
 
         static void OnAutoGeneratingColumns(DataGridAutoGeneratingColumnEventArgs args)
         {
-            var column = args.Column as DataGridTextColumn;
+            if (args.PropertyName != "Created")
+                return;
 
+            var column = args.Column as DataGridTextColumn;
             if(column == null)
                 return;
 
-            var binding = (Binding) column.Binding;
-            if(args.PropertyType == typeof(DateTime))
-            {
-                binding.StringFormat = "u";
-                column.CanUserSort = true;
-            }
-
-            if(args.PropertyName == "Created")
-            {
-                column.SortDirection = ListSortDirection.Descending;
-                column.CanUserSort = true;
-            }
+            column.SortDirection = ListSortDirection.Descending;
+            column.CanUserSort = true;
         }
 
         sealed class FileClusterProxy : INotifyPropertyChanged

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using hw.DebugFormatter;
 using hw.Helper;
+using Newtonsoft.Json;
 
 namespace ManageModsAndSavefiles
 {
@@ -19,7 +21,6 @@ namespace ManageModsAndSavefiles
             var result = Path.FromJsonFile<ModConfiguration>()
                 ?? new ModConfiguration();
 
-
             result.Persist();
             return result;
         }
@@ -31,13 +32,22 @@ namespace ManageModsAndSavefiles
             public string Name;
             public bool? IsGameOnlyPossible;
             public bool? IsSaveOnlyPossible;
+
+            internal bool IsEmpty => IsGameOnlyPossible == null && IsSaveOnlyPossible == null;
         }
 
-        void Persist()
+        internal void Persist()
         {
             Path.FileHandle().EnsureDirectoryOfFileExists();
             Path.ToJsonFile(this);
         }
+
+        [DisableDump]
+        [JsonIgnore]
+        public bool IsDirty
+            => Path.FileHandle().Exists
+                ? this.ToJson() != Path.FileHandle().String
+                : Data.Any();
 
         internal void Add(string name)
             => Data.Add
@@ -49,5 +59,11 @@ namespace ManageModsAndSavefiles
             );
 
         internal void Remove(string name) => Data.Remove(Data.Single(i => i.Name == name));
+
+        public void Save()
+        {
+            if(IsDirty)
+                Persist();
+        }
     }
 }

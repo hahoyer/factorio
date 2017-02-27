@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using hw.DebugFormatter;
 using hw.Helper;
 using JetBrains.Annotations;
 using ManageModsAndSavefiles;
@@ -15,6 +15,12 @@ namespace MmasfUI
 {
     sealed class ModDictionaryView : Window
     {
+        internal static class Command
+        {
+            internal const string SaveConfiguration = "ModDictionary.SaveConfiguration";
+        }
+
+
         sealed class Proxy : INotifyPropertyChanged
         {
             internal readonly ModDescription Data;
@@ -28,30 +34,64 @@ namespace MmasfUI
             public event PropertyChangedEventHandler PropertyChanged;
 
             [NotifyPropertyChangedInvocator]
-            void OnPropertyChanged([CallerMemberName] string propertyName = null)
-                => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            void OnPropertyChanged()
+                => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
 
             [UsedImplicitly]
             public string Name => Data.Name;
             [UsedImplicitly]
             public string Version => Data.Version.ToString();
+
+            [UsedImplicitly]
+            public bool? GameOnly
+            {
+                get { return Data.IsGameOnlyPossible; }
+                set
+                {
+                    Data.IsGameOnlyPossible = value;
+                    OnPropertyChanged();
+                }
+            }
+
+            [UsedImplicitly]
+            public bool? SaveOnly
+            {
+                get { return Data.IsSaveOnlyPossible; }
+                set
+                {
+                    Data.IsSaveOnlyPossible = value;
+                    OnPropertyChanged();
+                }
+            }
+
             [UsedImplicitly]
             public string MoreVersions { get; }
         }
 
         Proxy[] Data;
-        DataGrid DataGrid;
+        readonly DataGrid DataGrid;
         readonly StatusBar StatusBar = new StatusBar();
+        readonly string RawTitle;
 
         public ModDictionaryView(ViewConfiguration viewConfiguration)
         {
-            Content = CreateGrid();
+            DataGrid = CreateGrid();
+            Content = DataGrid;
+            DataGrid.CellEditEnding += (sender, args) => OnEndEdit();
 
             RefreshData();
-            Title = viewConfiguration.Data.Name;
+            RawTitle = viewConfiguration.Data.Name;
+            Title = RawTitle;
             this.InstallPositionPersister(viewConfiguration.PositionPath);
             this.InstallMainMenu(CreateMenu());
             this.InstallStatusLine(StatusBar);
+            MainContainer.Instance.CommandManager.Activate(this);
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            MainContainer.Instance.CommandManager.Activate(this, false);
+            base.OnClosed(e);
         }
 
         internal void RefreshData()
@@ -75,16 +115,20 @@ namespace MmasfUI
             return new Proxy(value, moreVersions);
         }
 
-        DataGrid CreateGrid()
+        static DataGrid CreateGrid()
         {
-            DataGrid = new DataGrid
+            var result = new DataGrid
             {
-                IsReadOnly = true,
                 SelectionMode = DataGridSelectionMode.Single
             };
 
-            TimeSpanProxy.Register(DataGrid);
-            return DataGrid;
+            result.ConfigurateDefaultColumns();
+            return result;
+        }
+
+        void OnEndEdit()
+        {
+            Title = RawTitle + (IsDirty ? "*" : "");
         }
 
         static Menu CreateMenu()
@@ -97,6 +141,7 @@ namespace MmasfUI
                         Header = "_File",
                         Items =
                         {
+                            "_Save".MenuItem(Command.SaveConfiguration),
                             "_Exit".MenuItem("Exit")
                         }
                     }
@@ -108,5 +153,20 @@ namespace MmasfUI
             var proxyItem = item == null ? null : Data.Single(p => p.Data.Name == item.Name);
             DataGrid.SelectedItem = proxyItem;
         }
+
+        [DisableDump]
+        [Command(Command.SaveConfiguration)]
+        public bool IsDirty
+            => MmasfContext
+                .Instance
+                .ModConfiguration
+                .IsDirty;
+
+        [Command(Command.SaveConfiguration)]
+        public void SaveConfiguration()
+            => MmasfContext
+                .Instance
+                .ModConfiguration
+                .Save();
     }
 }

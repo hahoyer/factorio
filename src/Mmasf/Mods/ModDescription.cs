@@ -44,7 +44,7 @@ namespace ManageModsAndSavefiles.Mods
             }
         }
 
-        static ModConfiguration Configuration => MmasfContext.Instance.ModConfiguration;
+        static ModConfiguration ModConfiguration => MmasfContext.Instance.ModConfiguration;
 
         public readonly string Name;
         public readonly Version Version;
@@ -52,21 +52,21 @@ namespace ManageModsAndSavefiles.Mods
 
         public bool HasConfiguration
         {
-            get { return ConfigurationItem != null; }
+            get { return Configuration != null; }
             set
             {
                 if(HasConfiguration == value)
                     return;
 
                 if(value)
-                    Configuration.Add(Name);
+                    ModConfiguration.Add(Name);
                 else
-                    Configuration.Remove(Name);
+                    ModConfiguration.Remove(Name);
             }
         }
 
-        ModConfiguration.Item ConfigurationItem
-            => Configuration.Data.SingleOrDefault(data => data.Name == Name);
+        public ModConfiguration.Item Configuration
+            => ModConfiguration.Data.SingleOrDefault(data => data.Name == Name);
 
         InfoJSon InfoJSonValue;
 
@@ -92,6 +92,38 @@ namespace ManageModsAndSavefiles.Mods
                     return;
 
                 NotImplementedMethod(value);
+            }
+        }
+
+        public bool? IsGameOnlyPossible
+        {
+            get { return Configuration?.IsGameOnlyPossible; }
+            set
+            {
+                if(IsGameOnlyPossible == value)
+                    return;
+
+                HasConfiguration = true;
+                Configuration.IsGameOnlyPossible = value;
+
+                if(Configuration.IsEmpty)
+                    HasConfiguration = false;
+            }
+        }
+
+        public bool? IsSaveOnlyPossible
+        {
+            get { return Configuration?.IsSaveOnlyPossible; }
+            set
+            {
+                if (IsSaveOnlyPossible == value)
+                    return;
+
+                HasConfiguration = true;
+                Configuration.IsSaveOnlyPossible = value;
+
+                if (Configuration.IsEmpty)
+                    HasConfiguration = false;
             }
         }
 

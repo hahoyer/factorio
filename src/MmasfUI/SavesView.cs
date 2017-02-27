@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using hw.Helper;
 using ManageModsAndSavefiles;
 using MmasfUI.Common;
@@ -17,7 +16,6 @@ namespace MmasfUI
     {
         readonly SaveFileClusterProxy[] Data;
         readonly StatusBar StatusBar = new StatusBar();
-        DataGrid DataGrid;
 
         public SavesView(ViewConfiguration viewConfiguration)
         {
@@ -31,27 +29,8 @@ namespace MmasfUI
                 .ToArray();
 
             ContextMenu = CreateContextMenu();
-            Content = CreateGrid();
 
-            Title = viewConfiguration.Data.Name + " of " + configuration.Name.Quote();
-            this.InstallPositionPersister(viewConfiguration.PositionPath);
-            this.InstallMainMenu(CreateMenu());
-            this.InstallStatusLine(StatusBar);
-        }
-
-        DataGrid CreateGrid()
-        {
-            DataGrid = new DataGrid
-            {
-                IsReadOnly = true
-            };
-
-            DataGrid.AutoGeneratingColumn += (s, e) => OnAutoGeneratingColumns(e);
-            DataGrid.SelectionChanged += (s, e) => OnSelectionChanged(e);
-
-            TimeSpanProxy.Register(DataGrid);
-
-            DataGrid.ItemsSource = Data;
+            Content = CreateGrid(Data);
 
             Task.Factory.StartNew
             (
@@ -63,7 +42,24 @@ namespace MmasfUI
                 }
             );
 
-            return DataGrid;
+            Title = viewConfiguration.Data.Name + " of " + configuration.Name.Quote();
+            this.InstallPositionPersister(viewConfiguration.PositionPath);
+            this.InstallMainMenu(CreateMenu());
+            this.InstallStatusLine(StatusBar);
+        }
+
+        static DataGrid CreateGrid(SaveFileClusterProxy[] data)
+        {
+            var result = new DataGrid
+            {
+                IsReadOnly = true
+            };
+
+            result.AutoGeneratingColumn += (s, e) => OnAutoGeneratingColumns(e);
+            result.ConfigurateDefaultColumns();
+            result.ActivateSelectedItems();
+            result.ItemsSource = data;
+            return result;
         }
 
         static ContextMenu CreateContextMenu()
@@ -71,38 +67,21 @@ namespace MmasfUI
             {
                 Items =
                 {
-                    "View _Conflicts".MenuItem(SaveFileClusterProxy.Command.ViewConflicts),
+                    "View _Conflicts".MenuItem(SaveFileClusterProxy.Command.ViewConflicts)
                 }
             };
 
-        static void OnSelectionChanged(SelectionChangedEventArgs args)
-        {
-            foreach(var item in args.RemovedItems)
-                MainContainer.Instance.CommandManager.Activate(item, false);
-
-            foreach(var item in args.AddedItems)
-                MainContainer.Instance.CommandManager.Activate(item);
-        }
-
         static void OnAutoGeneratingColumns(DataGridAutoGeneratingColumnEventArgs args)
         {
-            var column = args.Column as DataGridTextColumn;
-            if(column == null)
+            if (args.PropertyName != "Created")
                 return;
 
-            var binding = (Binding) column.Binding;
+            var column = args.Column as DataGridTextColumn;
+            if (column == null)
+                return;
 
-            if(args.PropertyType == typeof(DateTime))
-            {
-                binding.StringFormat = "u";
-                column.CanUserSort = true;
-            }
-
-            if(args.PropertyName == "Created")
-            {
-                column.SortDirection = ListSortDirection.Descending;
-                column.CanUserSort = true;
-            }
+            column.SortDirection = ListSortDirection.Descending;
+            column.CanUserSort = true;
         }
 
         void RefreshData()

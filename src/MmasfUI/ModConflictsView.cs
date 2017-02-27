@@ -28,12 +28,16 @@ namespace MmasfUI
             public Proxy(ModConflict data) { Data = data; }
             public event PropertyChangedEventHandler PropertyChanged;
 
+            [UsedImplicitly]
             [NotifyPropertyChangedInvocator]
             void OnPropertyChanged([CallerMemberName] string propertyName = null)
                 => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
+            [UsedImplicitly]
             public string ModName => Mod.Name;
+            [UsedImplicitly]
             public string SaveVersion => Data.SaveMod?.Version.ToString();
+            [UsedImplicitly]
             public string GameVersion => Data.GameMod?.Version.ToString();
 
             [Command(Command.ViewModDescriptions)]
@@ -45,19 +49,18 @@ namespace MmasfUI
                     .Execute(Mod);
         }
 
-        readonly Proxy[] Data;
-        DataGrid DataGrid;
         readonly StatusBar StatusBar = new StatusBar();
 
         public ModConflictsView
             (ViewConfiguration viewConfiguration, ManageModsAndSavefiles.Saves.FileCluster parent)
         {
-            Data = parent.RelevantConflicts
+            var data = parent.RelevantConflicts
                 .Select(s => new Proxy(s))
                 .ToArray();
 
             ContextMenu = CreateContextMenu();
-            Content = CreateGrid();
+            var dataGrid = CreateGrid(data);
+            Content = dataGrid;
 
             Title = viewConfiguration.Data.Name
                 + " of "
@@ -78,29 +81,18 @@ namespace MmasfUI
                 }
             };
 
-        DataGrid CreateGrid()
+        static DataGrid CreateGrid(IEnumerable<Proxy> data)
         {
-            DataGrid = new DataGrid
+            var result = new DataGrid
             {
-                IsReadOnly = true
+                IsReadOnly = true,
+                SelectionMode = DataGridSelectionMode.Single
             };
 
-            DataGrid.SelectionChanged += (s, e) => OnSelectionChanged(e);
-
-            TimeSpanProxy.Register(DataGrid);
-
-            DataGrid.ItemsSource = Data;
-
-            return DataGrid;
-        }
-
-        static void OnSelectionChanged(SelectionChangedEventArgs args)
-        {
-            foreach(var item in args.RemovedItems)
-                MainContainer.Instance.CommandManager.Activate(item, false);
-
-            foreach(var item in args.AddedItems)
-                MainContainer.Instance.CommandManager.Activate(item);
+            result.ConfigurateDefaultColumns();
+            result.ActivateSelectedItems();
+            result.ItemsSource = data;
+            return result;
         }
 
         static Menu CreateMenu()

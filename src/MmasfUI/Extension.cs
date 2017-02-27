@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Media;
 using ManageModsAndSavefiles;
-using ManageModsAndSavefiles.Saves;
 using MmasfUI.Common;
 
 namespace MmasfUI
@@ -89,5 +89,49 @@ namespace MmasfUI
                 modsConfiguration.ShowAndActivate();
             return modsConfiguration;
         }
+
+        public static void ConfigurateDefaultColumns(this DataGrid target)
+        {
+            TimeSpanProxy.Register(target);
+            target.AutoGeneratingColumn += (s, e) => OnAutoGeneratingColumns(e);
+        }
+
+        public static void ActivateSelectedItems(this DataGrid target)
+        {
+            target.SelectionChanged += (s, e) => OnSelectionChanged(e);
+        }
+
+        static void OnAutoGeneratingColumns(DataGridAutoGeneratingColumnEventArgs args)
+        {
+            var column = args.Column as DataGridTextColumn;
+            if(column != null)
+            {
+                var binding = (Binding) column.Binding;
+                if(args.PropertyType == typeof(DateTime))
+                {
+                    binding.StringFormat = "u";
+                    column.CanUserSort = true;
+                }
+            }
+
+            if(args.PropertyType != typeof(bool?))
+                return;
+
+            args.Column = new DataGridCheckBoxColumn
+            {
+                Header = args.Column.Header,
+                Binding = new Binding(args.PropertyName),
+                IsThreeState = true
+            };
+        }
+
+        static void OnSelectionChanged(SelectionChangedEventArgs args)
+        {
+            foreach(var item in args.RemovedItems)
+                MainContainer.Instance.CommandManager.Activate(item, false);
+
+            foreach(var item in args.AddedItems)
+                MainContainer.Instance.CommandManager.Activate(item);
+        }
     }
-}                                           
+}

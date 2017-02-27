@@ -16,7 +16,6 @@ namespace MmasfUI
             internal const string ViewModDictionary = "ViewModDictionary";
         }
 
-
         internal static readonly MainContainer Instance = new MainContainer();
 
         [STAThread]

@@ -5,7 +5,7 @@ using hw.Helper;
 using IniParser;
 using IniParser.Model;
 using ManageModsAndSavefiles.Compression;
-using ManageModsAndSavefiles.Compression.Nuget;
+using ManageModsAndSavefiles.Compression.Microsoft;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 
@@ -48,7 +48,14 @@ namespace ManageModsAndSavefiles
             => JsonConvert.DeserializeObject<T>(jsonText);
 
         internal static string ToJson<T>(this T o)
-            => JsonConvert.SerializeObject(o, Formatting.Indented);
+            => JsonConvert.SerializeObject
+            (
+                o,
+                Formatting.Indented,
+                new JsonSerializerSettings
+                {
+                    DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate
+                });
 
         internal static T FromJsonFile<T>(this string jsonFileName)
             where T : class
@@ -69,8 +76,8 @@ namespace ManageModsAndSavefiles
         public static IZipArchiveHandle ZipHandle(this string name, bool quirks = false)
             =>
                 quirks
-                    ? (IZipArchiveHandle) new Compression.Microsoft.ZipArchiveHandle(name)
-                    : new ZipArchiveHandle(name);
+                    ? (IZipArchiveHandle) new ZipArchiveHandle(name)
+                    : new Compression.Nuget.ZipArchiveHandle(name);
 
         public static TValue? GetValueOrNull<TKey, TValue>
             (this IDictionary<TKey, TValue> dictionary, TKey target)
@@ -114,7 +121,7 @@ namespace ManageModsAndSavefiles
             }
 
             public RegistryItem(string[] path)
-                : this(Map[path[0]], path.Skip(1).Stringify("\\")) { }
+                : this(Map[path[0]], path.Skip(1).Stringify("\\")) {}
 
             public T GetValue<T>()
             {
@@ -145,7 +152,7 @@ namespace ManageModsAndSavefiles
 
                     using(var item = Root.OpenSubKey(key))
                         return item != null
-                               && item.GetValueNames().Any(name => name == value);
+                            && item.GetValueNames().Any(name => name == value);
                 }
             }
         }
