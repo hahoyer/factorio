@@ -103,26 +103,25 @@ namespace MmasfUI
 
         static void OnAutoGeneratingColumns(DataGridAutoGeneratingColumnEventArgs args)
         {
-            var column = args.Column as DataGridTextColumn;
-            if(column != null)
-            {
-                var binding = (Binding) column.Binding;
-                if(args.PropertyType == typeof(DateTime))
+            if(args.PropertyType == typeof(bool?))
+                args.Column = new DataGridCheckBoxColumn
                 {
-                    binding.StringFormat = "u";
-                    column.CanUserSort = true;
-                }
-            }
+                    Header = args.Column.Header,
+                    Binding = new Binding(args.PropertyName),
+                    IsThreeState = true
+                };
 
-            if(args.PropertyType != typeof(bool?))
+            var dgbc = args.Column as DataGridBoundColumn;
+            if(dgbc == null)
                 return;
 
-            args.Column = new DataGridCheckBoxColumn
+            var binding = (Binding) dgbc.Binding;
+            binding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+            if(args.PropertyType == typeof(DateTime))
             {
-                Header = args.Column.Header,
-                Binding = new Binding(args.PropertyName),
-                IsThreeState = true
-            };
+                binding.StringFormat = "u";
+                dgbc.CanUserSort = true;
+            }
         }
 
         static void OnSelectionChanged(SelectionChangedEventArgs args)

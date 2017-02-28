@@ -77,26 +77,14 @@ namespace MmasfUI
         {
             DataGrid = CreateGrid();
             Content = DataGrid;
-            DataGrid.CellEditEnding += (sender, args) => OnEndEdit();
-            DataGrid.View.CurrentCellDirtyStateChanged += (sender, args) => OnCurrentCellChanged();
-
             RefreshData();
             RawTitle = viewConfiguration.Data.Name;
             Title = RawTitle;
             this.InstallPositionPersister(viewConfiguration.PositionPath);
             this.InstallMainMenu(CreateMenu());
             this.InstallStatusLine(StatusBar);
+            DataGrid.CurrentCellChanged += (s, e) => OnEndEdit();
             MainContainer.Instance.CommandManager.Activate(this);
-        }
-
-        void OnCurrentCellChanged()
-        {
-            (
-                "IsValid=" + DataGrid.CurrentCell.IsValid +
-                "Column.DisplayIndex=" + DataGrid.CurrentCell.Column.DisplayIndex 
-                )
-                .WriteLine();
-
         }
 
         protected override void OnClosed(EventArgs e)
@@ -179,5 +167,5 @@ namespace MmasfUI
                 .Instance
                 .ModConfiguration
                 .Save();
-    }
+   }
 }
