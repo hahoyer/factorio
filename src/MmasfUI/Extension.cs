@@ -93,15 +93,15 @@ namespace MmasfUI
         public static void ConfigurateDefaultColumns(this DataGrid target)
         {
             TimeSpanProxy.Register(target);
-            target.AutoGeneratingColumn += (s, e) => OnAutoGeneratingColumns(e);
+            target.AutoGeneratingColumn += (s, e) => OnAutoGeneratingColumnsForConfigurateDefaultColumns(e);
         }
 
         public static void ActivateSelectedItems(this DataGrid target)
         {
-            target.SelectionChanged += (s, e) => OnSelectionChanged(e);
+            target.SelectionChanged += (s, e) => OnSelectionChangedForActivateSelectedItems(e);
         }
 
-        static void OnAutoGeneratingColumns(DataGridAutoGeneratingColumnEventArgs args)
+        static void OnAutoGeneratingColumnsForConfigurateDefaultColumns(DataGridAutoGeneratingColumnEventArgs args)
         {
             if(args.PropertyType == typeof(bool?))
                 args.Column = new DataGridCheckBoxColumn
@@ -124,7 +124,7 @@ namespace MmasfUI
             }
         }
 
-        static void OnSelectionChanged(SelectionChangedEventArgs args)
+        static void OnSelectionChangedForActivateSelectedItems(SelectionChangedEventArgs args)
         {
             foreach(var item in args.RemovedItems)
                 MainContainer.Instance.CommandManager.Activate(item, false);

@@ -24,10 +24,12 @@ namespace MmasfUI
         sealed class Proxy : INotifyPropertyChanged
         {
             internal readonly ModDescription Data;
+            readonly Action OnPropertyEdited;
 
-            public Proxy(ModDescription data, IEnumerable<Version> moreVersions)
+            public Proxy(ModDescription data, IEnumerable<Version> moreVersions, Action onPropertyEdited)
             {
                 Data = data;
+                OnPropertyEdited = onPropertyEdited;
                 MoreVersions = moreVersions.Stringify(" ");
             }
 
@@ -49,7 +51,7 @@ namespace MmasfUI
                 set
                 {
                     Data.IsGameOnlyPossible = value;
-                    OnPropertyChanged();
+                    OnPropertyEdited();
                 }
             }
 
@@ -60,7 +62,7 @@ namespace MmasfUI
                 set
                 {
                     Data.IsSaveOnlyPossible = value;
-                    OnPropertyChanged();
+                    OnPropertyEdited();
                 }
             }
 
@@ -83,7 +85,6 @@ namespace MmasfUI
             this.InstallPositionPersister(viewConfiguration.PositionPath);
             this.InstallMainMenu(CreateMenu());
             this.InstallStatusLine(StatusBar);
-            DataGrid.CurrentCellChanged += (s, e) => OnEndEdit();
             MainContainer.Instance.CommandManager.Activate(this);
         }
 
@@ -107,11 +108,11 @@ namespace MmasfUI
             Select(formerSelection);
         }
 
-        static Proxy CreateProxy(FunctionCache<Version, ModDescription> modVersions)
+        Proxy CreateProxy(FunctionCache<Version, ModDescription> modVersions)
         {
             var value = modVersions.OrderByDescending(mod => mod.Key).First().Value;
             var moreVersions = modVersions.Select(v => v.Key).Where(v => v != value.Version);
-            return new Proxy(value, moreVersions);
+            return new Proxy(value, moreVersions, RefreshTitle);
         }
 
         static DataGrid CreateGrid()
@@ -125,7 +126,7 @@ namespace MmasfUI
             return result;
         }
 
-        void OnEndEdit()
+        void RefreshTitle()
         {
             Title = RawTitle + (IsDirty ? "*" : "");
         }
@@ -163,9 +164,12 @@ namespace MmasfUI
 
         [Command(Command.SaveConfiguration)]
         public void SaveConfiguration()
-            => MmasfContext
+        {
+            MmasfContext
                 .Instance
                 .ModConfiguration
                 .Save();
-   }
+            RefreshTitle();
+        }
+    }
 }
