@@ -68,7 +68,7 @@ namespace MmasfUI.Common
             }
         }                                           
 
-        internal void RegisterKeyBoardHandler(Window window) { window.KeyUp += GetKey; }
+        internal void RegisterKeyboardHandler(Window window) { window.KeyUp += GetKey; }
 
         void GetKey(object sender, KeyEventArgs e)
         {

@@ -13,8 +13,16 @@ namespace ManageModsAndSavefiles.Saves
         public ModDescription Mod => GameMod ?? SaveMod;
 
         internal bool IsRelevantConflict
-            => GameMod == null
-                || SaveMod == null
-                || !GameMod.IsCompatible(SaveMod.Version);
+        {
+            get
+            {
+                if(GameMod == null)
+                    return SaveMod.IsSaveOnlyPossible != true;
+                if(SaveMod == null)
+                    return GameMod.IsGameOnlyPossible != true;
+
+                return !GameMod.IsCompatible(SaveMod.Version);
+            }
+        }
     }
 }

@@ -170,6 +170,7 @@ namespace MmasfUI
                 .ModConfiguration
                 .Save();
             RefreshTitle();
+
         }
     }
 }

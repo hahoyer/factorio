@@ -26,6 +26,7 @@ namespace MmasfUI
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+
             ShowContextView();
         }
 
@@ -38,7 +39,7 @@ namespace MmasfUI
                 Title = "MmasfContext"
             };
 
-            view.Selection.RegisterKeyBoardHandler(main);
+            view.Selection.RegisterKeyboardHandler(main);
             main.InstallPositionPersister("Main");
             main.InstallMainMenu(CreateMainMenu());
             CommandManager.Activate(this);
