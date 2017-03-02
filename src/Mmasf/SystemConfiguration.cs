@@ -41,5 +41,9 @@ namespace ManageModsAndSavefiles
         }
 
         public string ConfigurationPath => File.Global[ConfigPathTag].PathFromFactorioStyle();
+        const string ProgramFolderName = "FactorioMmasf";
+        public static readonly string Folder = Environment
+            .GetFolderPath(Environment.SpecialFolder.ApplicationData)
+            .PathCombine(ProgramFolderName);
     }
 }

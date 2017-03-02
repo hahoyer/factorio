@@ -22,11 +22,11 @@ namespace MmasfUI
         public static void Main() => Instance.Run();
 
         ViewConfiguration ModDescriptions;
+        ViewConfiguration[] ViewList; 
 
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-
             ShowContextView();
         }
 

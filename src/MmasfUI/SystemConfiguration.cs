@@ -1,15 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using hw.DebugFormatter;
 using hw.Helper;
 
 namespace MmasfUI
 {
     static class SystemConfiguration
     {
-        const string ViewConfigurationFileName = "Views";
-        const string ConfigurationRoot = "Mmasf";
+        const string ViewConfigurationFileName = "UI";
+
+        static string ViewConfigurationPath
+            => ManageModsAndSavefiles.SystemConfiguration
+                .Folder
+                .PathCombine(ViewConfigurationFileName);
 
         internal static string GetConfigurationPath(string name)
         {
@@ -19,8 +22,5 @@ namespace MmasfUI
             fileHandle.EnsureIsExistentDirectory();
             return fileHandle.FullName;
         }
-
-        static string ViewConfigurationPath
-            => ConfigurationRoot.PathCombine(ViewConfigurationFileName);
     }
 }
