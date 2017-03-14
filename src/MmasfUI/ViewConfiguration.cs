@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using hw.DebugFormatter;
@@ -22,6 +23,28 @@ namespace MmasfUI
         internal static readonly IData Saves = new SavesType();
         internal static readonly IData Mods = new ModsType();
         internal static readonly IData ModDescriptions = new ModDescriptionsType();
+
+        internal static ViewConfiguration CreateViewConfiguration(string identifier)
+            => CreateType(Path.GetExtension(identifier)?.Substring(1))
+                .SmartCreate(Path.GetFileNameWithoutExtension(identifier));
+
+        static IData CreateType(string identifier)
+        {
+            switch(identifier)
+            {
+            case "Saves":
+                return new SavesType();
+            case "Mods":
+                return new ModsType();
+            case "ModDescriptions":
+                return new ModDescriptionsType();
+            case "ModConflicts":
+                return new SaveFileClusterProxy.ModConflicts();
+            default:
+                NotImplementedFunction(identifier);
+                return null;
+            }
+        }
 
         sealed class SavesType : DumpableObject, IData
         {
@@ -99,7 +122,7 @@ namespace MmasfUI
 
         Persister ViewPersister => PersisterCache.Value;
 
-        File ItemFile(string itemName) => ItemFileName(itemName).FileHandle();
+        hw.Helper.File ItemFile(string itemName) => ItemFileName(itemName).FileHandle();
 
         string ItemFileName(string itemName)
             => SystemConfiguration
@@ -120,13 +143,6 @@ namespace MmasfUI
         {
             View.Show();
             View.Activate();
-        }
-
-        internal static ViewConfiguration CreateViewConfiguration(string identifier)
-        {
-            Dumpable.NotImplementedFunction(identifier);
-            return null;
-
         }
     }
 }

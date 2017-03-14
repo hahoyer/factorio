@@ -63,7 +63,7 @@ namespace MmasfUI
         [Command(Command.ViewConflicts)]
         public void ViewConflicts() => ConflictConfiguration.ShowAndActivate();
 
-        sealed class ModConflicts : DumpableObject, ViewConfiguration.IData
+        internal sealed class ModConflicts : DumpableObject, ViewConfiguration.IData
         {
             readonly FileCluster Data;
             public ModConflicts(FileCluster data) { Data = data; }

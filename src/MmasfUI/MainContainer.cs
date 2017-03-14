@@ -49,23 +49,20 @@ namespace MmasfUI
                 }
             };
 
-        public MainContainer()
+        ViewConfiguration ModDescriptions;
+        ViewConfiguration[] ViewList;
+
+        protected override void OnStartup(StartupEventArgs e)
         {
             ViewList = SystemConfiguration
                 .ViewConfigurationPath
                 .FileHandle()
                 .Items
                 .Select(file => ViewConfiguration.CreateViewConfiguration(file.Name))
-                .Where(f=>f.Status == "Open")
-                .OrderByDescending(f=>f.LastUsed)
+                .Where(f => f.Status == "Open")
+                .OrderByDescending(f => f.LastUsed)
                 .ToArray();
-        }
 
-        ViewConfiguration ModDescriptions;
-        ViewConfiguration[] ViewList;
-
-        protected override void OnStartup(StartupEventArgs e)
-        {
             base.OnStartup(e);
             ShowContextView();
         }
