@@ -9,7 +9,7 @@ namespace MmasfUI
     {
         const string ViewConfigurationFileName = "UI";
 
-        static string ViewConfigurationPath
+        internal static string ViewConfigurationPath
             => ManageModsAndSavefiles.SystemConfiguration
                 .Folder
                 .PathCombine(ViewConfigurationFileName);

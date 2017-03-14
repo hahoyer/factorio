@@ -17,7 +17,7 @@ namespace MmasfUI
     {
         internal static class Command
         {
-            internal const string SaveConfiguration = "ModDictionary.SaveConfiguration";
+            internal const string SaveConfiguration = "ModDescriptions.SaveConfiguration";
         }
 
 

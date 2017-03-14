@@ -21,7 +21,7 @@ namespace MmasfUI
         readonly ValueCache<Window> ViewCache;
         internal static readonly IData Saves = new SavesType();
         internal static readonly IData Mods = new ModsType();
-        internal static readonly IData ModDictionary = new ModDictionaryType();
+        internal static readonly IData ModDescriptions = new ModDescriptionsType();
 
         sealed class SavesType : DumpableObject, IData
         {
@@ -39,12 +39,12 @@ namespace MmasfUI
             string IData.Name => "Mods";
         }
 
-        sealed class ModDictionaryType : DumpableObject, IData
+        sealed class ModDescriptionsType : DumpableObject, IData
         {
             Window IData.CreateView(ViewConfiguration viewConfiguration)
                 => new ModDictionaryView(viewConfiguration);
 
-            string IData.Name => "ModDictionary";
+            string IData.Name => "ModDescriptions";
         }
 
         internal ViewConfiguration(string name, IData data)
@@ -120,6 +120,13 @@ namespace MmasfUI
         {
             View.Show();
             View.Activate();
+        }
+
+        internal static ViewConfiguration CreateViewConfiguration(string identifier)
+        {
+            Dumpable.NotImplementedFunction(identifier);
+            return null;
+
         }
     }
 }

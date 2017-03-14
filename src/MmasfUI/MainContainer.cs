@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using hw.DebugFormatter;
+using hw.Helper;
 using ManageModsAndSavefiles.Mods;
 using MmasfUI.Common;
 
@@ -11,41 +12,15 @@ namespace MmasfUI
 {
     public sealed class MainContainer : Application
     {
+        [STAThread]
+        public static void Main() => Instance.Run();
+
         internal static class Command
         {
             internal const string ViewModDictionary = "ViewModDictionary";
         }
 
         internal static readonly MainContainer Instance = new MainContainer();
-
-        [STAThread]
-        public static void Main() => Instance.Run();
-
-        ViewConfiguration ModDescriptions;
-        ViewConfiguration[] ViewList; 
-
-        protected override void OnStartup(StartupEventArgs e)
-        {
-            base.OnStartup(e);
-            ShowContextView();
-        }
-
-        void ShowContextView()
-        {
-            var view = new ContextView();
-            var main = new Window
-            {
-                Content = view,
-                Title = "MmasfContext"
-            };
-
-            view.Selection.RegisterKeyboardHandler(main);
-            main.InstallPositionPersister("Main");
-            main.InstallMainMenu(CreateMainMenu());
-            CommandManager.Activate(this);
-            main.Show();
-            ModDescriptions = ViewConfiguration.ModDictionary.SmartCreate("");
-        }
 
         static Menu CreateMainMenu()
             => new Menu
@@ -74,17 +49,55 @@ namespace MmasfUI
                 }
             };
 
+        public MainContainer()
+        {
+            ViewList = SystemConfiguration
+                .ViewConfigurationPath
+                .FileHandle()
+                .Items
+                .Select(file => ViewConfiguration.CreateViewConfiguration(file.Name))
+                .Where(f=>f.Status == "Open")
+                .OrderByDescending(f=>f.LastUsed)
+                .ToArray();
+        }
+
+        ViewConfiguration ModDescriptions;
+        ViewConfiguration[] ViewList;
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+            ShowContextView();
+        }
+
+        void ShowContextView()
+        {
+            var view = new ContextView();
+            var main = new Window
+            {
+                Content = view,
+                Title = "MmasfContext"
+            };
+
+            view.Selection.RegisterKeyboardHandler(main);
+            main.InstallPositionPersister("Main");
+            main.InstallMainMenu(CreateMainMenu());
+            CommandManager.Activate(this);
+            main.Show();
+            ModDescriptions = ViewConfiguration.ModDescriptions.SmartCreate("");
+        }
+
         [Command(Command.ViewModDictionary)]
         public void ViewModDictionary()
         {
-            ((ModDictionaryView)ModDescriptions.View).RefreshData();
+            ((ModDictionaryView) ModDescriptions.View).RefreshData();
             ModDescriptions.ShowAndActivate();
         }
 
         [Command(Command.ViewModDictionary)]
         public void ViewModDictionary(ModDescription currentItem)
         {
-            ((ModDictionaryView)ModDescriptions.View).Select(currentItem);
+            ((ModDictionaryView) ModDescriptions.View).Select(currentItem);
             ViewModDictionary();
         }
 
