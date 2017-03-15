@@ -25,11 +25,17 @@ namespace MmasfUI
         internal static readonly IData ModDescriptions = new ModDescriptionsType();
 
         internal static ViewConfiguration CreateViewConfiguration(string identifier)
-            => CreateType(Path.GetExtension(identifier)?.Substring(1))
-                .SmartCreate(Path.GetFileNameWithoutExtension(identifier));
-
-        static IData CreateType(string identifier)
         {
+            var parts = identifier.Split('.');
+            var head = parts[0];
+            var subIdentifier = parts.Take(Math.Max(0, parts.Length)).Stringify(".");
+            var type = parts.Last();
+            return CreateType(subIdentifier, type).SmartCreate(head);
+        }
+
+        static IData CreateType(string subIdentifier, string identifier)
+        {
+
             switch(identifier)
             {
             case "Saves":
@@ -39,7 +45,7 @@ namespace MmasfUI
             case "ModDescriptions":
                 return new ModDescriptionsType();
             case "ModConflicts":
-                return new SaveFileClusterProxy.ModConflicts();
+                return new SaveFileClusterProxy.ModConflicts(subIdentifier);
             default:
                 NotImplementedFunction(identifier);
                 return null;

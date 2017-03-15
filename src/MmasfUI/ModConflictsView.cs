@@ -5,8 +5,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using hw.DebugFormatter;
 using hw.Helper;
 using JetBrains.Annotations;
+using ManageModsAndSavefiles;
 using ManageModsAndSavefiles.Mods;
 using ManageModsAndSavefiles.Saves;
 using MmasfUI.Common;
@@ -51,9 +53,13 @@ namespace MmasfUI
 
         readonly StatusBar StatusBar = new StatusBar();
 
-        public ModConflictsView
-            (ViewConfiguration viewConfiguration, ManageModsAndSavefiles.Saves.FileCluster parent)
+        public ModConflictsView(ViewConfiguration viewConfiguration, string parentName)
         {
+            var parent = MmasfContext
+                .Instance
+                .UserConfigurations.Single(u => u.Name == viewConfiguration.Name)
+                .SaveFiles.Single(u => u.Name == parentName);
+
             var data = parent.RelevantConflicts
                 .Select(s => new Proxy(s))
                 .ToArray();

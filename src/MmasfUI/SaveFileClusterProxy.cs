@@ -44,7 +44,7 @@ namespace MmasfUI
         public SaveFileClusterProxy(FileCluster data, string name)
         {
             Data = data;
-            ConflictConfiguration = new ModConflicts(data)
+            ConflictConfiguration = new ModConflicts(data.Name)
                 .SmartCreate(name + "." + data.Name);
         }
 
@@ -65,8 +65,8 @@ namespace MmasfUI
 
         internal sealed class ModConflicts : DumpableObject, ViewConfiguration.IData
         {
-            readonly FileCluster Data;
-            public ModConflicts(FileCluster data) { Data = data; }
+            readonly string Data;
+            public ModConflicts(string data) { Data = data; }
 
             Window ViewConfiguration.IData.CreateView(ViewConfiguration viewConfiguration)
                 => new ModConflictsView(viewConfiguration, Data);
