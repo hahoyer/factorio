@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net;
 using hw.DebugFormatter;
 
-
 namespace hw.Helper
 {
     /// <summary>
@@ -15,16 +14,23 @@ namespace hw.Helper
     [Serializable]
     public sealed class File
     {
-        string _name;
-        Cache CacheInstance = new Cache();
+        readonly string _name;
+
+        Uri _uriCache;
+
+        public Uri Uri { get { return _uriCache ?? (_uriCache = new Uri(_name)); } }
+
+        public bool IsFTP { get { return Uri.Scheme == Uri.UriSchemeFtp; } }
+
+        /// <summary>
+        ///     constructs a FileInfo
+        /// </summary>
+        /// <param name="name"> the filename </param>
+        internal static File Create(string name) { return new File(name); }
 
         File(string name) { _name = name; }
 
         public File() { _name = ""; }
-
-        public Uri Uri => CacheInstance.Uri ?? (CacheInstance.Uri = new Uri(_name));
-
-        public bool IsFTP => Uri.Scheme == Uri.UriSchemeFtp;
 
         /// <summary>
         ///     considers the file as a string. If file existe it should be a text file
@@ -35,8 +41,12 @@ namespace hw.Helper
             get
             {
                 if(System.IO.File.Exists(_name))
-                    using(var f = System.IO.File.OpenText(_name))
-                        return f.ReadToEnd();
+                {
+                    var f = System.IO.File.OpenText(_name);
+                    var result = f.ReadToEnd();
+                    f.Close();
+                    return result;
+                }
 
                 try
                 {
@@ -44,17 +54,23 @@ namespace hw.Helper
                         return StringFromHTTP;
                 }
                 catch
-                {
-                    // ignored
-                }
-
+                {}
                 return null;
             }
             set
             {
-                using(var f = System.IO.File.CreateText(_name))
-                    f.Write(value);
+                var f = System.IO.File.CreateText(_name);
+                f.Write(value);
+                f.Close();
             }
+        }
+
+        public void AssumeDirectoryOfFileExists()
+        {
+            var dn = DirectoryName;
+            if(dn == null || dn.FileHandle().Exists)
+                return;
+            Directory.CreateDirectory(dn);
         }
 
         string StringFromHTTP
@@ -70,6 +86,8 @@ namespace hw.Helper
                 return result;
             }
         }
+
+        public override string ToString() { return FullName; }
 
         /// <summary>
         ///     considers the file as a byte array
@@ -92,40 +110,29 @@ namespace hw.Helper
             }
         }
 
-        public FileStream Reader => System.IO.File.OpenRead(_name);
+        public FileStream Reader { get { return System.IO.File.OpenRead(_name); } }
 
         /// <summary>
         ///     Size of file in bytes
         /// </summary>
-        public long Size => ((FileInfo) FileSystemInfo).Length;
+        public long Size { get { return ((FileInfo) FileSystemInfo).Length; } }
 
         /// <summary>
         ///     Gets the full path of the directory or file.
         /// </summary>
-        public string FullName => FileSystemInfo.FullName;
-
-        public string DirectoryName => Path.GetDirectoryName(FullName);
-        public string Extension => Path.GetExtension(FullName);
+        public string FullName { get { return FileSystemInfo.FullName; } }
+        public string DirectoryName { get { return Path.GetDirectoryName(FullName); } }
+        public string Extension { get { return Path.GetExtension(FullName); } }
 
         /// <summary>
         ///     Gets the name of the directory or file without path.
         /// </summary>
-        public string Name
-        {
-            get { return FileSystemInfo.Name; }
-            set
-            {
-                var newName = DirectoryName.PathCombine(value);
-                Move(newName);
-                _name = newName;
-                CacheInstance = new Cache();
-            }
-        }
+        public string Name { get { return FileSystemInfo.Name; } }
 
         /// <summary>
         ///     Gets a value indicating whether a file exists.
         /// </summary>
-        public bool Exists => FileSystemInfo.Exists;
+        public bool Exists { get { return FileSystemInfo.Exists; } }
 
         /// <summary>
         ///     Gets a value indicating whether a file exists.
@@ -138,7 +145,6 @@ namespace hw.Helper
                     return false;
                 if((FileSystemInfo.Attributes & FileAttributes.ReparsePoint) == 0)
                     return false;
-
                 try
                 {
                     ((DirectoryInfo) FileSystemInfo).GetFileSystemInfos("dummy");
@@ -152,18 +158,93 @@ namespace hw.Helper
         }
 
         /// <summary>
+        ///     Delete the file
+        /// </summary>
+        public void Delete(bool recursive = false)
+        {
+            if(IsDirectory)
+                Directory.Delete(_name, recursive);
+            else
+                System.IO.File.Delete(_name);
+        }
+        /// <summary>
+        ///     Move the file
+        /// </summary>
+        public void Move(string newName)
+        {
+            if(IsDirectory)
+                Directory.Move(_name, newName);
+            else
+                System.IO.File.Move(_name, newName);
+        }
+
+        /// <summary>
         ///     returns true if it is a directory
         /// </summary>
-        public bool IsDirectory => Directory.Exists(_name);
+        public bool IsDirectory { get { return Directory.Exists(_name); } }
 
-        FileSystemInfo FileSystemInfo => CacheInstance.FileInfo ?? (CacheInstance.FileInfo = GetFileInfoCache());
+        FileSystemInfo _fileInfoCache;
+
+        FileSystemInfo FileSystemInfo
+        {
+            get
+            {
+                if(_fileInfoCache == null)
+                    if(IsDirectory)
+                        _fileInfoCache = new DirectoryInfo(_name);
+                    else
+                        _fileInfoCache = new FileInfo(_name);
+                return _fileInfoCache;
+            }
+        }
 
         /// <summary>
         ///     Content of directory, one line for each file
         /// </summary>
-        public string DirectoryString => GetDirectoryString();
+        public string DirectoryString { get { return GetDirectoryString(); } }
 
+        string GetDirectoryString()
+        {
+            var result = "";
+            foreach(var fi in GetItems())
+            {
+                result += fi.Name;
+                result += "\n";
+            }
+            return result;
+        }
+
+        FileSystemInfo[] GetItems() { return ((DirectoryInfo) FileSystemInfo).GetFileSystemInfos().ToArray(); }
         public File[] Items { get { return GetItems().Select(f => Create(f.FullName)).ToArray(); } }
+
+        /// <summary>
+        ///     Gets the directory of the source file that called this function
+        /// </summary>
+        /// <param name="depth"> The depth. </param>
+        /// <returns> </returns>
+        public static string SourcePath(int depth) { return new FileInfo(SourceFileName(depth + 1)).DirectoryName; }
+
+        /// <summary>
+        ///     Gets the name of the source file that called this function
+        /// </summary>
+        /// <param name="depth"> stack depths of the function used. </param>
+        /// <returns> </returns>
+        public static string SourceFileName(int depth)
+        {
+            var sf = new StackTrace(true).GetFrame(depth + 1);
+            return sf.GetFileName();
+        }
+        /// <summary>
+        ///     Gets list of files that match given path and pattern
+        /// </summary>
+        /// <param name="filePattern"></param>
+        /// <returns></returns>
+        public static string[] Select(string filePattern)
+        {
+            var namePattern = filePattern.Split('\\').Last();
+            return Directory
+                .GetFiles(filePattern.Substring(0, filePattern.Length - namePattern.Length - 1), namePattern);
+        }
 
         public bool IsLocked
         {
@@ -181,168 +262,6 @@ namespace hw.Helper
 
                 //file is not locked
             }
-        }
-
-        public DateTime ModifiedDate => FileSystemInfo.LastWriteTime;
-
-        FileSystemInfo GetFileInfoCache()
-            => IsDirectory ? (FileSystemInfo) new DirectoryInfo(_name) : new FileInfo(_name);
-
-        /// <summary>
-        ///     constructs a FileInfo
-        /// </summary>
-        /// <param name="name"> the filename </param>
-        internal static File Create(string name) => new File(name);
-
-        public void EnsureDirectoryOfFileExists()
-            => DirectoryName?.FileHandle().EnsureIsExistentDirectory();
-
-        [Obsolete("(Renamed) Use EnsureDirectoryOfFileExists instead")]
-        public void AssumeDirectoryOfFileExists() => EnsureDirectoryOfFileExists();
-
-        public void EnsureIsExistentDirectory()
-        {
-            if(Exists)
-                Tracer.Assert(IsDirectory);
-            else
-            {
-                EnsureDirectoryOfFileExists();
-                Directory.CreateDirectory(FullName);
-            }
-        }
-
-        public override string ToString() => FullName;
-
-        /// <summary>
-        ///     Delete the file
-        /// </summary>
-        public void Delete(bool recursive = false)
-        {
-            if(IsDirectory)
-                Directory.Delete(_name, recursive);
-            else
-                System.IO.File.Delete(_name);
-        }
-
-        /// <summary>
-        ///     Move the file
-        /// </summary>
-        public void Move(string newName)
-        {
-            if(IsDirectory)
-                Directory.Move(_name, newName);
-            else
-                System.IO.File.Move(_name, newName);
-        }
-
-        string GetDirectoryString()
-        {
-            var result = "";
-            foreach(var fi in GetItems())
-            {
-                result += fi.Name;
-                result += "\n";
-            }
-
-            return result;
-        }
-
-        FileSystemInfo[] GetItems()
-            => ((DirectoryInfo) FileSystemInfo).GetFileSystemInfos().ToArray();
-
-        /// <summary>
-        ///     Gets the directory of the source file that called this function
-        /// </summary>
-        /// <param name="depth"> The depth. </param>
-        /// <returns> </returns>
-        public static string SourcePath(int depth)
-            => new FileInfo(SourceFileName(depth + 1)).DirectoryName;
-
-        /// <summary>
-        ///     Gets the name of the source file that called this function
-        /// </summary>
-        /// <param name="depth"> stack depths of the function used. </param>
-        /// <returns> </returns>
-        public static string SourceFileName(int depth)
-        {
-            var sf = new StackTrace(true).GetFrame(depth + 1);
-            return sf.GetFileName();
-        }
-
-        /// <summary>
-        ///     Gets list of files that match given path and pattern
-        /// </summary>
-        /// <param name="filePattern"></param>
-        /// <returns></returns>
-        public static string[] Select(string filePattern)
-        {
-            var namePattern = filePattern.Split('\\').Last();
-            return Directory
-                .GetFiles
-                (filePattern.Substring(0, filePattern.Length - namePattern.Length - 1), namePattern);
-        }
-
-        public void CopyTo(string destinationPath)
-        {
-            if(IsDirectory)
-            {
-                destinationPath.FileHandle().EnsureIsExistentDirectory();
-                foreach(var sourceSubFile in Items)
-                {
-                    var destinationSubPath = destinationPath.PathCombine(sourceSubFile.Name);
-                    sourceSubFile.CopyTo(destinationSubPath);
-                }
-            }
-            else
-                System.IO.File.Copy(FullName, destinationPath);
-        }
-
-        public File[] GuardedItems()
-        {
-            try
-            {
-                if(IsDirectory)
-                    return Items;
-            }
-            catch
-            {
-                // ignored
-            }
-
-            return new File[0];
-        }
-
-        public IEnumerable<File> RecursiveItems()
-        {
-            yield return this;
-            if(!IsDirectory)
-                yield break;
-
-            Tracer.Line(FullName);
-            IEnumerable<string> filePaths = new[] {FullName};
-            while(true)
-            {
-                var newList = new List<string>();
-                var items = filePaths.SelectMany(s => s.FileHandle().GuardedItems()).ToArray();
-                foreach(var item in items)
-                {
-                    yield return item;
-
-                    if(item.IsDirectory)
-                        newList.Add(item.FullName);
-                }
-
-                if(!newList.Any())
-                    yield break;
-
-                filePaths = newList;
-            }
-        }
-
-        class Cache
-        {
-            public FileSystemInfo FileInfo;
-            public Uri Uri;
         }
     }
 }
