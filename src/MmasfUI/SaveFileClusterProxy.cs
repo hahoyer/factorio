@@ -64,7 +64,7 @@ namespace MmasfUI
         public void ViewConflicts()
             => MainContainer
                 .Instance
-                .FindView(ConfigurationName + "." + Data.Name, ModConflictsInstance)
+                .FindView(new[] {"ModConflicts", ConfigurationName, Data.Name})
                 .ShowAndActivate();
 
         internal sealed class ModConflicts : DumpableObject, ViewConfiguration.IData

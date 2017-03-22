@@ -11,7 +11,7 @@ using ManageModsAndSavefiles.Saves;
 
 namespace Test
 {
-	class Program
+    static class Program
 	{
 		public static void Main(string[] args) { Error788(); }
 

@@ -5,6 +5,10 @@ using System.Windows;
 using hw.DebugFormatter;
 using hw.Helper;
 
+#region MyRegion
+#endregion
+
+
 namespace MmasfUI
 {
     public sealed class ViewConfiguration : DumpableObject
@@ -15,21 +19,15 @@ namespace MmasfUI
             string Name { get; }
         }
 
-        internal readonly string Name;
-        internal readonly IData Data;
-        readonly ValueCache<Persister> PersisterCache;
+        internal readonly string[] Identifier;
         readonly ValueCache<Window> ViewCache;
         internal static readonly IData Saves = new SavesType();
         internal static readonly IData Mods = new ModsType();
         internal static readonly IData ModDescriptions = new ModDescriptionsType();
 
-        internal static ViewConfiguration CreateViewConfiguration(string identifier)
+        internal static ViewConfiguration CreateViewConfiguration(string[] identifier)
         {
-            var parts = identifier.Split('.');
-            var head = parts[0];
-            var subIdentifier = parts.Take(Math.Max(0, parts.Length - 2)).Stringify(".");
-            var type = parts.Last();
-            return CreateType(subIdentifier, type).CreateAndOpen(head);
+            return new ViewConfiguration(identifier);
         }
 
         static IData CreateType(string subIdentifier, string identifier)
@@ -75,11 +73,9 @@ namespace MmasfUI
             string IData.Name => "ModDescriptions";
         }
 
-        internal ViewConfiguration(string name, IData data)
+        internal ViewConfiguration(string [] identifier)
         {
-            Name = name;
-            Data = data;
-            PersisterCache = new ValueCache<Persister>(() => new Persister(ItemFile("View")));
+            Identifier = identifier;
             ViewCache = new ValueCache<Window>(CreateAndConnectView);
         }
 
@@ -116,7 +112,10 @@ namespace MmasfUI
             return result;
         }
 
-        Window CreateView() => Data.CreateView(this);
+        Window CreateView() {
+            NotImplementedMethod();
+            return null;
+        }
 
         internal void ConnectToWindow(Window window)
         {
@@ -125,22 +124,25 @@ namespace MmasfUI
             window.Activated += (a, s) => OnActivated();
         }
 
-        Persister ViewPersister => PersisterCache.Value;
-
         SmbFile ItemFile(string itemName) => ItemFileName(itemName).ToSmbFile();
 
         string ItemFileName(string itemName)
             => SystemConfiguration
-                .GetConfigurationPath(Name + "." + Data.Name)
+                .GetConfigurationPath(Identifier)
                 .PathCombine(itemName);
 
         void OnClosing()
         {
             Status = "Closed";
             ViewCache.IsValid = false;
+            MainContainer.Instance.RemoveViewConfiguration(this);
         }
 
-        void OnActivated() { LastUsed = DateTime.Now; }
+        void OnActivated()
+        {
+            LastUsed = DateTime.Now;
+            MainContainer.Instance.AddViewConfiguration(this);
+        }
 
         internal string PositionPath => ItemFileName("Position");
 
@@ -150,9 +152,9 @@ namespace MmasfUI
             View.Activate();
         }
 
-        internal bool IsMatching(string name, IData data)
+        internal bool IsMatching(string[] identifier)
         {
-            NotImplementedFunction(this, name, data);
+            NotImplementedFunction(this, identifier.Stringify(", "));
             return false;
         }
     }

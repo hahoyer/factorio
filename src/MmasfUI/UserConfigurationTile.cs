@@ -70,14 +70,14 @@ namespace MmasfUI
         public void ViewSaves()
             => MainContainer
                 .Instance
-                .FindView(Configuration.Name, ViewConfiguration.Saves)
+                .FindViewConfiguration(new []{ViewConfiguration.Saves.Name, Configuration.Name})
                 .ShowAndActivate();
 
         [Command(Command.ViewMods)]
         public void ViewMods()
             => MainContainer
                 .Instance
-                .FindView(Configuration.Name, ViewConfiguration.Mods)
+                .FindViewConfiguration(new[] { ViewConfiguration.Mods.Name, Configuration.Name })
                 .ShowAndActivate();
 
         [Command(Command.Select)]

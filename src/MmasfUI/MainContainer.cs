@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using hw.Helper;
 using ManageModsAndSavefiles.Mods;
 using MmasfUI.Common;
 
@@ -48,32 +47,11 @@ namespace MmasfUI
                 }
             };
 
-        ViewConfiguration[] ViewList;
-
-        internal ViewConfiguration FindView(string name, ViewConfiguration.IData data)
-        {
-            var result = ViewList
-                .SingleOrDefault(configuration => configuration.IsMatching(name, data));
-            if(result != null)
-                return result;
-
-            var newItem = new ViewConfiguration(name, data);
-            ViewList = ViewList.Concat(new[] {newItem}).ToArray();
-            return newItem;
-        }
-
         protected override void OnStartup(StartupEventArgs e)
         {
-            ViewList = StringExtender.ToSmbFile(SystemConfiguration
-                    .ViewConfigurationPath)
-                .Items
-                .Select(file => ViewConfiguration.CreateViewConfiguration(file.Name))
-                .Where(f => f.Status == "Open")
-                .OrderByDescending(f => f.LastUsed)
-                .ToArray();
-
             base.OnStartup(e);
             ShowContextView();
+            SystemConfiguration.OpenActiveViews();
         }
 
         void ShowContextView()
@@ -92,7 +70,7 @@ namespace MmasfUI
             main.Show();
         }
 
-        ViewConfiguration ModDescriptions => FindView("", ViewConfiguration.ModDescriptions);
+        ViewConfiguration ModDescriptions => FindViewConfiguration(new[] {"ModDescriptions"});
 
         [Command(Command.ViewModDictionary)]
         public void ViewModDictionary()
@@ -113,5 +91,22 @@ namespace MmasfUI
 
         internal readonly CommandManager CommandManager = new CommandManager
             (typeof(MainContainer).Namespace);
+
+        internal void RemoveViewConfiguration(ViewConfiguration viewConfiguration)
+        {
+            ViewConfigurations = ViewConfigurations.Where(item => item != viewConfiguration).ToArray();
+        }
+
+        internal void AddViewConfiguration(ViewConfiguration viewConfiguration)
+        {
+            if(ViewConfigurations.All(item => item != viewConfiguration))
+                ViewConfigurations = ViewConfigurations.Concat(new[] {viewConfiguration}).ToArray();
+        }
+
+        ViewConfiguration[] ViewConfigurations;
+
+        internal ViewConfiguration FindViewConfiguration(string[] identifier)
+            => ViewConfigurations.FirstOrDefault(item => item.Identifier.SequenceEqual(identifier))
+               ?? new ViewConfiguration(identifier);
     }
 }

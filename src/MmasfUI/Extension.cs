@@ -81,14 +81,6 @@ namespace MmasfUI
                 Command = MainContainer.Instance.CommandManager.ByName(commandIdentifier)
             };
 
-        internal static ViewConfiguration CreateAndOpen
-            (this ViewConfiguration.IData data, string name)
-        {
-            var result = new ViewConfiguration(name, data);
-            result.ShowAndActivate();
-            return result;
-        }
-
         public static void ConfigurateDefaultColumns(this DataGrid target)
         {
             TimeSpanProxy.Register(target);
