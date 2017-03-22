@@ -28,9 +28,9 @@ namespace MmasfUI
         {
             var parts = identifier.Split('.');
             var head = parts[0];
-            var subIdentifier = parts.Take(Math.Max(0, parts.Length)).Stringify(".");
+            var subIdentifier = parts.Take(Math.Max(0, parts.Length - 2)).Stringify(".");
             var type = parts.Last();
-            return CreateType(subIdentifier, type).SmartCreate(head);
+            return CreateType(subIdentifier, type).CreateAndOpen(head);
         }
 
         static IData CreateType(string subIdentifier, string identifier)
@@ -149,6 +149,12 @@ namespace MmasfUI
         {
             View.Show();
             View.Activate();
+        }
+
+        internal bool IsMatching(string name, ViewConfiguration.IData data)
+        {
+            Dumpable.NotImplementedFunction(this, name, data);
+            return false;
         }
     }
 }

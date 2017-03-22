@@ -18,7 +18,8 @@ namespace MmasfUI
         }
 
         readonly FileCluster Data;
-        readonly ViewConfiguration ConflictConfiguration;
+        readonly string ConfigurationName;
+        readonly ModConflicts ModConflictsInstance;
         FileCluster DataIfRead => Data.IsDataRead ? Data : null;
         IEnumerable<ModConflict> Conflicts => DataIfRead?.RelevantConflicts;
 
@@ -40,12 +41,11 @@ namespace MmasfUI
         [UsedImplicitly]
         public string CampaignName => DataIfRead?.CampaignName;
 
-
-        public SaveFileClusterProxy(FileCluster data, string name)
+        public SaveFileClusterProxy(FileCluster data, string configurationName)
         {
             Data = data;
-            ConflictConfiguration = new ModConflicts(data.Name)
-                .SmartCreate(name + "." + data.Name);
+            ConfigurationName = configurationName;
+            ModConflictsInstance = new ModConflicts(data.Name);
         }
 
         public void Refresh()
@@ -61,15 +61,24 @@ namespace MmasfUI
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
 
         [Command(Command.ViewConflicts)]
-        public void ViewConflicts() => ConflictConfiguration.ShowAndActivate();
+        public void ViewConflicts()
+            => MainContainer
+                .Instance
+                .FindView(ConfigurationName + "." + Data.Name, ModConflictsInstance)
+                .ShowAndActivate();
 
         internal sealed class ModConflicts : DumpableObject, ViewConfiguration.IData
         {
-            readonly string Data;
-            public ModConflicts(string data) { Data = data; }
+            readonly string FileClusterName;
+
+            public ModConflicts(string fileClusterName)
+            {
+                Tracer.ConditionalBreak(fileClusterName.StartsWith("HardCrafting"));
+                FileClusterName = fileClusterName;
+            }
 
             Window ViewConfiguration.IData.CreateView(ViewConfiguration viewConfiguration)
-                => new ModConflictsView(viewConfiguration, Data);
+                => new ModConflictsView(viewConfiguration, FileClusterName);
 
             string ViewConfiguration.IData.Name => "ModConflicts";
         }

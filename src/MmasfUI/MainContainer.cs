@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using hw.DebugFormatter;
 using hw.Helper;
 using ManageModsAndSavefiles.Mods;
 using MmasfUI.Common;
@@ -49,8 +48,19 @@ namespace MmasfUI
                 }
             };
 
-        ViewConfiguration ModDescriptions;
         ViewConfiguration[] ViewList;
+
+        internal ViewConfiguration FindView(string name, ViewConfiguration.IData data)
+        {
+            var result = ViewList
+                .SingleOrDefault(configuration => configuration.IsMatching(name, data));
+            if(result != null)
+                return result;
+
+            var newItem = new ViewConfiguration(name, data);
+            ViewList = ViewList.Concat(new[] {newItem}).ToArray();
+            return newItem;
+        }
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -81,8 +91,9 @@ namespace MmasfUI
             main.InstallMainMenu(CreateMainMenu());
             CommandManager.Activate(this);
             main.Show();
-            ModDescriptions = ViewConfiguration.ModDescriptions.SmartCreate("");
         }
+
+        ViewConfiguration ModDescriptions => FindView("", ViewConfiguration.ModDescriptions);
 
         [Command(Command.ViewModDictionary)]
         public void ViewModDictionary()

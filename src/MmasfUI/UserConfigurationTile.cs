@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using ManageModsAndSavefiles;
@@ -21,8 +20,6 @@ namespace MmasfUI
         readonly MmasfContext Context;
         readonly UserConfiguration Configuration;
         new readonly ContextView Parent;
-        readonly ViewConfiguration SavesConfiguration;
-        readonly ViewConfiguration ModsConfiguration;
 
         internal UserConfigurationTile
         (
@@ -56,9 +53,6 @@ namespace MmasfUI
 
             ContextMenu = CreateContextMenu();
             Content = result;
-
-            SavesConfiguration = ViewConfiguration.Saves.SmartCreate(Configuration.Name);
-            ModsConfiguration = ViewConfiguration.Mods.SmartCreate(Configuration.Name);
         }
 
         static ContextMenu CreateContextMenu()
@@ -73,10 +67,18 @@ namespace MmasfUI
             };
 
         [Command(Command.ViewSaves)]
-        public void ViewSaves() => SavesConfiguration.ShowAndActivate();
+        public void ViewSaves()
+            => MainContainer
+                .Instance
+                .FindView(Configuration.Name, ViewConfiguration.Saves)
+                .ShowAndActivate();
 
         [Command(Command.ViewMods)]
-        public void ViewMods() => ModsConfiguration.ShowAndActivate();
+        public void ViewMods()
+            => MainContainer
+                .Instance
+                .FindView(Configuration.Name, ViewConfiguration.Mods)
+                .ShowAndActivate();
 
         [Command(Command.Select)]
         public void OnSelect()

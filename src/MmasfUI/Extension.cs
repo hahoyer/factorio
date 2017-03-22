@@ -81,19 +81,19 @@ namespace MmasfUI
                 Command = MainContainer.Instance.CommandManager.ByName(commandIdentifier)
             };
 
-        internal static ViewConfiguration SmartCreate
+        internal static ViewConfiguration CreateAndOpen
             (this ViewConfiguration.IData data, string name)
         {
-            var modsConfiguration = new ViewConfiguration(name, data);
-            if(modsConfiguration.Status == "Open")
-                modsConfiguration.ShowAndActivate();
-            return modsConfiguration;
+            var result = new ViewConfiguration(name, data);
+            result.ShowAndActivate();
+            return result;
         }
 
         public static void ConfigurateDefaultColumns(this DataGrid target)
         {
             TimeSpanProxy.Register(target);
-            target.AutoGeneratingColumn += (s, e) => OnAutoGeneratingColumnsForConfigurateDefaultColumns(e);
+            target.AutoGeneratingColumn +=
+                (s, e) => OnAutoGeneratingColumnsForConfigurateDefaultColumns(e);
         }
 
         public static void ActivateSelectedItems(this DataGrid target)
@@ -101,7 +101,8 @@ namespace MmasfUI
             target.SelectionChanged += (s, e) => OnSelectionChangedForActivateSelectedItems(e);
         }
 
-        static void OnAutoGeneratingColumnsForConfigurateDefaultColumns(DataGridAutoGeneratingColumnEventArgs args)
+        static void OnAutoGeneratingColumnsForConfigurateDefaultColumns
+            (DataGridAutoGeneratingColumnEventArgs args)
         {
             if(args.PropertyType == typeof(bool?))
                 args.Column = new DataGridCheckBoxColumn

@@ -23,9 +23,11 @@ namespace MmasfUI
                 .Instance
                 .UserConfigurations.Single(u => u.Name == viewConfiguration.Name);
 
+            var configurationName = configuration.Name;
+
             Data = configuration
                 .SaveFiles
-                .Select(s => new SaveFileClusterProxy(s, configuration.Name))
+                .Select(s => new SaveFileClusterProxy(s, configurationName))
                 .ToArray();
 
             ContextMenu = CreateContextMenu();
@@ -42,7 +44,7 @@ namespace MmasfUI
                 }
             );
 
-            Title = viewConfiguration.Data.Name + " of " + configuration.Name.Quote();
+            Title = viewConfiguration.Data.Name + " of " + configurationName.Quote();
             this.InstallPositionPersister(viewConfiguration.PositionPath);
             this.InstallMainMenu(CreateMenu());
             this.InstallStatusLine(StatusBar);

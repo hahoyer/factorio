@@ -53,12 +53,15 @@ namespace MmasfUI
 
         readonly StatusBar StatusBar = new StatusBar();
 
-        public ModConflictsView(ViewConfiguration viewConfiguration, string parentName)
+        public ModConflictsView(ViewConfiguration viewConfiguration, string fileClusterName)
         {
+            var parts = viewConfiguration.Name.Split('.');
+            var configurationName = parts[0];
+            var fileName = parts.Skip(1).Take(parts.Length - 2).Stringify(".");
             var parent = MmasfContext
                 .Instance
-                .UserConfigurations.Single(u => u.Name == viewConfiguration.Name)
-                .SaveFiles.Single(u => u.Name == parentName);
+                .UserConfigurations.Single(u => u.Name == configurationName)
+                .SaveFiles.Single(u => u.Name == fileClusterName);
 
             var data = parent.RelevantConflicts
                 .Select(s => new Proxy(s))
@@ -74,7 +77,7 @@ namespace MmasfUI
                 + " of "
                 + parent.Parent.Name.Quote();
             this.InstallPositionPersister(viewConfiguration.PositionPath);
-            this.InstallMainMenu(CreateMenu());
+            this.InstallMainMenu(CreateMenu());                      
             this.InstallStatusLine(StatusBar);
         }
 
