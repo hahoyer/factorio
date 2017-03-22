@@ -54,19 +54,7 @@ namespace ManageModsAndSavefiles.Mods
 
         public override int GetHashCode()
         {
-            unchecked
-            {
-                var hashCode = Author?.GetHashCode() ?? 0;
-                hashCode = (hashCode * 397) ^ (Contact?.GetHashCode() ?? 0);
-                hashCode = (hashCode * 397) ^ (Dependencies?.GetHashCode() ?? 0);
-                hashCode = (hashCode * 397) ^ (Description?.GetHashCode() ?? 0);
-                hashCode = (hashCode * 397) ^ (FactorioVersion?.GetHashCode() ?? 0);
-                hashCode = (hashCode * 397) ^ (Homepage?.GetHashCode() ?? 0);
-                hashCode = (hashCode * 397) ^ (Name?.GetHashCode() ?? 0);
-                hashCode = (hashCode * 397) ^ (Title?.GetHashCode() ?? 0);
-                hashCode = (hashCode * 397) ^ (Version?.GetHashCode() ?? 0);
-                return hashCode;
-            }
+	        return 0;
         }
 
         public static bool operator ==(InfoJSon left, InfoJSon right) => Equals(left, right);

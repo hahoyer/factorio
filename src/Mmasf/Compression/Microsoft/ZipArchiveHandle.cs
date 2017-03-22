@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
 using hw.DebugFormatter;
+// ReSharper disable once RedundantUsingDirective
 using ManageModsAndSavefiles.Compression.Nuget;
 
 namespace ManageModsAndSavefiles.Compression.Microsoft

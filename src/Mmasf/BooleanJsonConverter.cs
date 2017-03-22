@@ -7,7 +7,7 @@ namespace ManageModsAndSavefiles
 {
     /// <summary>
     ///     Handles converting JSON string values into a C# boolean data type.
-    ///     <see cref="https://gist.github.com/randyburden/5924981" />
+    ///     <see cref="http://gist.github.com/randyburden/5924981" />
     /// </summary>
     public sealed class BooleanJsonConverter : JsonConverter
     {

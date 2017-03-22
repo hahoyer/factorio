@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Windows;
 using hw.DebugFormatter;
@@ -128,7 +127,7 @@ namespace MmasfUI
 
         Persister ViewPersister => PersisterCache.Value;
 
-        SmbFile ItemFile(string itemName) => StringExtender.ToSmbFile(ItemFileName(itemName));
+        SmbFile ItemFile(string itemName) => ItemFileName(itemName).ToSmbFile();
 
         string ItemFileName(string itemName)
             => SystemConfiguration
@@ -151,9 +150,9 @@ namespace MmasfUI
             View.Activate();
         }
 
-        internal bool IsMatching(string name, ViewConfiguration.IData data)
+        internal bool IsMatching(string name, IData data)
         {
-            Dumpable.NotImplementedFunction(this, name, data);
+            NotImplementedFunction(this, name, data);
             return false;
         }
     }

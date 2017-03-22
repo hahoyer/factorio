@@ -27,6 +27,7 @@ namespace ManageModsAndSavefiles.Saves
 
             if(captureIdentifier as string == "Lookahead")
             {
+	            // ReSharper disable once UnusedVariable
                 var value = reader.GetBytes(100);
                 Tracer.TraceBreak();
                 return;

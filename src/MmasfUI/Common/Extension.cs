@@ -130,16 +130,15 @@ namespace MmasfUI.Common
             DockPanel.SetDock(content, Dock.Top);
         }
 
-        internal static void InstallPositionPersister(this Window main, string configFileName)
-        {
-            new PositionConfig
-                (() => configFileName)
-                {
-                    Target = main
-                };
-        }
+        internal static void InstallPositionPersister(this Window main, string configFileName) 
+	        // ReSharper disable once ObjectCreationAsStatement
+			=> new PositionConfig
+	        (() => configFileName)
+	        {
+		        Target = main
+	        };
 
-        internal static string ToValidFileName(this string value)
+	    internal static string ToValidFileName(this string value)
         {
             return value.Select(ToValidFileChar).Aggregate("", (c, n) => c + n);
         }

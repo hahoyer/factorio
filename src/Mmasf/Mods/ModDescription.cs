@@ -15,6 +15,7 @@ namespace ManageModsAndSavefiles.Mods
             object BinaryRead.IReaderProvider.ReadAndAdvance
                 (BinaryRead reader, Type type, MemberInfo member)
             {
+	            // ReSharper disable once UnusedVariable
                 var x = reader.GetBytes(100);
                 var isBefore01414 = ((UserContext) reader.UserContext).IsBefore01414;
 

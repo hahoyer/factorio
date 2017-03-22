@@ -109,6 +109,7 @@ namespace ManageModsAndSavefiles
                 return CreateModReferenceBefore014(i, reader);
 
             var name = reader.GetNextString<byte>();
+	        // ReSharper disable once UnusedVariable
             var lookAhead = reader.GetBytes(150);
             var version = new Version
                 (reader.GetNext<byte>(), reader.GetNext<byte>(), reader.GetNext<byte>());

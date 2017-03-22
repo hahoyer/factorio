@@ -43,7 +43,7 @@ namespace MmasfUI.Common
                 case 1:
                     return parameter != null && parameter.GetType().Is(parameterInfos[0].ParameterType);
                 default:
-                    Tracer.Assert(false, "Too much parameters");
+                    Tracer.ConditionalBreak(true);
                     return false;
             }
         }

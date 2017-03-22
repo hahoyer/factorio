@@ -59,7 +59,6 @@
     <Compile Include="MmasfContext.cs" />
     <Compile Include="DataConfiguration.cs" />
     <Compile Include="Extension.cs" />
-    <Compile Include="Formatter.cs" />
     <Compile Include="IniFile.cs" />
     <Compile Include="Mods\ModDescription.cs" />
     <Compile Include="Mods\ModListJSon.cs" />
