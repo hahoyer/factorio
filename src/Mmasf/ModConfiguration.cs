@@ -38,7 +38,7 @@ namespace ManageModsAndSavefiles
 
         internal void Persist()
         {
-            Path.FileHandle().EnsureDirectoryOfFileExists();
+            Path.ToSmbFile().EnsureDirectoryOfFileExists();
             Path.ToJsonFile(this);
         }
 
@@ -48,11 +48,11 @@ namespace ManageModsAndSavefiles
         {
             get
             {
-                if(!Path.FileHandle().Exists)
+                if(!Path.ToSmbFile().Exists)
                     return Data.Any();
 
                 var internalVersion = this.ToJson();
-                var persistentVersion = Path.FileHandle().String;
+                var persistentVersion = Path.ToSmbFile().String;
                 return internalVersion != persistentVersion;
             }
         }

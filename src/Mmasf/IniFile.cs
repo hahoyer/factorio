@@ -25,8 +25,8 @@ namespace ManageModsAndSavefiles
 
         internal void UpdateFrom(IniFile source)
         {
-            var destinationFile = Path.FileHandle();
-            var sourceFile = source.Path.FileHandle();
+            var destinationFile = Path.ToSmbFile();
+            var sourceFile = source.Path.ToSmbFile();
             if(!destinationFile.Exists || destinationFile.ModifiedDate < sourceFile.ModifiedDate)
             {
                 destinationFile.EnsureDirectoryOfFileExists();

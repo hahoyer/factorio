@@ -17,14 +17,12 @@ namespace ManageModsAndSavefiles.Mods
             IDictionary<string, bool> knownMods,
             MmasfContext parent)
         {
-            var fileHandle = path.FileHandle();
+            var fileHandle = path.ToSmbFile();
             var infoJSon = GetInfoJSon(fileHandle);
             if(infoJSon == null)
                 return null;
 
-            var dictionary = path
-                .FileHandle().DirectoryName
-                .FileHandle().DirectoryName;
+            var dictionary = path.ToSmbFile().DirectoryName.ToSmbFile().DirectoryName;
 
             var index = paths
                 .OrderByDescending(item => item.Split('\\').Length)
@@ -41,7 +39,7 @@ namespace ManageModsAndSavefiles.Mods
             return new FileCluster(fileHandle, isEnabled, index, description, infoJSon);
         }
 
-        static Version GetVersionFromFile(File file)
+        static Version GetVersionFromFile(SmbFile file)
         {
             var text =
                 file.IsDirectory ? GetInfoJSonFromDirectory(file) : GetInfoJSonFromZipFile(file);
@@ -52,7 +50,7 @@ namespace ManageModsAndSavefiles.Mods
             return new Version(info.Version);
         }
 
-        static string GetModNameFromFile(File file)
+        static string GetModNameFromFile(SmbFile file)
         {
             var text =
                 file.IsDirectory ? GetInfoJSonFromDirectory(file) : GetInfoJSonFromZipFile(file);
@@ -63,7 +61,7 @@ namespace ManageModsAndSavefiles.Mods
             return info.Name;
         }
 
-        static InfoJSon GetInfoJSon(File file)
+        static InfoJSon GetInfoJSon(SmbFile file)
         {
             var text =
                 file.IsDirectory
@@ -73,7 +71,7 @@ namespace ManageModsAndSavefiles.Mods
             return text?.FromJson<InfoJSon>();
         }
 
-        static string GetInfoJSonFromZipFile(File modFileFile)
+        static string GetInfoJSonFromZipFile(SmbFile modFileFile)
         {
             try
             {
@@ -85,7 +83,7 @@ namespace ManageModsAndSavefiles.Mods
             }
         }
 
-        static string GetInfoJSonFromZipFile(File modFileFile, bool quirks)
+        static string GetInfoJSonFromZipFile(SmbFile modFileFile, bool quirks)
         {
             var headerDir = modFileFile.Name.Substring(0, modFileFile.Name.Length - 4);
             return modFileFile
@@ -96,13 +94,12 @@ namespace ManageModsAndSavefiles.Mods
                 .String;
         }
 
-        static string GetInfoJSonFromDirectory(File file)
-            => file.FullName.PathCombine(FileNameInfoJson)
-                .FileHandle()
+        static string GetInfoJSonFromDirectory(SmbFile file)
+            => file.FullName.PathCombine(FileNameInfoJson).ToSmbFile()
                 .String;
 
         public readonly int ConfigIndex;
-        public readonly File File;
+        public readonly SmbFile File;
         public readonly ModDescription Description;
         public readonly InfoJSon InfoJSon;
         public readonly bool? IsEnabled;
@@ -111,7 +108,7 @@ namespace ManageModsAndSavefiles.Mods
         public string Title=> InfoJSon.Title;
         public Version Version => new Version(InfoJSon.Version);
 
-        FileCluster(File fileHandle, bool? isEnabled, int configIndex, ModDescription description, InfoJSon infoJSon)
+        FileCluster(SmbFile fileHandle, bool? isEnabled, int configIndex, ModDescription description, InfoJSon infoJSon)
         {
             File = fileHandle;
             ConfigIndex = configIndex;

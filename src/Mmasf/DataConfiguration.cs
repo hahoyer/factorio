@@ -16,7 +16,7 @@ namespace ManageModsAndSavefiles
         internal DataConfiguration(string fileName)
         {
             IniFile = new IniFile(fileName.PathCombine(ConfigurationIniFileName));
-            RootUserConfigurationPath = fileName.FileHandle().DirectoryName;
+            RootUserConfigurationPath = fileName.ToSmbFile().DirectoryName;
         }
 
         public string CurrentUserConfigurationPath

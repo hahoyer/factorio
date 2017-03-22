@@ -96,7 +96,7 @@ namespace MmasfUI.Common
 
         string[] ParameterStrings => TargetValue == null ? null : FileHandle.String?.Split('\n');
 
-        File FileHandle => FileName?.FileHandle();
+        SmbFile FileHandle => FileName.ToSmbFile();
 
         void Save(Rect? position, WindowState state)
         {

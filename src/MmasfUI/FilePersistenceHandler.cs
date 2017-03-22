@@ -34,9 +34,9 @@ namespace MmasfUI
             return null;
         }
 
-        hw.Helper.File FileHandle(string name)
+        SmbFile FileHandle(string name)
         {
-            var result = FileName.PathCombine(name).FileHandle();
+            var result = FileName.PathCombine(name).ToSmbFile();
             result.EnsureDirectoryOfFileExists();
             return result;
         }

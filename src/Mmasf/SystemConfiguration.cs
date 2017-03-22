@@ -24,7 +24,7 @@ namespace ManageModsAndSavefiles
         internal static string Path
             => new[] {SteamPath, SystemReadDataDir}
                 .Where(f => f != null)
-                .Select(f => f.FileHandle())
+                .Select(f => f.ToSmbFile())
                 .FindFilesThatEndsWith(FileNameEnd).First()
                 .FullName;
 
@@ -36,7 +36,7 @@ namespace ManageModsAndSavefiles
         SystemConfiguration(string fileName)
         {
             Tracer.Assert
-                (fileName.FileHandle().Exists, "System configuration file not found: " + fileName);
+                (fileName.ToSmbFile().Exists, "System configuration file not found: " + fileName);
             File = new IniFile(fileName);
         }
 

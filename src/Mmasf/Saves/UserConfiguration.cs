@@ -18,23 +18,22 @@ namespace ManageModsAndSavefiles
 
         internal static string[] Paths
             => Extension
-                .SystemWriteDataDir
-                .FileHandle()
+                .SystemWriteDataDir.ToSmbFile()
                 .RecursiveItems()
                 .Where(IsRelevantPathCandidate)
                 .Select(item => item.FullName)
                 .ToArray();
 
-        static bool IsRelevantPathCandidate(File item)
+        static bool IsRelevantPathCandidate(SmbFile item)
             =>
             item.IsDirectory
             && IsExistent(item, PlayerDataFileName, false)
             && IsExistent(item, SaveDirectoryName, true)
             && IsExistent(item, ModDirectoryName, true);
 
-        static bool IsExistent(File item, string fileName, bool isDictionary)
+        static bool IsExistent(SmbFile item, string fileName, bool isDictionary)
         {
-            var fileHandle = item.FullName.PathCombine(fileName).FileHandle();
+            var fileHandle = item.FullName.PathCombine(fileName).ToSmbFile();
             return fileHandle.Exists && fileHandle.IsDirectory == isDictionary;
         }
 
@@ -67,7 +66,7 @@ namespace ManageModsAndSavefiles
 
         Saves.FileCluster[] GetSaveFiles()
         {
-            var fileHandle = FilesPath(SaveDirectoryName).FileHandle();
+            var fileHandle = FilesPath(SaveDirectoryName).ToSmbFile();
             if(!fileHandle.Exists)
                 return new Saves.FileCluster[0];
 
@@ -80,7 +79,7 @@ namespace ManageModsAndSavefiles
 
         Mods.FileCluster[] GetModFiles()
         {
-            var fileHandle = FilesPath(ModDirectoryName).FileHandle();
+            var fileHandle = FilesPath(ModDirectoryName).ToSmbFile();
             if(!fileHandle.Exists)
                 return new Mods.FileCluster[0];
 
@@ -96,8 +95,7 @@ namespace ManageModsAndSavefiles
         IDictionary<string, bool> GetModConfiguration()
         {
             var fileHandle = FilesPath(ModDirectoryName)
-                .PathCombine(ModConfigurationFileName)
-                .FileHandle();
+                .PathCombine(ModConfigurationFileName).ToSmbFile();
 
             if(!fileHandle.Exists)
                 return new Dictionary<string, bool>();
@@ -118,9 +116,9 @@ namespace ManageModsAndSavefiles
 
         public void InitializeFrom(UserConfiguration source)
             =>
-            source.FilesPath(PlayerDataFileName).FileHandle().CopyTo(FilesPath(PlayerDataFileName));
+            source.FilesPath(PlayerDataFileName).ToSmbFile().CopyTo(FilesPath(PlayerDataFileName));
 
-        protected override string GetNodeDump() => Path.FileHandle().Name;
+        protected override string GetNodeDump() => Path.ToSmbFile().Name;
 
     }
 }

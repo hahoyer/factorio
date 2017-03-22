@@ -21,12 +21,12 @@ namespace ManageModsAndSavefiles
                 .GetFolderPath(Environment.SpecialFolder.ApplicationData)
                 .PathCombine("Factorio");
 
-        internal static IEnumerable<File> FindFilesThatEndsWith
-            (this File root, string target)
+        internal static IEnumerable<SmbFile> FindFilesThatEndsWith
+            (this SmbFile root, string target)
             => new[] {root}.FindFilesThatEndsWith(target);
 
-        internal static IEnumerable<File> FindFilesThatEndsWith
-            (this IEnumerable<File> root, string target)
+        internal static IEnumerable<SmbFile> FindFilesThatEndsWith
+            (this IEnumerable<SmbFile> root, string target)
             => root.SelectMany(f => f.RecursiveItems())
                 .Where(item => item.FullName.EndsWith(target));
 
@@ -59,11 +59,11 @@ namespace ManageModsAndSavefiles
 
         internal static T FromJsonFile<T>(this string jsonFileName)
             where T : class
-            => jsonFileName.FileHandle().String?.FromJson<T>();
+            => jsonFileName.ToSmbFile().String?.FromJson<T>();
 
         internal static void ToJsonFile<T>(this string jsonFileName, T o)
             where T : class
-            => jsonFileName.FileHandle().String = o.ToJson();
+            => jsonFileName.ToSmbFile().String = o.ToJson();
 
         internal static string PathToFactorioStyle(this string name) =>
             name.Replace(SystemWriteDataDir, SystemWriteDataPlaceholder)

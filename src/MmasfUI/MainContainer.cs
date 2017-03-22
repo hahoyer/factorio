@@ -64,9 +64,8 @@ namespace MmasfUI
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            ViewList = SystemConfiguration
-                .ViewConfigurationPath
-                .FileHandle()
+            ViewList = StringExtender.ToSmbFile(SystemConfiguration
+                    .ViewConfigurationPath)
                 .Items
                 .Select(file => ViewConfiguration.CreateViewConfiguration(file.Name))
                 .Where(f => f.Status == "Open")

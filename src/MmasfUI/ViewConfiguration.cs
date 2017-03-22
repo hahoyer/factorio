@@ -128,7 +128,7 @@ namespace MmasfUI
 
         Persister ViewPersister => PersisterCache.Value;
 
-        hw.Helper.File ItemFile(string itemName) => ItemFileName(itemName).FileHandle();
+        SmbFile ItemFile(string itemName) => StringExtender.ToSmbFile(ItemFileName(itemName));
 
         string ItemFileName(string itemName)
             => SystemConfiguration

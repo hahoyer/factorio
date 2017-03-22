@@ -16,9 +16,8 @@ namespace MmasfUI
 
         internal static string GetConfigurationPath(string name)
         {
-            var fileHandle = ViewConfigurationPath
-                .PathCombine(name.Replace("\\", "_"))
-                .FileHandle();
+            var fileHandle = StringExtender.ToSmbFile(ViewConfigurationPath
+                .PathCombine(name.Replace("\\", "_")));
             fileHandle.EnsureIsExistentDirectory();
             return fileHandle.FullName;
         }

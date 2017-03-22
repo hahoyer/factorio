@@ -35,8 +35,8 @@ namespace ManageModsAndSavefiles.Saves
             }
         }
 
-        public string Name => Path.FileHandle().Name;
-        public DateTime Created => Path.FileHandle().ModifiedDate;
+        public string Name => Path.ToSmbFile().Name;
+        public DateTime Created => Path.ToSmbFile().ModifiedDate;
         public Version Version => Data.Version;
         public string ScenarioName => Data.ScenarioName;
         public string MapName => Data.MapName;

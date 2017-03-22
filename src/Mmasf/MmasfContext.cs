@@ -72,8 +72,7 @@ namespace ManageModsAndSavefiles
             {
                 var result = "";
 
-                var executable = Configuration.SystemPath
-                    .FileHandle().DirectoryName
+                var executable = Configuration.SystemPath.ToSmbFile().DirectoryName
                     .PathCombine("bin\\x64\\factorio.exe");
 
                 result += "Executable path: " + executable + "\n";

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using hw.DebugFormatter;
+using hw.Helper;
 
 namespace MmasfUI
 {
@@ -41,11 +42,11 @@ namespace MmasfUI
 
         readonly IDictionary<string, IMember> Members = new ConcurrentDictionary<string, IMember>();
 
-        readonly hw.Helper.File Handle;
+        readonly SmbFile Handle;
         [EnableDump]
         string FileName => Handle.FullName;
 
-        internal Persister(hw.Helper.File handle) { Handle = handle; }
+        internal Persister(SmbFile handle) { Handle = handle; }
 
         public void Register<T>(string name, Action<T> load, Func<T> store)
             =>

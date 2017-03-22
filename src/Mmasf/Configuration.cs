@@ -15,7 +15,7 @@ namespace ManageModsAndSavefiles
             var result = Path.FromJsonFile<Configuration>()
                 ?? new Configuration();
 
-            if(result.SystemPath == null || !result.SystemPath.FileHandle().Exists)
+            if(result.SystemPath == null || !result.SystemPath.ToSmbFile().Exists)
                 result.SystemPath = SystemConfiguration.Path;
 
             if(result.UserConfigurationPaths == null)
@@ -30,7 +30,7 @@ namespace ManageModsAndSavefiles
 
         void Persist()
         {
-            Path.FileHandle().EnsureDirectoryOfFileExists();
+            Path.ToSmbFile().EnsureDirectoryOfFileExists();
             Path.ToJsonFile(this);
         }
 
