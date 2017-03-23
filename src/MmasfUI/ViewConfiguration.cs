@@ -5,75 +5,16 @@ using System.Windows;
 using hw.DebugFormatter;
 using hw.Helper;
 
-#region MyRegion
-#endregion
-
-
 namespace MmasfUI
 {
     public sealed class ViewConfiguration : DumpableObject
     {
-        internal interface IData
-        {
-            Window CreateView(ViewConfiguration viewConfiguration);
-            string Name { get; }
-        }
-
         internal readonly string[] Identifier;
+
+        [DisableDump]
         readonly ValueCache<Window> ViewCache;
-        internal static readonly IData Saves = new SavesType();
-        internal static readonly IData Mods = new ModsType();
-        internal static readonly IData ModDescriptions = new ModDescriptionsType();
 
-        internal static ViewConfiguration CreateViewConfiguration(string[] identifier)
-        {
-            return new ViewConfiguration(identifier);
-        }
-
-        static IData CreateType(string subIdentifier, string identifier)
-        {
-
-            switch(identifier)
-            {
-            case "Saves":
-                return new SavesType();
-            case "Mods":
-                return new ModsType();
-            case "ModDescriptions":
-                return new ModDescriptionsType();
-            case "ModConflicts":
-                return new SaveFileClusterProxy.ModConflicts(subIdentifier);
-            default:
-                NotImplementedFunction(identifier);
-                return null;
-            }
-        }
-
-        sealed class SavesType : DumpableObject, IData
-        {
-            Window IData.CreateView(ViewConfiguration viewConfiguration)
-                => new SavesView(viewConfiguration);
-
-            string IData.Name => "Saves";
-        }
-
-        sealed class ModsType : DumpableObject, IData
-        {
-            Window IData.CreateView(ViewConfiguration viewConfiguration)
-                => new ModsView(viewConfiguration);
-
-            string IData.Name => "Mods";
-        }
-
-        sealed class ModDescriptionsType : DumpableObject, IData
-        {
-            Window IData.CreateView(ViewConfiguration viewConfiguration)
-                => new ModDictionaryView(viewConfiguration);
-
-            string IData.Name => "ModDescriptions";
-        }
-
-        internal ViewConfiguration(string [] identifier)
+        internal ViewConfiguration(string[] identifier)
         {
             Identifier = identifier;
             ViewCache = new ValueCache<Window>(CreateAndConnectView);
@@ -103,6 +44,7 @@ namespace MmasfUI
             return null;
         }
 
+        [DisableDump]
         internal Window View => ViewCache.Value;
 
         Window CreateAndConnectView()
@@ -112,7 +54,16 @@ namespace MmasfUI
             return result;
         }
 
-        Window CreateView() {
+        Window CreateView()
+        {
+            switch(Identifier[0])
+            {
+            case "ModDictionary":
+                return new ModDictionaryView(this);
+            case "Saves":
+                return new SavesView(this);
+            }
+
             NotImplementedMethod();
             return null;
         }
@@ -144,6 +95,7 @@ namespace MmasfUI
             MainContainer.Instance.AddViewConfiguration(this);
         }
 
+        [DisableDump]
         internal string PositionPath => ItemFileName("Position");
 
         internal void ShowAndActivate()

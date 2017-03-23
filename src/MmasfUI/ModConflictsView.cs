@@ -14,115 +14,110 @@ using MmasfUI.Common;
 
 namespace MmasfUI
 {
-	sealed class ModConflictsView : Window
-	{
-		sealed class Proxy : INotifyPropertyChanged
-		{
-			internal static class Command
-			{
-				internal const string ViewModDescriptions = "ModConflictsView.ViewModDescriptions";
-			}
+    sealed class ModConflictsView : Window
+    {
+        sealed class Proxy : INotifyPropertyChanged
+        {
+            internal static class Command
+            {
+                internal const string ViewModDescriptions = "ModConflictsView.ViewModDescriptions";
+            }
 
-			readonly ModConflict Data;
-			ModDescription Mod => Data.Mod;
+            readonly ModConflict Data;
+            ModDescription Mod => Data.Mod;
 
-			public Proxy(ModConflict data) { Data = data; }
-			public event PropertyChangedEventHandler PropertyChanged;
+            public Proxy(ModConflict data) { Data = data; }
+            public event PropertyChangedEventHandler PropertyChanged;
 
-			[UsedImplicitly]
-			[NotifyPropertyChangedInvocator]
-			void OnPropertyChanged([CallerMemberName] string propertyName = null)
-				=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            [UsedImplicitly]
+            [NotifyPropertyChangedInvocator]
+            void OnPropertyChanged([CallerMemberName] string propertyName = null)
+                => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-			[UsedImplicitly]
-			public string ModName => Mod.Name;
-			[UsedImplicitly]
-			public string SaveVersion => Data.SaveMod?.Version.ToString();
-			[UsedImplicitly]
-			public string GameVersion => Data.GameMod?.Version.ToString();
+            [UsedImplicitly]
+            public string ModName => Mod.Name;
+            [UsedImplicitly]
+            public string SaveVersion => Data.SaveMod?.Version.ToString();
+            [UsedImplicitly]
+            public string GameVersion => Data.GameMod?.Version.ToString();
 
-			[Command(Command.ViewModDescriptions)]
-			public void ViewModDescriptions()
-				=> MainContainer
-					.Instance
-					.CommandManager
-					.ByName(MainContainer.Command.ViewModDictionary)
-					.Execute(Mod);
-		}
+            [Command(Command.ViewModDescriptions)]
+            public void ViewModDescriptions()
+                => MainContainer
+                    .Instance
+                    .CommandManager
+                    .ByName(MainContainer.Command.ViewModDictionary)
+                    .Execute(Mod);
+        }
 
-		readonly StatusBar StatusBar = new StatusBar();
+        readonly StatusBar StatusBar = new StatusBar();
 
-	    internal ModConflictsView(ViewConfiguration viewConfiguration, string fileClusterName)
-		{
-			var parts = viewConfiguration.Identifier.Skip(1).ToArray();
-			var parent = MmasfContext
-				.Instance
-				.UserConfigurations.Single(u => u.Name == configurationName)
-				.SaveFiles.Single(u => u.Name == fileClusterName);
+        internal ModConflictsView(ViewConfiguration viewConfiguration, string fileClusterName)
+        {
+            var parent = MmasfContext
+                .Instance
+                .UserConfigurations.Single(u => u.Name == viewConfiguration.Identifier[1])
+                .SaveFiles.Single(u => u.Name == fileClusterName);
 
-			var data = parent.RelevantConflicts
-				.Select(s => new Proxy(s))
-				.ToArray();
+            var data = parent.RelevantConflicts
+                .Select(s => new Proxy(s))
+                .ToArray();
 
-			ContextMenu = CreateContextMenu();
-			var dataGrid = CreateGrid(data);
-			Content = dataGrid;
+            ContextMenu = CreateContextMenu();
+            var dataGrid = CreateGrid(data);
+            Content = dataGrid;
 
-			Title = viewConfiguration.Data.Name
-			        + " of "
-			        + parent.Name.Quote()
-			        + " of "
-			        + parent.Parent.Name.Quote();
-			this.InstallPositionPersister(viewConfiguration.PositionPath);
-			this.InstallMainMenu(CreateMenu());
-			this.InstallStatusLine(StatusBar);
-		}
+            Title = viewConfiguration.Identifier.Stringify(" of ");
+            this.InstallPositionPersister(viewConfiguration.PositionPath);
+            this.InstallMainMenu(CreateMenu());
+            this.InstallStatusLine(StatusBar);
+        }
 
-		static ContextMenu CreateContextMenu()
-			=> new ContextMenu
-			{
-				Items =
-				{
-					"View _Mod descriptions".MenuItem(Proxy.Command.ViewModDescriptions)
-				}
-			};
+        static ContextMenu CreateContextMenu()
+            => new ContextMenu
+            {
+                Items =
+                {
+                    "View _Mod descriptions".MenuItem(Proxy.Command.ViewModDescriptions)
+                }
+            };
 
-		static DataGrid CreateGrid(IEnumerable<Proxy> data)
-		{
-			var result = new DataGrid
-			{
-				IsReadOnly = true,
-				SelectionMode = DataGridSelectionMode.Single
-			};
+        static DataGrid CreateGrid(IEnumerable<Proxy> data)
+        {
+            var result = new DataGrid
+            {
+                IsReadOnly = true,
+                SelectionMode = DataGridSelectionMode.Single
+            };
 
-			result.ConfigurateDefaultColumns();
-			result.ActivateSelectedItems();
-			result.ItemsSource = data;
-			return result;
-		}
+            result.ConfigurateDefaultColumns();
+            result.ActivateSelectedItems();
+            result.ItemsSource = data;
+            return result;
+        }
 
-		static Menu CreateMenu()
-			=> new Menu
-			{
-				Items =
-				{
-					new MenuItem
-					{
-						Header = "_File",
-						Items =
-						{
-							"_Exit".MenuItem("Exit")
-						}
-					},
-					new MenuItem
-					{
-						Header = "_View",
-						Items =
-						{
-							"View _Mod descriptions".MenuItem(Proxy.Command.ViewModDescriptions)
-						}
-					}
-				}
-			};
-	}
+        static Menu CreateMenu()
+            => new Menu
+            {
+                Items =
+                {
+                    new MenuItem
+                    {
+                        Header = "_File",
+                        Items =
+                        {
+                            "_Exit".MenuItem("Exit")
+                        }
+                    },
+                    new MenuItem
+                    {
+                        Header = "_View",
+                        Items =
+                        {
+                            "View _Mod descriptions".MenuItem(Proxy.Command.ViewModDescriptions)
+                        }
+                    }
+                }
+            };
+    }
 }

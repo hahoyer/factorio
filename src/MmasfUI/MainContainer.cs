@@ -47,12 +47,17 @@ namespace MmasfUI
                 }
             };
 
+        ViewConfiguration[] ViewConfigurations = new ViewConfiguration[0];
+
         protected override void OnStartup(StartupEventArgs e)
         {
+            CleanupConfigArea();
             base.OnStartup(e);
             ShowContextView();
             SystemConfiguration.OpenActiveViews();
         }
+
+        static void CleanupConfigArea() => SystemConfiguration.Cleanup();
 
         void ShowContextView()
         {
@@ -70,31 +75,38 @@ namespace MmasfUI
             main.Show();
         }
 
-        ViewConfiguration ModDescriptions => FindViewConfiguration(new[] {"ModDescriptions"});
+        ViewConfiguration ModDictionary => FindViewConfiguration("ModDictionary");
+        ModDictionaryView ModDictionaryView => (ModDictionaryView) ModDictionary.View;
 
         [Command(Command.ViewModDictionary)]
         public void ViewModDictionary()
         {
-            ((ModDictionaryView) ModDescriptions.View).RefreshData();
-            ModDescriptions.ShowAndActivate();
+            ModDictionaryView.RefreshData();
+            ModDictionary.ShowAndActivate();
         }
+
 
         [Command(Command.ViewModDictionary)]
         public void ViewModDictionary(ModDescription currentItem)
         {
-            ((ModDictionaryView) ModDescriptions.View).Select(currentItem);
+            ModDictionaryView.Select(currentItem);
             ViewModDictionary();
         }
 
         [Command("Exit")]
-        public void OnExit() => Shutdown();
+        public void OnExit()
+        {
+            CleanupConfigArea();
+            Shutdown();
+        }
 
-        internal readonly CommandManager CommandManager = new CommandManager
-            (typeof(MainContainer).Namespace);
+        internal readonly CommandManager CommandManager
+            = new CommandManager(typeof(MainContainer).Namespace);
 
         internal void RemoveViewConfiguration(ViewConfiguration viewConfiguration)
         {
-            ViewConfigurations = ViewConfigurations.Where(item => item != viewConfiguration).ToArray();
+            ViewConfigurations =
+                ViewConfigurations.Where(item => item != viewConfiguration).ToArray();
         }
 
         internal void AddViewConfiguration(ViewConfiguration viewConfiguration)
@@ -103,10 +115,8 @@ namespace MmasfUI
                 ViewConfigurations = ViewConfigurations.Concat(new[] {viewConfiguration}).ToArray();
         }
 
-        ViewConfiguration[] ViewConfigurations;
-
-        internal ViewConfiguration FindViewConfiguration(string[] identifier)
+        internal ViewConfiguration FindViewConfiguration(params string[] identifier)
             => ViewConfigurations.FirstOrDefault(item => item.Identifier.SequenceEqual(identifier))
-               ?? new ViewConfiguration(identifier);
+                ?? new ViewConfiguration(identifier);
     }
 }

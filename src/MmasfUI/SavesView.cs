@@ -19,13 +19,12 @@ namespace MmasfUI
 
         public SavesView(ViewConfiguration viewConfiguration)
         {
-            var configuration = MmasfContext
+            var configurationName = viewConfiguration.Identifier[1];
+
+            Data = MmasfContext
                 .Instance
-                .UserConfigurations.Single(u => u.Name == viewConfiguration.Name);
-
-            var configurationName = configuration.Name;
-
-            Data = configuration
+                .UserConfigurations
+                .Single(u => u.Name == configurationName)
                 .SaveFiles
                 .Select(s => new SaveFileClusterProxy(s, configurationName))
                 .ToArray();
@@ -44,7 +43,7 @@ namespace MmasfUI
                 }
             );
 
-            Title = viewConfiguration.Data.Name + " of " + configurationName.Quote();
+            Title = viewConfiguration.Identifier.Stringify(" of ");
             this.InstallPositionPersister(viewConfiguration.PositionPath);
             this.InstallMainMenu(CreateMenu());
             this.InstallStatusLine(StatusBar);
@@ -75,11 +74,11 @@ namespace MmasfUI
 
         static void OnAutoGeneratingColumns(DataGridAutoGeneratingColumnEventArgs args)
         {
-            if (args.PropertyName != "Created")
+            if(args.PropertyName != "Created")
                 return;
 
             var column = args.Column as DataGridTextColumn;
-            if (column == null)
+            if(column == null)
                 return;
 
             column.SortDirection = ListSortDirection.Descending;

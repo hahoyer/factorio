@@ -70,6 +70,8 @@ namespace MmasfUI
             public string MoreVersions { get; }
         }
 
+        public static Window Create() { throw new NotImplementedException(); }
+
         Proxy[] Data;
         readonly DataGrid DataGrid;
         readonly StatusBar StatusBar = new StatusBar();
@@ -80,7 +82,7 @@ namespace MmasfUI
             DataGrid = CreateGrid();
             Content = DataGrid;
             RefreshData();
-            RawTitle = viewConfiguration.Data.Name;
+            RawTitle = viewConfiguration.Identifier.Stringify(" / ");
             Title = RawTitle;
             this.InstallPositionPersister(viewConfiguration.PositionPath);
             this.InstallMainMenu(CreateMenu());
@@ -172,5 +174,6 @@ namespace MmasfUI
             RefreshTitle();
 
         }
+
     }
 }

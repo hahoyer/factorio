@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Windows;
 using hw.DebugFormatter;
 using JetBrains.Annotations;
 using ManageModsAndSavefiles.Saves;
@@ -19,7 +18,6 @@ namespace MmasfUI
 
         readonly FileCluster Data;
         readonly string ConfigurationName;
-        readonly ModConflicts ModConflictsInstance;
         FileCluster DataIfRead => Data.IsDataRead ? Data : null;
         IEnumerable<ModConflict> Conflicts => DataIfRead?.RelevantConflicts;
 
@@ -45,7 +43,6 @@ namespace MmasfUI
         {
             Data = data;
             ConfigurationName = configurationName;
-            ModConflictsInstance = new ModConflicts(data.Name);
         }
 
         public void Refresh()
@@ -64,23 +61,7 @@ namespace MmasfUI
         public void ViewConflicts()
             => MainContainer
                 .Instance
-                .FindView(new[] {"ModConflicts", ConfigurationName, Data.Name})
+                .FindViewConfiguration("ModConflicts", ConfigurationName, Data.Name)
                 .ShowAndActivate();
-
-        internal sealed class ModConflicts : DumpableObject, ViewConfiguration.IData
-        {
-            readonly string FileClusterName;
-
-            public ModConflicts(string fileClusterName)
-            {
-                Tracer.ConditionalBreak(fileClusterName.StartsWith("HardCrafting"));
-                FileClusterName = fileClusterName;
-            }
-
-            Window ViewConfiguration.IData.CreateView(ViewConfiguration viewConfiguration)
-                => new ModConflictsView(viewConfiguration, FileClusterName);
-
-            string ViewConfiguration.IData.Name => "ModConflicts";
-        }
     }
 }

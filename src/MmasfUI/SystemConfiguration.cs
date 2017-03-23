@@ -15,13 +15,13 @@ namespace MmasfUI
                 .Folder
                 .PathCombine(ViewConfigurationFileName);
 
-        internal static string GetConfigurationPath(string[] viewIdentifier) 
+        internal static string GetConfigurationPath(string[] viewIdentifier)
             => GetConfigurationPath(viewIdentifier.Stringify("\n"));
 
         static string GetConfigurationPath(string viewIdentifier)
         {
             return GetKnownConfigurationPath(viewIdentifier)
-                   ?? GetNewConfigurationPath(viewIdentifier);
+                ?? GetNewConfigurationPath(viewIdentifier);
         }
 
         static string GetKnownConfigurationPath(string viewIdentifier)
@@ -38,11 +38,11 @@ namespace MmasfUI
                 .Select(key => key.Trim('\n', '\r', '\t', ' '))
                 .ToArray();
 
-        static string GetViewIdentifierString(string viewIdentifier) 
+        static string GetViewIdentifierString(string viewIdentifier)
             => viewIdentifier
-            .PathCombine(ViewIdentifierName)
-            .ToSmbFile()
-            .String;
+                .PathCombine(ViewIdentifierName)
+                .ToSmbFile()
+                .String;
 
         static string GetNewConfigurationPath(string viewIdentifier)
         {
@@ -85,10 +85,11 @@ namespace MmasfUI
                 return Enumerable.Empty<string>();
             }
         }
+
         internal static void OpenActiveViews()
         {
             var views = AllKnownViewIdentifiers
-                .Select(ViewConfiguration.CreateViewConfiguration)
+                .Select(identifier => new ViewConfiguration(identifier))
                 .Where(f => f.Status == "Open")
                 .OrderByDescending(f => f.LastUsed);
 
@@ -96,4 +97,17 @@ namespace MmasfUI
                 view.ShowAndActivate();
         }
 
+        public static void Cleanup()
+        {
+            var enumerable = ConfigurationPathsForAllKnownFiles
+                .Select(path => new {path, isValid = GetViewIdentifierString(path)!= null})
+            .
+            ToArray();
+            var filesToDelete = enumerable
+                .Where(i=>!i.isValid);
+
+            foreach(var item in filesToDelete)
+                item.path.ToSmbFile().Delete(true);
+        }
+    }
 }

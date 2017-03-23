@@ -16,20 +16,19 @@ namespace MmasfUI
     {
         readonly StatusBar StatusBar = new StatusBar();
 
-        public ModsView(ViewConfiguration viewConfiguration)
+        internal ModsView(ViewConfiguration viewConfiguration)
         {
-            var configuration = MmasfContext
+            var data = MmasfContext
                 .Instance
-                .UserConfigurations.Single(u => u.Name == viewConfiguration.Name);
-
-            var data = configuration
+                .UserConfigurations
+                .Single(u => u.Name == viewConfiguration.Identifier[1])
                 .ModFiles
                 .Select(s => new FileClusterProxy(s))
                 .ToArray();
 
             Content = CreateGrid(data);
 
-            Title = viewConfiguration.Name + " of " + configuration.Name.Quote();
+            Title = viewConfiguration.Identifier.Stringify(" of ");
             this.InstallPositionPersister(viewConfiguration.PositionPath);
             this.InstallMainMenu(CreateMenu());
             this.InstallStatusLine(StatusBar);
