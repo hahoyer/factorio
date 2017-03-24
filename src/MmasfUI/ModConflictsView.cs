@@ -52,12 +52,17 @@ namespace MmasfUI
 
         readonly StatusBar StatusBar = new StatusBar();
 
-        internal ModConflictsView(ViewConfiguration viewConfiguration, string fileClusterName)
+        internal ModConflictsView(ViewConfiguration viewConfiguration)
         {
+            var saveFileName = viewConfiguration.Identifier[1];
+            var configurationName = viewConfiguration.Identifier[2];
+
             var parent = MmasfContext
                 .Instance
-                .UserConfigurations.Single(u => u.Name == viewConfiguration.Identifier[1])
-                .SaveFiles.Single(u => u.Name == fileClusterName);
+                .UserConfigurations
+                .Single(u => u.Name == configurationName)
+                .SaveFiles
+                .Single(u => u.Name == saveFileName);
 
             var data = parent.RelevantConflicts
                 .Select(s => new Proxy(s))

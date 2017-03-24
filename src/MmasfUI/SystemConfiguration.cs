@@ -19,10 +19,8 @@ namespace MmasfUI
             => GetConfigurationPath(viewIdentifier.Stringify("\n"));
 
         static string GetConfigurationPath(string viewIdentifier)
-        {
-            return GetKnownConfigurationPath(viewIdentifier)
+            => GetKnownConfigurationPath(viewIdentifier)
                 ?? GetNewConfigurationPath(viewIdentifier);
-        }
 
         static string GetKnownConfigurationPath(string viewIdentifier)
         {
@@ -91,7 +89,7 @@ namespace MmasfUI
             var views = AllKnownViewIdentifiers
                 .Select(identifier => new ViewConfiguration(identifier))
                 .Where(f => f.Status == "Open")
-                .OrderByDescending(f => f.LastUsed);
+                .OrderBy(f => f.LastUsed);
 
             foreach(var view in views)
                 view.ShowAndActivate();
@@ -100,11 +98,17 @@ namespace MmasfUI
         public static void Cleanup()
         {
             var enumerable = ConfigurationPathsForAllKnownFiles
-                .Select(path => new {path, isValid = GetViewIdentifierString(path)!= null})
-            .
-            ToArray();
+                .Select
+                (
+                    path => new
+                    {
+                        path,
+                        isValid = GetViewIdentifierString(path) != null
+                    })
+                .ToArray();
+
             var filesToDelete = enumerable
-                .Where(i=>!i.isValid);
+                .Where(i => !i.isValid);
 
             foreach(var item in filesToDelete)
                 item.path.ToSmbFile().Delete(true);

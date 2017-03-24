@@ -97,11 +97,14 @@ namespace MmasfUI
         public void OnExit()
         {
             CleanupConfigArea();
+            IsClosing = true;
             Shutdown();
         }
 
         internal readonly CommandManager CommandManager
             = new CommandManager(typeof(MainContainer).Namespace);
+
+        internal bool IsClosing;
 
         internal void RemoveViewConfiguration(ViewConfiguration viewConfiguration)
         {

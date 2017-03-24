@@ -15,7 +15,7 @@ namespace ManageModsAndSavefiles.Mods
             object BinaryRead.IReaderProvider.ReadAndAdvance
                 (BinaryRead reader, Type type, MemberInfo member)
             {
-	            // ReSharper disable once UnusedVariable
+                // ReSharper disable once UnusedVariable
                 var x = reader.GetBytes(100);
                 var isBefore01414 = ((UserContext) reader.UserContext).IsBefore01414;
 
@@ -41,7 +41,8 @@ namespace ManageModsAndSavefiles.Mods
                         )
                     };
 
-                return MmasfContext.Instance.ModDictionary[result.name][result.version];
+                var mod = MmasfContext.Instance.ModDictionary[result.name];
+                return mod[result.version];
             }
         }
 
@@ -117,13 +118,13 @@ namespace ManageModsAndSavefiles.Mods
             get { return Configuration?.IsSaveOnlyPossible; }
             set
             {
-                if (IsSaveOnlyPossible == value)
+                if(IsSaveOnlyPossible == value)
                     return;
 
                 HasConfiguration = true;
                 Configuration.IsSaveOnlyPossible = value;
 
-                if (Configuration.IsEmpty)
+                if(Configuration.IsEmpty)
                     HasConfiguration = false;
             }
         }

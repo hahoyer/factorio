@@ -62,6 +62,10 @@ namespace MmasfUI
                 return new ModDictionaryView(this);
             case "Saves":
                 return new SavesView(this);
+            case "Mods":
+                return new ModsView(this);
+            case "ModConflicts":
+                return new ModConflictsView(this);
             }
 
             NotImplementedMethod();
@@ -84,6 +88,9 @@ namespace MmasfUI
 
         void OnClosing()
         {
+            if(MainContainer.Instance.IsClosing)
+                return;
+
             Status = "Closed";
             ViewCache.IsValid = false;
             MainContainer.Instance.RemoveViewConfiguration(this);
@@ -102,12 +109,6 @@ namespace MmasfUI
         {
             View.Show();
             View.Activate();
-        }
-
-        internal bool IsMatching(string[] identifier)
-        {
-            NotImplementedFunction(this, identifier.Stringify(", "));
-            return false;
         }
     }
 }
