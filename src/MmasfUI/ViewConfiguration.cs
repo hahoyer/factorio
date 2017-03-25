@@ -9,15 +9,21 @@ namespace MmasfUI
 {
     public sealed class ViewConfiguration : DumpableObject
     {
+        internal interface IWindow
+        {
+            Window Window{ get; }
+            void Refresh();
+        }
+
         internal readonly string[] Identifier;
 
         [DisableDump]
-        readonly ValueCache<Window> ViewCache;
+        readonly ValueCache<IWindow> ViewCache;
 
         internal ViewConfiguration(string[] identifier)
         {
             Identifier = identifier;
-            ViewCache = new ValueCache<Window>(CreateAndConnectView);
+            ViewCache = new ValueCache<IWindow>(CreateAndConnectView);
         }
 
         internal string Status
@@ -45,16 +51,16 @@ namespace MmasfUI
         }
 
         [DisableDump]
-        internal Window View => ViewCache.Value;
+        internal IWindow View => ViewCache.Value;
 
-        Window CreateAndConnectView()
+        IWindow CreateAndConnectView()
         {
-            var result = CreateView();
-            ConnectToWindow(result);
+            IWindow result = CreateView();
+            ConnectToWindow(result.Window);
             return result;
         }
 
-        Window CreateView()
+        IWindow CreateView()
         {
             switch(Identifier[0])
             {
@@ -66,10 +72,10 @@ namespace MmasfUI
                 return new ModsView(this);
             case "ModConflicts":
                 return new ModConflictsView(this);
+            default:
+                NotImplementedMethod();
+                return null;
             }
-
-            NotImplementedMethod();
-            return null;
         }
 
         internal void ConnectToWindow(Window window)
@@ -107,8 +113,10 @@ namespace MmasfUI
 
         internal void ShowAndActivate()
         {
-            View.Show();
-            View.Activate();
+            View.Window.Show();
+            View.Window.Activate();
         }
+
+        internal void Refresh() => View.Refresh();
     }
 }

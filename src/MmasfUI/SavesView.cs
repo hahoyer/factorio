@@ -12,12 +12,15 @@ using MmasfUI.Common;
 
 namespace MmasfUI
 {
-    sealed class SavesView : Window
+    sealed class SavesView : Window, ViewConfiguration.IWindow
     {
         readonly SaveFileClusterProxy[] Data;
         readonly StatusBar StatusBar = new StatusBar();
 
-        public SavesView(ViewConfiguration viewConfiguration)
+        Window ViewConfiguration.IWindow.Window => this;
+        void ViewConfiguration.IWindow.Refresh() => RefreshData();
+
+        internal SavesView(ViewConfiguration viewConfiguration)
         {
             var configurationName = viewConfiguration.Identifier[1];
 

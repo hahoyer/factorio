@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using hw.DebugFormatter;
 using hw.Helper;
 using JetBrains.Annotations;
 using ManageModsAndSavefiles;
@@ -14,7 +15,7 @@ using MmasfUI.Common;
 
 namespace MmasfUI
 {
-    sealed class ModConflictsView : Window
+    sealed class ModConflictsView : DumpableObject, ViewConfiguration.IWindow
     {
         sealed class Proxy : INotifyPropertyChanged
         {
@@ -50,33 +51,46 @@ namespace MmasfUI
                     .Execute(Mod);
         }
 
-        readonly StatusBar StatusBar = new StatusBar();
+        readonly Window Window;
+        readonly string SaveFileName;
+        readonly string ConfigurationName;
+        readonly DataGrid DataGrid;
 
         internal ModConflictsView(ViewConfiguration viewConfiguration)
         {
-            var saveFileName = viewConfiguration.Identifier[1];
-            var configurationName = viewConfiguration.Identifier[2];
+            SaveFileName = viewConfiguration.Identifier[1];
+            ConfigurationName = viewConfiguration.Identifier[2];
+            DataGrid = CreateGrid(Data);
+            Window = CreateWindow(viewConfiguration, DataGrid);
+        }
 
-            var parent = MmasfContext
+        Window ViewConfiguration.IWindow.Window => Window;
+        void ViewConfiguration.IWindow.Refresh() => DataGrid.ItemsSource = Data;
+
+        static Window CreateWindow(ViewConfiguration viewConfiguration, DataGrid grid)
+        {
+            var window = new Window
+            {
+                ContextMenu = CreateContextMenu(),
+                Content = grid,
+                Title = viewConfiguration.Identifier.Stringify(" of ")
+            };
+
+            window.InstallPositionPersister(viewConfiguration.PositionPath);
+            window.InstallMainMenu(CreateMenu());
+            return window;
+        }
+
+        Proxy[] Data
+            => MmasfContext
                 .Instance
                 .UserConfigurations
-                .Single(u => u.Name == configurationName)
+                .Single(u => u.Name == ConfigurationName)
                 .SaveFiles
-                .Single(u => u.Name == saveFileName);
-
-            var data = parent.RelevantConflicts
+                .Single(u => u.Name == SaveFileName)
+                .RelevantConflicts
                 .Select(s => new Proxy(s))
                 .ToArray();
-
-            ContextMenu = CreateContextMenu();
-            var dataGrid = CreateGrid(data);
-            Content = dataGrid;
-
-            Title = viewConfiguration.Identifier.Stringify(" of ");
-            this.InstallPositionPersister(viewConfiguration.PositionPath);
-            this.InstallMainMenu(CreateMenu());
-            this.InstallStatusLine(StatusBar);
-        }
 
         static ContextMenu CreateContextMenu()
             => new ContextMenu
@@ -124,5 +138,6 @@ namespace MmasfUI
                     }
                 }
             };
+
     }
 }

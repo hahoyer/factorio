@@ -75,7 +75,7 @@ namespace MmasfUI
             main.Show();
         }
 
-        ViewConfiguration ModDictionary => FindViewConfiguration("ModDictionary");
+        ViewConfiguration ModDictionary => GetViewConfiguration("ModDictionary");
         ModDictionaryView ModDictionaryView => (ModDictionaryView) ModDictionary.View;
 
         [Command(Command.ViewModDictionary)]
@@ -118,8 +118,19 @@ namespace MmasfUI
                 ViewConfigurations = ViewConfigurations.Concat(new[] {viewConfiguration}).ToArray();
         }
 
-        internal ViewConfiguration FindViewConfiguration(params string[] identifier)
-            => ViewConfigurations.FirstOrDefault(item => item.Identifier.SequenceEqual(identifier))
-                ?? new ViewConfiguration(identifier);
+        internal ViewConfiguration GetViewConfiguration(params string[] identifier)
+            => FindViewConfiguration(identifier) ?? new ViewConfiguration(identifier);
+
+        ViewConfiguration FindViewConfiguration(string[] identifier)
+        {
+            return ViewConfigurations.FirstOrDefault
+                (item => item.Identifier.SequenceEqual(identifier));
+        }
+
+        public void RefreshAll()
+        {
+            foreach(var viewConfiguration in ViewConfigurations)
+                viewConfiguration.Refresh();
+        }
     }
 }

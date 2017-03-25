@@ -61,7 +61,7 @@ namespace MmasfUI
         public void ViewConflicts()
             => MainContainer
                 .Instance
-                .FindViewConfiguration("ModConflicts", Data.Name, ConfigurationName)
+                .GetViewConfiguration("ModConflicts", Data.Name, ConfigurationName)
                 .ShowAndActivate();
     }
 }

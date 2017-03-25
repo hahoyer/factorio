@@ -12,27 +12,51 @@ using MmasfUI.Common;
 
 namespace MmasfUI
 {
-    sealed class ModsView : Window
+    sealed class ModsView : Window, ViewConfiguration.IWindow
     {
         readonly StatusBar StatusBar = new StatusBar();
+        readonly string ConfigurationName;
+        readonly DataGrid DataGrid;
+
+        Window ViewConfiguration.IWindow.Window => this;
+        void ViewConfiguration.IWindow.Refresh() => RefreshData();
 
         internal ModsView(ViewConfiguration viewConfiguration)
         {
-            var data = MmasfContext
-                .Instance
-                .UserConfigurations
-                .Single(u => u.Name == viewConfiguration.Identifier[1])
-                .ModFiles
-                .Select(s => new FileClusterProxy(s))
-                .ToArray();
-
-            Content = CreateGrid(data);
-
+            ConfigurationName = viewConfiguration.Identifier[1];
+            DataGrid = CreateGrid(Data);
+            Content = DataGrid;
             Title = viewConfiguration.Identifier.Stringify(" of ");
             this.InstallPositionPersister(viewConfiguration.PositionPath);
             this.InstallMainMenu(CreateMenu());
             this.InstallStatusLine(StatusBar);
         }
+
+        IEnumerable<FileClusterProxy> Data { get
+        {
+            return MmasfContext
+                .Instance
+                .UserConfigurations
+                .Single(u => u.Name == ConfigurationName)
+                .ModFiles
+                .Select(s => new FileClusterProxy(s))
+                .ToArray();
+        } }
+
+        void RefreshData()
+        {
+            var formerSelection = (FileClusterProxy)DataGrid.SelectedItem;
+            DataGrid.ItemsSource = null;
+            DataGrid.ItemsSource = Data;
+            Select(formerSelection);
+        }
+
+        void Select(FileClusterProxy item)
+        {
+            var proxyItem = item == null ? null : Data.Single(p => p.Name == item.Name);
+            DataGrid.SelectedItem = proxyItem;
+        }
+
 
         static DataGrid CreateGrid(IEnumerable<FileClusterProxy> data)
         {

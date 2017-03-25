@@ -13,7 +13,7 @@ using MmasfUI.Common;
 
 namespace MmasfUI
 {
-    sealed class ModDictionaryView : Window
+    sealed class ModDictionaryView : Window, ViewConfiguration.IWindow
     {
         internal static class Command
         {
@@ -26,7 +26,8 @@ namespace MmasfUI
             internal readonly ModDescription Data;
             readonly Action OnPropertyEdited;
 
-            public Proxy(ModDescription data, IEnumerable<Version> moreVersions, Action onPropertyEdited)
+            public Proxy
+                (ModDescription data, IEnumerable<Version> moreVersions, Action onPropertyEdited)
             {
                 Data = data;
                 OnPropertyEdited = onPropertyEdited;
@@ -45,17 +46,6 @@ namespace MmasfUI
             public string Version => Data.Version.ToString();
 
             [UsedImplicitly]
-            public bool? GameOnly
-            {
-                get { return Data.IsGameOnlyPossible; }
-                set
-                {
-                    Data.IsGameOnlyPossible = value;
-                    OnPropertyEdited();
-                }
-            }
-
-            [UsedImplicitly]
             public bool? SaveOnly
             {
                 get { return Data.IsSaveOnlyPossible; }
@@ -67,10 +57,22 @@ namespace MmasfUI
             }
 
             [UsedImplicitly]
+            public bool? GameOnly
+            {
+                get { return Data.IsGameOnlyPossible; }
+                set
+                {
+                    Data.IsGameOnlyPossible = value;
+                    OnPropertyEdited();
+                }
+            }
+
+            [UsedImplicitly]
             public string MoreVersions { get; }
         }
 
-        public static Window Create() { throw new NotImplementedException(); }
+        Window ViewConfiguration.IWindow.Window => this;
+        void ViewConfiguration.IWindow.Refresh() => RefreshData();
 
         Proxy[] Data;
         readonly DataGrid DataGrid;
@@ -80,6 +82,7 @@ namespace MmasfUI
         public ModDictionaryView(ViewConfiguration viewConfiguration)
         {
             DataGrid = CreateGrid();
+
             Content = DataGrid;
             RefreshData();
             RawTitle = viewConfiguration.Identifier.Stringify(" / ");
@@ -100,15 +103,18 @@ namespace MmasfUI
         {
             var formerSelection = ((Proxy) DataGrid.SelectedItem)?.Data;
             DataGrid.ItemsSource = null;
-            Data = MmasfContext
+            Data = GetData();
+            DataGrid.ItemsSource = Data;
+            Select(formerSelection);
+        }
+
+        Proxy[] GetData()
+            => MmasfContext
                 .Instance
                 .ModDictionary
                 .Where(mods => mods.Key != "base")
                 .Select(mods => CreateProxy(mods.Value))
                 .ToArray();
-            DataGrid.ItemsSource = Data;
-            Select(formerSelection);
-        }
 
         Proxy CreateProxy(FunctionCache<Version, ModDescription> modVersions)
         {
@@ -128,10 +134,7 @@ namespace MmasfUI
             return result;
         }
 
-        void RefreshTitle()
-        {
-            Title = RawTitle + (IsDirty ? "*" : "");
-        }
+        void RefreshTitle() { Title = RawTitle + (IsDirty ? "*" : ""); }
 
         static Menu CreateMenu()
             => new Menu
@@ -172,8 +175,7 @@ namespace MmasfUI
                 .ModConfiguration
                 .Save();
             RefreshTitle();
-
+            MainContainer.Instance.RefreshAll();
         }
-
     }
 }
