@@ -58,6 +58,9 @@ namespace MmasfUI
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
 
         [Command(Command.ViewConflicts)]
+        public bool IsConflicting => Conflicts?.Any() ?? false;
+
+        [Command(Command.ViewConflicts)]
         public void ViewConflicts()
             => MainContainer
                 .Instance
