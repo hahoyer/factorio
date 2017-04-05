@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using ManageModsAndSavefiles;
 using ManageModsAndSavefiles.Mods;
 using MmasfUI.Common;
 
@@ -16,6 +17,7 @@ namespace MmasfUI
         internal static class Command
         {
             internal const string ViewModDictionary = "ViewModDictionary";
+            internal const string RereadConfigurations = "RereadConfigurations";
         }
 
         internal static readonly MainContainer Instance = new MainContainer();
@@ -43,6 +45,14 @@ namespace MmasfUI
                             "_Mods".MenuItem(UserConfigurationTile.Command.ViewMods),
                             "Mod _dictionary".MenuItem(Command.ViewModDictionary)
                         }
+                    },
+                    new MenuItem
+                    {
+                        Header = "_Tools",
+                        Items =
+                        {
+                            "_Reread Configurations".MenuItem(Command.RereadConfigurations)
+                        }
                     }
                 }
             };
@@ -61,14 +71,14 @@ namespace MmasfUI
 
         void ShowContextView()
         {
-            var view = new ContextView();
+            ContextView = new ContextView();
             var main = new Window
             {
-                Content = view,
+                Content = ContextView,
                 Title = "MmasfContext"
             };
 
-            view.Selection.RegisterKeyboardHandler(main);
+            ContextView.Selection.RegisterKeyboardHandler(main);
             main.InstallPositionPersister("Main");
             main.InstallMainMenu(CreateMainMenu());
             CommandManager.Activate(this);
@@ -93,6 +103,13 @@ namespace MmasfUI
             ViewModDictionary();
         }
 
+        [Command(Command.RereadConfigurations)]
+        public void RereadConfigurations()
+        {
+            MmasfContext.Instance.RenewUserConfigurationPaths();
+            ContextView.Refresh();
+        }
+
         [Command("Exit")]
         public void OnExit()
         {
@@ -105,6 +122,7 @@ namespace MmasfUI
             = new CommandManager(typeof(MainContainer).Namespace);
 
         internal bool IsClosing;
+        ContextView ContextView;
 
         internal void RemoveViewConfiguration(ViewConfiguration viewConfiguration)
         {
