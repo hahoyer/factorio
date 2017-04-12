@@ -34,7 +34,7 @@ namespace ManageModsAndSavefiles.Reader
 
         public byte[] GetBytes(int count)
         {
-            Tracer.Assert(count < 1000);
+            Tracer.Assert(count < 10000);
             var result = new byte[count];
             Reader.Position = Position;
             Reader.Read(result, 0, count);
