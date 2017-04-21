@@ -61,6 +61,21 @@ namespace hw.Helper
             }
         }
 
+        public string SubString(long start, int size)
+        {
+            if (!System.IO.File.Exists(_name))
+                return null;
+
+            using(var f = Reader)
+            {
+                f.Position = start;
+                byte[] buffer = new byte[size];
+                f.Read(buffer, 0, size);
+                return System.Text.Encoding.UTF8.GetString(buffer);
+            }
+        }
+
+
         public void CheckedEnsureDirectoryOfFileExists()
         {
             if(AutoCreateDirectories)
@@ -104,7 +119,7 @@ namespace hw.Helper
             }
         }
 
-        public FileStream Reader => System.IO.File.OpenRead(_name);
+        public FileStream Reader => new FileStream(_name, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
         /// <summary>
         ///     Size of file in bytes
@@ -334,5 +349,6 @@ namespace hw.Helper
                 filePaths = newList;
             }
         }
+
     }
 }
