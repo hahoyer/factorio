@@ -5,6 +5,12 @@
     <AssemblyName>ManageModsAndSavefiles</AssemblyName>
     <TargetTypeEx>CSharp.Library</TargetTypeEx>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <NoWarn>649,414</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <NoWarn>649,414</NoWarn>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs">
       <AutoGen>True</AutoGen>
