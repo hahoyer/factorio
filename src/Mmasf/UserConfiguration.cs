@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
@@ -60,6 +61,19 @@ namespace ManageModsAndSavefiles
             ModConfigurationCache = new ValueCache<IDictionary<string, bool>>(GetModConfiguration);
             ModFilesCache = new ValueCache<Mods.FileCluster[]>(GetModFiles);
             SaveFilesCache = new ValueCache<Saves.FileCluster[]>(GetSaveFiles);
+
+
+            var watcher = new FileSystemWatcher(path)
+            {
+                EnableRaisingEvents = true,
+                IncludeSubdirectories = false,
+                Filter = "*.request"
+            };
+
+            watcher.Renamed += (o, a) => OnRenamed(a);
+
+
+
         }
 
         string FilesPath(string item) => Path.PathCombine(item);

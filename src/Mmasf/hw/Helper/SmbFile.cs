@@ -78,6 +78,7 @@ namespace hw.Helper
             {
                 EnsureDirectoryOfFileExists();
                 Directory.CreateDirectory(FullName);
+                _fileInfoCache = null;
             }
         }
 
@@ -213,7 +214,11 @@ namespace hw.Helper
         }
 
         FileSystemInfo[] GetItems()
-            => ((DirectoryInfo) FileSystemInfo).GetFileSystemInfos().ToArray();
+        {
+            if(AutoCreateDirectories)
+                EnsureIsExistentDirectory();
+            return ((DirectoryInfo) FileSystemInfo).GetFileSystemInfos().ToArray();
+        }
 
         public SmbFile[] Items
         {
