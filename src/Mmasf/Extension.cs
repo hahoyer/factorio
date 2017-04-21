@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using hw.DebugFormatter;
 using hw.Helper;
 using IniParser;
 using IniParser.Model;
@@ -162,5 +164,13 @@ namespace ManageModsAndSavefiles
 
         internal static RegistryItem Registry(this string fullKey)
             => new RegistryItem(fullKey.Split('\\'));
+
+        public static void Sleep(this TimeSpan value) => Thread.Sleep(value);
+
+        public static TimeSpan MilliSeconds(this int value) => TimeSpan.FromMilliseconds(value);
+        public static TimeSpan Seconds(this int value) => TimeSpan.FromSeconds(value);
+        public static void WriteLine(this string value) => Tracer.Line(value);
+        public static void WriteFlaggedLine(this string value) => Tracer.FlaggedLine(value, stackFrameDepth:1);
+
     }
 }

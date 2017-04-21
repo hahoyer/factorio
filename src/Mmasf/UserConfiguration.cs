@@ -11,8 +11,10 @@ namespace ManageModsAndSavefiles
 {
     public sealed class UserConfiguration : DumpableObject
     {
-        const string SaveDirectoryName = "saves";
+       internal const string SaveDirectoryName = "saves";
         internal const string ModDirectoryName = "mods";
+        internal const string LogfileName= "factorio-current.log";
+        internal const string PreviousLogfileName = "factorio-previous.log";
         const string PlayerDataFileName = "player-data.json";
         const string ReadDataTag = "read-data";
         const string ModConfigurationFileName = "mod-list.json";
@@ -48,6 +50,7 @@ namespace ManageModsAndSavefiles
         readonly ValueCache<Mods.FileCluster[]> ModFilesCache;
         readonly ValueCache<IDictionary<string, bool>> ModConfigurationCache;
         readonly MmasfContext Parent;
+        readonly LogfileWatcher LogfileWatcher;
 
         public string Name => Path.Split('\\').Last();
         public bool IsRoot => Path == Parent.DataConfiguration.RootUserConfigurationPath;
@@ -62,18 +65,7 @@ namespace ManageModsAndSavefiles
             ModFilesCache = new ValueCache<Mods.FileCluster[]>(GetModFiles);
             SaveFilesCache = new ValueCache<Saves.FileCluster[]>(GetSaveFiles);
 
-
-            var watcher = new FileSystemWatcher(path)
-            {
-                EnableRaisingEvents = true,
-                IncludeSubdirectories = false,
-                Filter = "*.request"
-            };
-
-            watcher.Renamed += (o, a) => OnRenamed(a);
-
-
-
+            LogfileWatcher = new LogfileWatcher(Path);
         }
 
         string FilesPath(string item) => Path.PathCombine(item);
@@ -109,7 +101,8 @@ namespace ManageModsAndSavefiles
         IDictionary<string, bool> GetModConfiguration()
         {
             var fileHandle = FilesPath(ModDirectoryName)
-                .PathCombine(ModConfigurationFileName).ToSmbFile();
+                .PathCombine(ModConfigurationFileName)
+                .ToSmbFile();
 
             if(!fileHandle.Exists)
                 return new Dictionary<string, bool>();
@@ -124,15 +117,17 @@ namespace ManageModsAndSavefiles
         public IEnumerable<Saves.FileCluster> SaveFiles => SaveFilesCache.Value;
         IDictionary<string, bool> ModConfiguration => ModConfigurationCache.Value;
 
-        public IEnumerable<ModConflict> SaveFileConflicts 
+        public IEnumerable<ModConflict> SaveFileConflicts
             => SaveFiles
             .SelectMany(save => save.Conflicts);
 
         public void InitializeFrom(UserConfiguration source)
             =>
-            source.FilesPath(PlayerDataFileName).ToSmbFile().CopyTo(FilesPath(PlayerDataFileName));
+                source.FilesPath
+                    (PlayerDataFileName)
+                    .ToSmbFile()
+                    .CopyTo(FilesPath(PlayerDataFileName));
 
         protected override string GetNodeDump() => Path.ToSmbFile().Name;
-
     }
 }
