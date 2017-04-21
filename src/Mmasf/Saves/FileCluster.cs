@@ -83,7 +83,7 @@ namespace ManageModsAndSavefiles.Saves
 
         [DisableDump]
         public IEnumerable<ModConflict> RelevantConflicts
-            => Conflicts.Where(c => c.IsRelevantConflict);
+            => Conflicts.Where(c => c.IsRelevant);
 
         ModConflict CreateConflict(ModDescription saveMod, Mods.FileCluster gameMod)
         {

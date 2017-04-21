@@ -99,8 +99,9 @@ namespace MmasfUI
         [Command(Command.ViewModDictionary)]
         public void ViewModDictionary(ModDescription currentItem)
         {
+            ModDictionaryView.RefreshData();
             ModDictionaryView.Select(currentItem);
-            ViewModDictionary();
+            ModDictionary.ShowAndActivate();
         }
 
         [Command(Command.RereadConfigurations)]

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using hw.DebugFormatter;
 using JetBrains.Annotations;
 using ManageModsAndSavefiles.Saves;
 using MmasfUI.Common;
@@ -25,19 +24,28 @@ namespace MmasfUI
         public DateTime Created => Data.Created;
         [UsedImplicitly]
         public string Name => Data.Name;
-        [UsedImplicitly]
-        public string FirstConflict => Conflicts?.FirstOrDefault()?.Mod.FullName;
 
         [UsedImplicitly]
         public TimeSpanProxy Duration { get; set; }
         [UsedImplicitly]
         public Version Version => DataIfRead?.Version;
         [UsedImplicitly]
-        public string ScenarioName => DataIfRead?.ScenarioName;
+        public string GamePart => DataIfRead?.ScenarioName + "/" + DataIfRead?.MapName + "/" + DataIfRead?.CampaignName;
         [UsedImplicitly]
-        public string MapName => DataIfRead?.MapName;
+        public bool IsKnownConflict => Conflicts?.Any(c => c.IsKnown) ?? false;
         [UsedImplicitly]
-        public string CampaignName => DataIfRead?.CampaignName;
+        public string FirstUnknown
+        {
+            get
+            {
+                var conflicts = Conflicts?.ToArray();
+                if(conflicts == null)
+                    return null;
+                if(conflicts.Any(c => c.IsKnown))
+                    return null;
+                return conflicts.FirstOrDefault(c => !c.IsKnown)?.Mod.FullName;
+            }
+        }
 
         public SaveFileClusterProxy(FileCluster data, string configurationName)
         {
@@ -58,7 +66,7 @@ namespace MmasfUI
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
 
         [Command(Command.ViewConflicts)]
-        public bool IsConflicting => Conflicts?.Any() ?? false;
+        public bool IsConflict => Conflicts?.Any() ?? false;
 
         [Command(Command.ViewConflicts)]
         public void ViewConflicts()

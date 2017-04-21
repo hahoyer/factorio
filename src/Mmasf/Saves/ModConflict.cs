@@ -12,7 +12,7 @@ namespace ManageModsAndSavefiles.Saves
         public ModDescription GameMod;
         public ModDescription Mod => GameMod ?? SaveMod;
 
-        internal bool IsRelevantConflict
+        internal bool IsRelevant
         {
             get
             {
@@ -22,6 +22,20 @@ namespace ManageModsAndSavefiles.Saves
                     return GameMod.IsGameOnlyPossible != true;
 
                 return !GameMod.IsCompatible(SaveMod.Version);
+            }
+        }
+
+        public bool IsKnown
+        {
+            get
+            {
+                if(!Mod.HasConfiguration)
+                    return false;
+                if(GameMod == null)
+                    return Mod.IsSaveOnlyPossible != null;
+                if(SaveMod == null)
+                    return Mod.IsGameOnlyPossible != null;
+                return false;
             }
         }
     }

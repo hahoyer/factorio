@@ -77,8 +77,8 @@
     <Compile Include="Saves\FileCluster.cs" />
     <Compile Include="Saves\ModConflict.cs" />
     <Compile Include="Saves\UserContext.cs" />
-    <Compile Include="Saves\LogfileWatcher.cs" />
-    <Compile Include="Saves\SavefileWatcher.cs" />
+    <Compile Include="LogfileWatcher.cs" />
+    <Compile Include="SavefileWatcher.cs" />
     <Compile Include="SeekableReader.cs" />
     <Compile Include="StreamWithCleanupList.cs" />
     <Compile Include="SystemConfiguration.cs" />
@@ -113,6 +113,7 @@
       <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="PresentationFramework" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />

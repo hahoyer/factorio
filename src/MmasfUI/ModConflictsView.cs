@@ -41,6 +41,8 @@ namespace MmasfUI
             public string SaveVersion => Data.SaveMod?.Version.ToString();
             [UsedImplicitly]
             public string GameVersion => Data.GameMod?.Version.ToString();
+            [UsedImplicitly]
+            public bool IsKnown => Data.IsKnown;
 
             [Command(Command.ViewModDescriptions)]
             public void ViewModDescriptions()
