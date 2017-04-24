@@ -17,6 +17,7 @@ namespace ManageModsAndSavefiles
         readonly string LogfileName;
         readonly FileSystemWatcher Watcher;
         DateTime? StartTime;
+        readonly object Mutex = new object();
 
         internal LogfileWatcher(string path)
         {
@@ -29,33 +30,36 @@ namespace ManageModsAndSavefiles
 
         void OnTimer(object state)
         {
-            Tracer.Assert(state == Timer);
-            var fileHandle = LogfileName.ToSmbFile();
-            var delta = fileHandle.Size - LastSize;
-
-            if(delta == 0)
-                return;
-
-            Tracer.Assert(delta < int.MaxValue);
-            Tracer.Assert(delta > 0);
-
-            var newData = fileHandle.SubString(LastSize, (int) delta);
-            var rawLines = (LastLinePart + newData).Split('\n');
-            var lines = rawLines.Take(rawLines.Length - 1).Select(ScanLine).ToArray();
-
-            if(StartTime == null && lines.Any())
-                StartTime = DateTime.Parse(lines[0].Data.Substring(0,19), CultureInfo.InvariantCulture);
-
-            if(StartTime == null)
-                (LogfileName + " " + delta + "\n" + newData).WriteFlaggedLine();
-            else
+            lock(Mutex)
             {
-                var formattedData = lines.Select(l => l.Format(StartTime.Value)).Stringify("\n");
-                (LogfileName + " " + delta + "\n" + formattedData).WriteFlaggedLine();
-            }
+                Tracer.Assert(state == Timer);
+                var fileHandle = LogfileName.ToSmbFile();
+                var delta = fileHandle.Size - LastSize;
 
-            LastSize += delta;
-            LastLinePart = rawLines.Last();
+                if (delta == 0)
+                    return;
+
+                Tracer.Assert(delta < int.MaxValue);
+                Tracer.Assert(delta > 0);
+
+                var newData = fileHandle.SubString(LastSize, (int)delta);
+                var rawLines = (LastLinePart + newData).Split('\n');
+                var lines = rawLines.Take(rawLines.Length - 1).Select(ScanLine).ToArray();
+
+                if (StartTime == null && lines.Any())
+                    StartTime = DateTime.Parse(lines[0].Data.Substring(0, 19), CultureInfo.InvariantCulture);
+
+                if (StartTime == null)
+                    (LogfileName + " " + delta + "\n" + newData).WriteFlaggedLine();
+                else
+                {
+                    var formattedData = lines.Select(l => l.Format(StartTime.Value)).Stringify("\n");
+                    (LogfileName + " " + delta + "\n" + formattedData).WriteFlaggedLine();
+                }
+
+                LastSize += delta;
+                LastLinePart = rawLines.Last();
+            }
         }
 
         static Line ScanLine(string data)
@@ -92,11 +96,14 @@ namespace ManageModsAndSavefiles
 
         void OnLogfileCreated(object sender, FileSystemEventArgs e)
         {
-            (DateTime.Now.DynamicShortFormat(true) + " " + e.FullPath)
-                .WriteLine();
-            LastSize = 0;
-            LastLinePart = "";
-            StartTime = null;
+            lock(Mutex)
+            {
+                (DateTime.Now.DynamicShortFormat(true) + " " + e.FullPath)
+                    .WriteLine();
+                LastSize = 0;
+                LastLinePart = "";
+                StartTime = null;
+            }
         }
     }
 }
