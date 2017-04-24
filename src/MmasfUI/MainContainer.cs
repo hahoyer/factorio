@@ -32,6 +32,7 @@ namespace MmasfUI
                         Header = "_File",
                         Items =
                         {
+                            "_Open Location".MenuItem(UserConfigurationTile.Command.OpenLocation),
                             "_Select".MenuItem(UserConfigurationTile.Command.Select),
                             "_Exit".MenuItem("Exit")
                         }

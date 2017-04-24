@@ -12,6 +12,7 @@ namespace MmasfUI
     {
         internal static class Command
         {
+            internal const string OpenLocation = "UserConfiguration.OpenLocation";
             internal const string Select = "UserConfiguration.Select";
             internal const string ViewSaves = "UserConfiguration.ViewSaves";
             internal const string ViewMods = "UserConfiguration.ViewMods";
@@ -90,9 +91,19 @@ namespace MmasfUI
         [Command(Command.Select)]
         public bool CanExecuteSelect => !Configuration.IsCurrent;
 
-        bool Selection.IAcceptor.IsSelected
+        [Command(Command.OpenLocation)]
+        public void OnOpenLocation()
         {
-            set { MainContainer.Instance.CommandManager.Activate(this, value); }
+            var process = new System.Diagnostics.Process();
+            var startInfo = new System.Diagnostics.ProcessStartInfo();
+            startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            startInfo.FileName = "cmd.exe";
+            startInfo.Arguments = "/C " + "explorer " + Configuration.Path;
+            process.StartInfo = startInfo;
+            process.Start();
         }
+
+
+        bool Selection.IAcceptor.IsSelected { set { MainContainer.Instance.CommandManager.Activate(this, value); } }
     }
 }
