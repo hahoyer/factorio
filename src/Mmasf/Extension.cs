@@ -32,19 +32,17 @@ namespace ManageModsAndSavefiles
             => root.SelectMany(f => f.RecursiveItems())
                 .Where(item => item.FullName.EndsWith(target));
 
-        static readonly FileIniDataParser IniParserInstance = CreateFileIniDataParser();
-
-        static FileIniDataParser CreateFileIniDataParser()
+        static FileIniDataParser CreateFileIniDataParser(string commentString)
         {
             var result = new FileIniDataParser();
-            result.Parser.Configuration.CommentString = "#";
+            result.Parser.Configuration.CommentString = commentString;
             return result;
         }
 
-        internal static IniData FromIni(this string name) => IniParserInstance.ReadFile(name);
+        internal static IniData FromIni(this string name, string commentString) => CreateFileIniDataParser(commentString).ReadFile(name);
 
-        internal static void SaveTo(this IniData data, string name)
-            => IniParserInstance.WriteFile(name, data);
+        internal static void SaveTo(this IniData data, string name, string commentString)
+            => CreateFileIniDataParser(commentString).WriteFile(name, data);
 
         internal static T FromJson<T>(this string jsonText)
             => JsonConvert.DeserializeObject<T>(jsonText);

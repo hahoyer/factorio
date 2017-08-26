@@ -38,11 +38,11 @@ namespace MmasfUI.Common
 
         public static T FromJsonFile<T>(this string jsonFileName)
             where T : class
-            => StringExtender.ToSmbFile(jsonFileName).String?.FromJson<T>();
+            => jsonFileName.ToSmbFile().String?.FromJson<T>();
 
         public static void ToJsonFile<T>(this string jsonFileName, T o)
             where T : class
-            => StringExtender.ToSmbFile(jsonFileName).String = o.ToJson();
+            => jsonFileName.ToSmbFile().String = o.ToJson();
 
         public static string UnescapeComma(this string value)
             => value

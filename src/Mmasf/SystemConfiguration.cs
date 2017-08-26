@@ -28,16 +28,16 @@ namespace ManageModsAndSavefiles
                 .FindFilesThatEndsWith(FileNameEnd).First()
                 .FullName;
 
-        internal static SystemConfiguration Create(string fileName)
-            => new SystemConfiguration(fileName);
+        internal static SystemConfiguration Create(string fileName, string commentString)
+            => new SystemConfiguration(fileName, commentString);
 
         readonly IniFile File;
 
-        SystemConfiguration(string fileName)
+        SystemConfiguration(string fileName, string commentString)
         {
             Tracer.Assert
                 (fileName.ToSmbFile().Exists, "System configuration file not found: " + fileName);
-            File = new IniFile(fileName);
+            File = new IniFile(fileName, commentString);
         }
 
         public string ConfigurationPath => File.Global[ConfigPathTag].PathFromFactorioStyle();

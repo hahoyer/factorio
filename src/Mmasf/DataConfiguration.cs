@@ -15,19 +15,19 @@ namespace ManageModsAndSavefiles
 
         internal DataConfiguration(string fileName)
         {
-            IniFile = new IniFile(fileName.PathCombine(ConfigurationIniFileName));
+            IniFile = new IniFile(fileName.PathCombine(ConfigurationIniFileName), ";");
             RootUserConfigurationPath = fileName.ToSmbFile().DirectoryName;
         }
 
         public string CurrentUserConfigurationPath
         {
-            get { return FactorioStyleCurrentUserConfigurationPath.PathFromFactorioStyle(); }
-            set { FactorioStyleCurrentUserConfigurationPath = value.PathToFactorioStyle(); }
+            get => FactorioStyleCurrentUserConfigurationPath.PathFromFactorioStyle();
+            set => FactorioStyleCurrentUserConfigurationPath = value;
         }
 
         string FactorioStyleCurrentUserConfigurationPath
         {
-            get { return IniFile[PathSectionName][WriteDataTag]; }
+            get => IniFile[PathSectionName][WriteDataTag];
             set
             {
                 IniFile[PathSectionName][WriteDataTag] = value;

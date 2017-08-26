@@ -30,7 +30,7 @@ namespace ManageModsAndSavefiles
 
             SystemConfigurationCache = new CompoundCache<SystemConfiguration>
             (
-                () => SystemConfiguration.Create(Configuration.SystemPath),
+                () => SystemConfiguration.Create(Configuration.SystemPath,"#"),
                 ConfigurationCache
             );
 
