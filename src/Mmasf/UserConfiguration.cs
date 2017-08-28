@@ -19,9 +19,8 @@ namespace ManageModsAndSavefiles
         const string ReadDataTag = "read-data";
         const string ModConfigurationFileName = "mod-list.json";
 
-        internal static string[] Paths
-            => Extension
-                .SystemWriteDataDir.ToSmbFile()
+        internal static string[] Paths(string root)
+            => root.ToSmbFile()
                 .RecursiveItems()
                 .Where(IsRelevantPathCandidate)
                 .Select(item => item.FullName)
@@ -64,7 +63,7 @@ namespace ManageModsAndSavefiles
             ModConfigurationCache = new ValueCache<IDictionary<string, bool>>(GetModConfiguration);
             ModFilesCache = new ValueCache<Mods.FileCluster[]>(GetModFiles);
             SaveFilesCache = new ValueCache<Saves.FileCluster[]>(GetSaveFiles);
-
+            return;
             LogfileWatcher = new LogfileWatcher(Path);
         }
 

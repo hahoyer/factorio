@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using hw.Helper;
 
 namespace ManageModsAndSavefiles
@@ -13,9 +11,10 @@ namespace ManageModsAndSavefiles
 
         readonly IniFile IniFile;
 
-        internal DataConfiguration(string fileName)
+        internal DataConfiguration(string fileName, Action onExternalModification)
         {
-            IniFile = new IniFile(fileName.PathCombine(ConfigurationIniFileName), ";");
+            var path = fileName.PathCombine(ConfigurationIniFileName);
+            IniFile = new IniFile(path, commentString: ";", onExternalModification: onExternalModification);
             RootUserConfigurationPath = fileName.ToSmbFile().DirectoryName;
         }
 

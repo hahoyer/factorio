@@ -25,7 +25,7 @@ namespace ManageModsAndSavefiles
             Watcher = CreateWatcher(path);
 
             Timer = new Timer(OnTimer);
-            Timer.Change(TimeSpan.Zero, TimeSpan.FromSeconds(1));
+            Timer.Change(TimeSpan.Zero, 1.Seconds());
         }
 
         void OnTimer(object state)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Windows.Controls;
 using ManageModsAndSavefiles;
 using MmasfUI.Common;
@@ -18,7 +19,14 @@ namespace MmasfUI
             CreateView();
         }
 
-        void CreateView() { Content = MmasfContext.Instance.CreateView(Selection, this); }
+        void CreateView()
+        {
+            var instance = MmasfContext.Instance;
+            instance.OnExternalModification = InvokeRefresh;
+            Content = instance.CreateView(Selection, this);
+        }
+
+        void InvokeRefresh() { Dispatcher.Invoke(Refresh); }
 
         internal void Refresh()
         {

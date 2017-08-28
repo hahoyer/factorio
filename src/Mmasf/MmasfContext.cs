@@ -19,10 +19,11 @@ namespace ManageModsAndSavefiles
         readonly CompoundCache<DataConfiguration> DataConfigurationCache;
         readonly CompoundCache<UserConfiguration[]> UserConfigurationsCache;
         public readonly FunctionCache<string, FunctionCache<Version, ModDescription>> ModDictionary;
+        public Action OnExternalModification;
 
         MmasfContext()
         {
-            ConfigurationCache = new CompoundCache<Configuration>(Configuration.Create);
+            ConfigurationCache = new CompoundCache<Configuration>(() => new Configuration());
             ModConfigurationCache = new CompoundCache<ModConfiguration>(ModConfiguration.Create);
 
             ModDictionary = new FunctionCache<string, FunctionCache<Version, ModDescription>>
@@ -30,14 +31,14 @@ namespace ManageModsAndSavefiles
 
             SystemConfigurationCache = new CompoundCache<SystemConfiguration>
             (
-                () => SystemConfiguration.Create(Configuration.SystemPath,"#"),
+                () => SystemConfiguration.Create(Configuration.SystemPath, "#"),
                 ConfigurationCache
             );
 
             DataConfigurationCache = new CompoundCache<DataConfiguration>
             (
                 () =>
-                    new DataConfiguration(SystemConfiguration.ConfigurationPath),
+                    new DataConfiguration(SystemConfiguration.ConfigurationPath,OnExternalModification),
                 SystemConfigurationCache
             );
 
@@ -56,12 +57,16 @@ namespace ManageModsAndSavefiles
 
         [DisableDump]
         public Configuration Configuration => ConfigurationCache.Value;
+
         [DisableDump]
         public ModConfiguration ModConfiguration => ModConfigurationCache.Value;
+
         [DisableDump]
         public SystemConfiguration SystemConfiguration => SystemConfigurationCache.Value;
+
         [DisableDump]
         public DataConfiguration DataConfiguration => DataConfigurationCache.Value;
+
         [DisableDump]
         public UserConfiguration[] UserConfigurations => UserConfigurationsCache.Value;
 

@@ -1,34 +1,42 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using hw.Helper;
 using IniParser.Model;
+using JetBrains.Annotations;
 
 namespace ManageModsAndSavefiles
 {
     sealed class IniFile
     {
-        private string CommentString ;
         readonly ValueCache<IniData> Data;
-        internal readonly string Path;
+        readonly string Path;
+        readonly string CommentString;
 
-        internal IniFile(string path, string commentString)
+        readonly Action OnExternalModification;
+        [UsedImplicitly]
+        readonly FileSystemWatcher Watcher;
+
+
+        internal IniFile(string path, string commentString, Action onExternalModification)
         {
             Path = path;
             CommentString = commentString;
+            OnExternalModification = onExternalModification;
             Data = new ValueCache<IniData>(() => Path.FromIni(CommentString));
+            Watcher = CreateWatcher(path);
         }
-
-        internal void Persist() => Data.Value.SaveTo(Path, CommentString);
 
         internal KeyDataCollection this[string name] => Data.Value[name];
         internal KeyDataCollection Global => Data.Value.Global;
+
+        internal void Persist() => Data.Value.SaveTo(Path, CommentString);
 
         internal void UpdateFrom(IniFile source)
         {
             var destinationFile = Path.ToSmbFile();
             var sourceFile = source.Path.ToSmbFile();
-            if (!destinationFile.Exists || destinationFile.ModifiedDate < sourceFile.ModifiedDate)
+            if(!destinationFile.Exists ||
+               destinationFile.ModifiedDate < sourceFile.ModifiedDate)
             {
                 destinationFile.EnsureDirectoryOfFileExists();
                 destinationFile.String = sourceFile.String;
@@ -36,5 +44,25 @@ namespace ManageModsAndSavefiles
 
             Data.IsValid = false;
         }
+
+        FileSystemWatcher CreateWatcher(string path)
+        {
+            var f = path.ToSmbFile();
+            var result = new FileSystemWatcher(f.DirectoryName, f.Name)
+            {
+                NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.LastWrite,
+                EnableRaisingEvents = true
+            };
+            result.Created += OnModification;
+            result.Changed += OnModification;
+            return result;
+        }
+
+        void OnModification(object sender, FileSystemEventArgs e)
+        {
+            Data.IsValid = false;
+            OnExternalModification?.Invoke();
+        }
+
     }
 }

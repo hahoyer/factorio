@@ -37,8 +37,10 @@ namespace ManageModsAndSavefiles
         {
             Tracer.Assert
                 (fileName.ToSmbFile().Exists, "System configuration file not found: " + fileName);
-            File = new IniFile(fileName, commentString);
+            File = new IniFile(fileName, commentString, OnExternalModification);
         }
+
+        void OnExternalModification() { throw new NotImplementedException(); }
 
         public string ConfigurationPath => File.Global[ConfigPathTag].PathFromFactorioStyle();
         const string ProgramFolderName = "FactorioMmasf";

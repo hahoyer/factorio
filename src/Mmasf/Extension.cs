@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using hw.DebugFormatter;
@@ -15,6 +16,65 @@ namespace ManageModsAndSavefiles
 {
     public static class Extension
     {
+        internal sealed class RegistryItem
+        {
+            static readonly IDictionary<string, RegistryKey> Map
+                = new Dictionary<string, RegistryKey>
+                {
+                    {"HKEY_CLASSES_ROOT", Microsoft.Win32.Registry.ClassesRoot},
+                    {"HKEY_CURRENT_USER", Microsoft.Win32.Registry.CurrentUser},
+                    {"HKEY_LOCAL_MACHINE", Microsoft.Win32.Registry.LocalMachine},
+                    {"HKEY_CURRENT_CONFIG", Microsoft.Win32.Registry.CurrentConfig}
+                };
+
+            readonly string Key;
+
+            readonly RegistryKey Root;
+
+            public RegistryItem(RegistryKey root, string key)
+            {
+                Root = root;
+                Key = key;
+            }
+
+            public RegistryItem(string[] path)
+                : this(Map[path[0]], path.Skip(count: 1).Stringify(separator: "\\"))
+            {
+            }
+
+            public bool IsValidSubKey
+            {
+                get
+                {
+                    using(var item = Root.OpenSubKey(Key))
+                        return item != null;
+                }
+            }
+
+            public bool IsValidValue
+            {
+                get
+                {
+                    var path = Key.Split('\\');
+                    var key = path.Take(path.Length - 1).Stringify(separator: "\\");
+                    var value = path.Last();
+
+                    using(var item = Root.OpenSubKey(key))
+                        return item != null && item.GetValueNames().Any(name => name == value);
+                }
+            }
+
+            public T GetValue<T>()
+            {
+                var path = Key.Split('\\');
+                var key = path.Take(path.Length - 1).Stringify(separator: "\\");
+                var value = path.Last();
+
+                using(var item = Root.OpenSubKey(key))
+                    return (T) item?.GetValue(value);
+            }
+        }
+
         const string SystemWriteDataPlaceholder = "__PATH__system-write-data__";
         internal const string SystemReadDataPlaceholder = "__PATH__system-read-data__";
 
@@ -36,10 +96,13 @@ namespace ManageModsAndSavefiles
         {
             var result = new FileIniDataParser();
             result.Parser.Configuration.CommentString = commentString;
+            result.Parser.Configuration.AssigmentSpacer = "";
             return result;
         }
 
-        internal static IniData FromIni(this string name, string commentString) => CreateFileIniDataParser(commentString).ReadFile(name);
+        internal static IniData FromIni
+            (this string name, string commentString) 
+            => CreateFileIniDataParser(commentString).ReadFile(name);
 
         internal static void SaveTo(this IniData data, string name, string commentString)
             => CreateFileIniDataParser(commentString).WriteFile(name, data);
@@ -67,11 +130,11 @@ namespace ManageModsAndSavefiles
 
         internal static string PathToFactorioStyle(this string name) =>
             name.Replace(SystemWriteDataDir, SystemWriteDataPlaceholder)
-                .Replace("\\", "/");
+                .Replace(oldValue: "\\", newValue: "/");
 
         internal static string PathFromFactorioStyle(this string name) =>
             name.Replace(SystemWriteDataPlaceholder, SystemWriteDataDir)
-                .Replace("/", "\\");
+                .Replace(oldValue: "/", newValue: "\\");
 
         public static IZipArchiveHandle ZipHandle(this string name, bool quirks = false)
             =>
@@ -100,63 +163,6 @@ namespace ManageModsAndSavefiles
             return default(TValue);
         }
 
-        internal sealed class RegistryItem
-        {
-            static readonly IDictionary<string, RegistryKey> Map
-                = new Dictionary<string, RegistryKey>
-                {
-                    {"HKEY_CLASSES_ROOT", Microsoft.Win32.Registry.ClassesRoot},
-                    {"HKEY_CURRENT_USER", Microsoft.Win32.Registry.CurrentUser},
-                    {"HKEY_LOCAL_MACHINE", Microsoft.Win32.Registry.LocalMachine},
-                    {"HKEY_CURRENT_CONFIG", Microsoft.Win32.Registry.CurrentConfig}
-                };
-
-            readonly RegistryKey Root;
-            readonly string Key;
-
-            public RegistryItem(RegistryKey root, string key)
-            {
-                Root = root;
-                Key = key;
-            }
-
-            public RegistryItem(string[] path)
-                : this(Map[path[0]], path.Skip(1).Stringify("\\")) {}
-
-            public T GetValue<T>()
-            {
-                var path = Key.Split('\\');
-                var key = path.Take(path.Length - 1).Stringify("\\");
-                var value = path.Last();
-
-                using(var item = Root.OpenSubKey(key))
-                    return (T) item?.GetValue(value);
-            }
-
-            public bool IsValidSubKey
-            {
-                get
-                {
-                    using(var item = Root.OpenSubKey(Key))
-                        return item != null;
-                }
-            }
-
-            public bool IsValidValue
-            {
-                get
-                {
-                    var path = Key.Split('\\');
-                    var key = path.Take(path.Length - 1).Stringify("\\");
-                    var value = path.Last();
-
-                    using(var item = Root.OpenSubKey(key))
-                        return item != null
-                            && item.GetValueNames().Any(name => name == value);
-                }
-            }
-        }
-
         internal static RegistryItem RegistryCurrentUser(this string fullKey)
             => new RegistryItem(Microsoft.Win32.Registry.CurrentUser, fullKey);
 
@@ -168,7 +174,7 @@ namespace ManageModsAndSavefiles
         public static TimeSpan MilliSeconds(this int value) => TimeSpan.FromMilliseconds(value);
         public static TimeSpan Seconds(this int value) => TimeSpan.FromSeconds(value);
         public static void WriteLine(this string value) => Tracer.Line(value);
-        public static void WriteFlaggedLine(this string value) => Tracer.FlaggedLine(value, stackFrameDepth:1);
+        public static void WriteFlaggedLine(this string value) => Tracer.FlaggedLine(value, stackFrameDepth: 1);
 
     }
 }
