@@ -11,17 +11,17 @@ namespace ManageModsAndSavefiles
 
         readonly IniFile IniFile;
 
-        internal DataConfiguration(string fileName, Action onExternalModification)
+        internal DataConfiguration(SmbFile fileName, Action onExternalModification)
         {
             var path = fileName.PathCombine(ConfigurationIniFileName);
             IniFile = new IniFile(path, commentString: ";", onExternalModification: onExternalModification);
-            RootUserConfigurationPath = fileName.ToSmbFile().DirectoryName;
+            RootUserConfigurationPath = fileName.DirectoryName;
         }
 
-        public string CurrentUserConfigurationPath
+        public SmbFile CurrentUserConfigurationPath
         {
             get => FactorioStyleCurrentUserConfigurationPath.PathFromFactorioStyle();
-            set => FactorioStyleCurrentUserConfigurationPath = value;
+            set => FactorioStyleCurrentUserConfigurationPath = value.FullName;
         }
 
         string FactorioStyleCurrentUserConfigurationPath

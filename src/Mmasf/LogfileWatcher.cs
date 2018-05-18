@@ -14,14 +14,14 @@ namespace ManageModsAndSavefiles
         long LastSize;
         string LastLinePart;
         readonly Timer Timer;
-        readonly string LogfileName;
+        readonly SmbFile Logfile;
         readonly FileSystemWatcher Watcher;
         DateTime? StartTime;
         readonly object Mutex = new object();
 
-        internal LogfileWatcher(string path)
+        internal LogfileWatcher(SmbFile path)
         {
-            LogfileName = path.PathCombine(UserConfiguration.LogfileName);
+            Logfile = path.PathCombine(UserConfiguration.LogfileName);
             Watcher = CreateWatcher(path);
 
             Timer = new Timer(OnTimer);
@@ -33,8 +33,7 @@ namespace ManageModsAndSavefiles
             lock(Mutex)
             {
                 Tracer.Assert(state == Timer);
-                var fileHandle = LogfileName.ToSmbFile();
-                var delta = fileHandle.Size - LastSize;
+                var delta = Logfile.Size - LastSize;
 
                 if (delta == 0)
                     return;
@@ -42,7 +41,7 @@ namespace ManageModsAndSavefiles
                 Tracer.Assert(delta < int.MaxValue);
                 Tracer.Assert(delta > 0);
 
-                var newData = fileHandle.SubString(LastSize, (int)delta);
+                var newData = Logfile.SubString(LastSize, (int)delta);
                 var rawLines = (LastLinePart + newData).Split('\n');
                 var lines = rawLines.Take(rawLines.Length - 1).Select(ScanLine).ToArray();
 
@@ -50,11 +49,11 @@ namespace ManageModsAndSavefiles
                     StartTime = DateTime.Parse(lines[0].Data.Substring(0, 19), CultureInfo.InvariantCulture);
 
                 if (StartTime == null)
-                    (LogfileName + " " + delta + "\n" + newData).WriteFlaggedLine();
+                    (Logfile + " " + delta + "\n" + newData).WriteFlaggedLine();
                 else
                 {
                     var formattedData = lines.Select(l => l.Format(StartTime.Value)).Stringify("\n");
-                    (LogfileName + " " + delta + "\n" + formattedData).WriteFlaggedLine();
+                    (Logfile + " " + delta + "\n" + formattedData).WriteFlaggedLine();
                 }
 
                 LastSize += delta;
@@ -79,9 +78,9 @@ namespace ManageModsAndSavefiles
                    + " " + Data;
         }
 
-        FileSystemWatcher CreateWatcher(string path)
+        FileSystemWatcher CreateWatcher(SmbFile path)
         {
-            var result = new FileSystemWatcher(path, UserConfiguration.PreviousLogfileName)
+            var result = new FileSystemWatcher(path.FullName, UserConfiguration.PreviousLogfileName)
             {
                 NotifyFilter = NotifyFilters.CreationTime
                                | NotifyFilters.LastAccess

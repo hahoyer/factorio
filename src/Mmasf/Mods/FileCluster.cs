@@ -12,22 +12,21 @@ namespace ManageModsAndSavefiles.Mods
 
         public static FileCluster Create
         (
-            string path,
-            IEnumerable<string> paths,
+            SmbFile path,
+            SmbFile[] paths,
             IDictionary<string, bool> knownMods,
             MmasfContext parent)
         {
-            var fileHandle = path.ToSmbFile();
-            var infoJSon = GetInfoJSon(fileHandle);
+            var infoJSon = GetInfoJSon(path);
             if(infoJSon == null)
                 return null;
 
-            var dictionary = path.ToSmbFile().DirectoryName.ToSmbFile().DirectoryName;
+            var dictionary = path.Directory.Directory;
 
             var index = paths
-                .OrderByDescending(item => item.Split('\\').Length)
+                .OrderByDescending(item => item.FullName.Split('\\').Length)
                 .ThenBy(item => item)
-                .IndexWhere(dictionary.StartsWith)
+                .IndexWhere(file => file.Contains(dictionary))
                 .AssertValue();
 
             var modName = infoJSon.Name;
@@ -36,7 +35,7 @@ namespace ManageModsAndSavefiles.Mods
             var description = parent.ModDictionary[modName][version];
 
             description.InfoJSon = infoJSon;
-            return new FileCluster(fileHandle, isEnabled, index, description, infoJSon);
+            return new FileCluster(path, isEnabled, index, description, infoJSon);
         }
 
         static Version GetVersionFromFile(SmbFile file)

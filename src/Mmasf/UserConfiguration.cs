@@ -19,11 +19,10 @@ namespace ManageModsAndSavefiles
         const string ReadDataTag = "read-data";
         const string ModConfigurationFileName = "mod-list.json";
 
-        internal static string[] Paths(string root)
-            => root.ToSmbFile()
+        internal static SmbFile[] Paths(SmbFile root)
+            => root
                 .RecursiveItems()
                 .Where(IsRelevantPathCandidate)
-                .Select(item => item.FullName)
                 .ToArray();
 
         static bool IsRelevantPathCandidate(SmbFile item)
@@ -40,22 +39,23 @@ namespace ManageModsAndSavefiles
         }
 
         internal static UserConfiguration Create
-            (string item, string[] allPaths, MmasfContext parent)
+            (SmbFile item, SmbFile[] allPaths, MmasfContext parent)
             => new UserConfiguration(item, allPaths, parent);
 
-        public readonly string Path;
-        readonly string[] AllPaths;
+        public readonly SmbFile Path;
+        readonly SmbFile[] AllPaths;
         readonly ValueCache<Saves.FileCluster[]> SaveFilesCache;
         readonly ValueCache<Mods.FileCluster[]> ModFilesCache;
         readonly ValueCache<IDictionary<string, bool>> ModConfigurationCache;
         readonly MmasfContext Parent;
         readonly LogfileWatcher LogfileWatcher;
 
-        public string Name => Path.Split('\\').Last();
-        public bool IsRoot => Path == Parent.DataConfiguration.RootUserConfigurationPath;
-        public bool IsCurrent => Path == Parent.DataConfiguration.CurrentUserConfigurationPath;
+        public string Name => Path.Name;
+        public bool IsRoot => Path.FullName == Parent.DataConfiguration.RootUserConfigurationPath;
+        public bool IsCurrent 
+            => Path.FullName == Parent.DataConfiguration.CurrentUserConfigurationPath.FullName;
 
-        UserConfiguration(string path, string[] allPaths, MmasfContext parent)
+        UserConfiguration(SmbFile path, SmbFile[] allPaths, MmasfContext parent)
         {
             Path = path;
             AllPaths = allPaths;
@@ -67,11 +67,11 @@ namespace ManageModsAndSavefiles
             LogfileWatcher = new LogfileWatcher(Path);
         }
 
-        string FilesPath(string item) => Path.PathCombine(item);
+        SmbFile FilesPath(string item) => Path.PathCombine(item);
 
         Saves.FileCluster[] GetSaveFiles()
         {
-            var fileHandle = FilesPath(SaveDirectoryName).ToSmbFile();
+            var fileHandle = FilesPath(SaveDirectoryName);
             if(!fileHandle.Exists)
                 return new Saves.FileCluster[0];
 
@@ -84,7 +84,7 @@ namespace ManageModsAndSavefiles
 
         Mods.FileCluster[] GetModFiles()
         {
-            var fileHandle = FilesPath(ModDirectoryName).ToSmbFile();
+            var fileHandle = FilesPath(ModDirectoryName);
             if(!fileHandle.Exists)
                 return new Mods.FileCluster[0];
 
@@ -92,7 +92,7 @@ namespace ManageModsAndSavefiles
                 .Items
                 .Where(item => item.IsDirectory || item.Extension.ToLower() == ".zip")
                 .Select
-                (item => Mods.FileCluster.Create(item.FullName, AllPaths, ModConfiguration, Parent))
+                (item => Mods.FileCluster.Create(item, AllPaths, ModConfiguration, Parent))
                 .Where(item => item != null)
                 .ToArray();
         }
@@ -100,8 +100,7 @@ namespace ManageModsAndSavefiles
         IDictionary<string, bool> GetModConfiguration()
         {
             var fileHandle = FilesPath(ModDirectoryName)
-                .PathCombine(ModConfigurationFileName)
-                .ToSmbFile();
+                .PathCombine(ModConfigurationFileName);
 
             if(!fileHandle.Exists)
                 return new Dictionary<string, bool>();
@@ -122,11 +121,9 @@ namespace ManageModsAndSavefiles
 
         public void InitializeFrom(UserConfiguration source)
             =>
-                source.FilesPath
-                    (PlayerDataFileName)
-                    .ToSmbFile()
-                    .CopyTo(FilesPath(PlayerDataFileName));
+                source.FilesPath(PlayerDataFileName)
+                    .CopyTo(FilesPath(PlayerDataFileName).FullName);
 
-        protected override string GetNodeDump() => Path.ToSmbFile().Name;
+        protected override string GetNodeDump() => Path.Name;
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using hw.Helper;
 
 namespace ManageModsAndSavefiles
@@ -13,16 +12,30 @@ namespace ManageModsAndSavefiles
         }
 
         const string FileNameEnd = "config.json";
-        static readonly string Path = SystemConfiguration.Folder.PathCombine(FileNameEnd);
+        static readonly SmbFile Path = SystemConfiguration.Folder.FullName.PathCombine(FileNameEnd).ToSmbFile();
+
+        static DataClass Create()
+        {
+            var result = Path.FullName.FromJsonFile<DataClass>() ?? new DataClass();
+
+            var systemPath = result.SystemPath?.ToSmbFile();
+            if(systemPath?.Exists != true)
+                result.SystemPath = SystemConfiguration.Path.FullName;
+
+            if(result.UserConfigurationRootPaths == null)
+                result.UserConfigurationRootPaths = new[] {Extension.SystemWriteDataDir.FullName};
+
+            return result;
+        }
 
         readonly DataClass Data;
 
-        readonly ValueCache<string[]> UserConfigurationPathsCache;
+        readonly ValueCache<SmbFile[]> UserConfigurationPathsCache;
 
         public Configuration()
         {
             Data = Create();
-            UserConfigurationPathsCache = new ValueCache<string[]>
+            UserConfigurationPathsCache = new ValueCache<SmbFile[]>
             (
                 ()
                     => UserConfigurationRootPaths
@@ -31,30 +44,20 @@ namespace ManageModsAndSavefiles
             Persist();
         }
 
-        public string SystemPath => Data.SystemPath;
-        public string[] UserConfigurationRootPaths => Data.UserConfigurationRootPaths;
-        public string[] UserConfigurationPaths => UserConfigurationPathsCache.Value;
+        public SmbFile SystemPath => Data.SystemPath.ToSmbFile();
 
-        static DataClass Create()
-        {
-            var result = Path.FromJsonFile<DataClass>() ?? new DataClass();
+        public SmbFile[] UserConfigurationRootPaths => Data.UserConfigurationRootPaths.Select
+                (x => x.ToSmbFile())
+            .ToArray();
 
-            if(result.SystemPath == null ||
-               !result.SystemPath.ToSmbFile().Exists)
-                result.SystemPath = SystemConfiguration.Path;
-
-            if(result.UserConfigurationRootPaths == null)
-                result.UserConfigurationRootPaths = new[] {Extension.SystemWriteDataDir};
-
-            return result;
-        }
+        public SmbFile[] UserConfigurationPaths => UserConfigurationPathsCache.Value;
 
         void Persist()
         {
-            Path.ToSmbFile().EnsureDirectoryOfFileExists();
-            Path.ToJsonFile(Data);
+            Path.EnsureDirectoryOfFileExists();
+            Path.FullName.ToJsonFile(Data);
         }
 
-        public void RenewUserConfigurationPaths() { UserConfigurationPathsCache.IsValid = false; }
+        public void RenewUserConfigurationPaths() {UserConfigurationPathsCache.IsValid = false;}
     }
 }

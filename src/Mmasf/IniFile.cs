@@ -9,7 +9,7 @@ namespace ManageModsAndSavefiles
     sealed class IniFile
     {
         readonly ValueCache<IniData> Data;
-        readonly string Path;
+        readonly SmbFile Path;
         readonly string CommentString;
 
         readonly Action OnExternalModification;
@@ -17,7 +17,7 @@ namespace ManageModsAndSavefiles
         readonly FileSystemWatcher Watcher;
 
 
-        internal IniFile(string path, string commentString, Action onExternalModification)
+        internal IniFile(SmbFile path, string commentString, Action onExternalModification)
         {
             Path = path;
             CommentString = commentString;
@@ -33,8 +33,8 @@ namespace ManageModsAndSavefiles
 
         internal void UpdateFrom(IniFile source)
         {
-            var destinationFile = Path.ToSmbFile();
-            var sourceFile = source.Path.ToSmbFile();
+            var destinationFile = Path;
+            var sourceFile = source.Path;
             if(!destinationFile.Exists ||
                destinationFile.ModifiedDate < sourceFile.ModifiedDate)
             {
@@ -45,10 +45,9 @@ namespace ManageModsAndSavefiles
             Data.IsValid = false;
         }
 
-        FileSystemWatcher CreateWatcher(string path)
+        FileSystemWatcher CreateWatcher(SmbFile path)
         {
-            var f = path.ToSmbFile();
-            var result = new FileSystemWatcher(f.DirectoryName, f.Name)
+            var result = new FileSystemWatcher(path.DirectoryName, path.Name)
             {
                 NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.LastWrite,
                 EnableRaisingEvents = true

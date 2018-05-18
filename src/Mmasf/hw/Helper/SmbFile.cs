@@ -11,16 +11,6 @@ namespace hw.Helper
     [Serializable]
     public sealed class SmbFile
     {
-        readonly string _name;
-        FileSystemInfo _fileInfoCache;
-
-        /// <summary>
-        ///     Ensure, that all directories are existent when writing to file.
-        ///     Can be modified at any time.
-        /// </summary>
-        // ReSharper disable once FieldCanBeMadeReadOnly.Global
-        public bool AutoCreateDirectories;
-
         /// <summary>
         ///     constructs a FileInfo
         /// </summary>
@@ -29,18 +19,61 @@ namespace hw.Helper
         internal static SmbFile Create(string name, bool autoCreateDirectories)
             => new SmbFile(name, autoCreateDirectories);
 
+        /// <summary>
+        ///     Gets the directory of the source file that called this function
+        /// </summary>
+        /// <param name="depth"> The depth. </param>
+        /// <returns> </returns>
+        public static string SourcePath(int depth)
+            => new FileInfo(SourceFileName(depth + 1)).DirectoryName;
+
+        /// <summary>
+        ///     Gets the name of the source file that called this function
+        /// </summary>
+        /// <param name="depth"> stack depths of the function used. </param>
+        /// <returns> </returns>
+        public static string SourceFileName(int depth)
+        {
+            var sf = new StackTrace(true).GetFrame(depth + 1);
+            return sf.GetFileName();
+        }
+
+        /// <summary>
+        ///     Gets list of files that match given path and pattern
+        /// </summary>
+        /// <param name="filePattern"></param>
+        /// <returns></returns>
+        public static string[] Select(string filePattern)
+        {
+            var namePattern = filePattern.Split('\\').Last();
+            var path = filePattern.Substring(0, filePattern.Length - namePattern.Length - 1);
+            return System.IO.Directory.GetFiles(path, namePattern);
+        }
+
+        /// <summary>
+        ///     Ensure, that all directories are existent when writing to file.
+        ///     Can be modified at any time.
+        /// </summary>
+        // ReSharper disable once FieldCanBeMadeReadOnly.Global
+        [EnableDumpExcept(true)]
+        public bool AutoCreateDirectories;
+
+        readonly string _name;
+        FileSystemInfo _fileInfoCache;
+
         SmbFile(string name, bool autoCreateDirectories)
         {
             _name = name;
             AutoCreateDirectories = autoCreateDirectories;
         }
 
-        public SmbFile() { _name = ""; }
+        public SmbFile() => _name = "";
 
         /// <summary>
         ///     considers the file as a string. If file existe it should be a text file
         /// </summary>
         /// <value> the content of the file if existing else null. </value>
+        [DisableDump]
         public string String
         {
             get
@@ -58,6 +91,144 @@ namespace hw.Helper
                     f.Write(value);
             }
         }
+
+        /// <summary>
+        ///     considers the file as a byte array
+        /// </summary>
+        [DisableDump]
+        public byte[] Bytes
+        {
+            get
+            {
+                var f = Reader;
+                var result = new byte[Size];
+                f.Read(result, 0, (int) Size);
+                f.Close();
+                return result;
+            }
+            set
+            {
+                var f = System.IO.File.OpenWrite(_name);
+                f.Write(value, 0, value.Length);
+                f.Close();
+            }
+        }
+
+        [DisableDump]
+        public FileStream Reader
+            => new FileStream(_name, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+        /// <summary>
+        ///     Size of file in bytes
+        /// </summary>
+        [DisableDump]
+        public long Size => ((FileInfo) FileSystemInfo).Length;
+
+        /// <summary>
+        ///     Gets the full path of the directory or file.
+        /// </summary>
+        public string FullName => FileSystemInfo.FullName;
+
+        [DisableDump]
+        public SmbFile Directory => DirectoryName.ToSmbFile();
+
+        [DisableDump]
+        public string DirectoryName => Path.GetDirectoryName(FullName);
+
+        [DisableDump]
+        public string Extension => Path.GetExtension(FullName);
+
+        /// <summary>
+        ///     Gets the name of the directory or file without path.
+        /// </summary>
+        [DisableDump]
+        public string Name => FileSystemInfo.Name;
+
+        /// <summary>
+        ///     Gets a value indicating whether a file exists.
+        /// </summary>
+        public bool Exists => FileSystemInfo.Exists;
+
+        /// <summary>
+        ///     Gets a value indicating whether a file exists.
+        /// </summary>
+        [DisableDump]
+        public bool IsMounted
+        {
+            get
+            {
+                if(!Exists)
+                    return false;
+                if((FileSystemInfo.Attributes & FileAttributes.ReparsePoint) == 0)
+                    return false;
+
+                try
+                {
+                    ((DirectoryInfo) FileSystemInfo).GetFileSystemInfos("dummy");
+                    return true;
+                }
+                catch(Exception)
+                {
+                    return false;
+                }
+            }
+        }
+
+        /// <summary>
+        ///     returns true if it is a directory
+        /// </summary>
+        public bool IsDirectory => System.IO.Directory.Exists(_name);
+
+        FileSystemInfo FileSystemInfo
+        {
+            get
+            {
+                if(_fileInfoCache != null)
+                    return _fileInfoCache;
+
+                _fileInfoCache = IsDirectory
+                    ? (FileSystemInfo) new DirectoryInfo(_name)
+                    : new FileInfo(_name);
+
+                return _fileInfoCache;
+            }
+        }
+
+        /// <summary>
+        ///     Content of directory, one line for each file
+        /// </summary>
+        [DisableDump]
+        public string DirectoryString => GetDirectoryString();
+
+        [DisableDump]
+        public SmbFile[] Items
+        {
+            get {return GetItems().Select(f => Create(f.FullName, AutoCreateDirectories)).ToArray();}
+        }
+
+        [EnableDumpExcept(false)]
+        public bool IsLocked
+        {
+            get
+            {
+                try
+                {
+                    System.IO.File.OpenRead(_name).Close();
+                    return false;
+                }
+                catch(IOException)
+                {
+                    return true;
+                }
+
+                //file is not locked
+            }
+        }
+
+        [DisableDump]
+        public DateTime ModifiedDate => FileSystemInfo.LastWriteTime;
+
+        public string ModifiedDateString => ModifiedDate.DynamicShortFormat(true);
 
         public string SubString(long start, int size)
         {
@@ -89,7 +260,7 @@ namespace hw.Helper
             else
             {
                 EnsureDirectoryOfFileExists();
-                Directory.CreateDirectory(FullName);
+                System.IO.Directory.CreateDirectory(FullName);
                 _fileInfoCache = null;
             }
         }
@@ -97,83 +268,12 @@ namespace hw.Helper
         public override string ToString() => FullName;
 
         /// <summary>
-        ///     considers the file as a byte array
-        /// </summary>
-        public byte[] Bytes
-        {
-            get
-            {
-                var f = Reader;
-                var result = new byte[Size];
-                f.Read(result, 0, (int) Size);
-                f.Close();
-                return result;
-            }
-            set
-            {
-                var f = System.IO.File.OpenWrite(_name);
-                f.Write(value, 0, value.Length);
-                f.Close();
-            }
-        }
-
-        public FileStream Reader
-            => new FileStream(_name, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-
-        /// <summary>
-        ///     Size of file in bytes
-        /// </summary>
-        public long Size => ((FileInfo) FileSystemInfo).Length;
-
-        /// <summary>
-        ///     Gets the full path of the directory or file.
-        /// </summary>
-        public string FullName => FileSystemInfo.FullName;
-
-        public string DirectoryName => Path.GetDirectoryName(FullName);
-        public string Extension => Path.GetExtension(FullName);
-
-        /// <summary>
-        ///     Gets the name of the directory or file without path.
-        /// </summary>
-        public string Name => FileSystemInfo.Name;
-
-        /// <summary>
-        ///     Gets a value indicating whether a file exists.
-        /// </summary>
-        public bool Exists => FileSystemInfo.Exists;
-
-        /// <summary>
-        ///     Gets a value indicating whether a file exists.
-        /// </summary>
-        public bool IsMounted
-        {
-            get
-            {
-                if(!Exists)
-                    return false;
-                if((FileSystemInfo.Attributes & FileAttributes.ReparsePoint) == 0)
-                    return false;
-
-                try
-                {
-                    ((DirectoryInfo) FileSystemInfo).GetFileSystemInfos("dummy");
-                    return true;
-                }
-                catch(Exception)
-                {
-                    return false;
-                }
-            }
-        }
-
-        /// <summary>
         ///     Delete the file
         /// </summary>
         public void Delete(bool recursive = false)
         {
             if(IsDirectory)
-                Directory.Delete(_name, recursive);
+                System.IO.Directory.Delete(_name, recursive);
             else
                 System.IO.File.Delete(_name);
         }
@@ -184,35 +284,10 @@ namespace hw.Helper
         public void Move(string newName)
         {
             if(IsDirectory)
-                Directory.Move(_name, newName);
+                System.IO.Directory.Move(_name, newName);
             else
                 System.IO.File.Move(_name, newName);
         }
-
-        /// <summary>
-        ///     returns true if it is a directory
-        /// </summary>
-        public bool IsDirectory => Directory.Exists(_name);
-
-        FileSystemInfo FileSystemInfo
-        {
-            get
-            {
-                if(_fileInfoCache != null)
-                    return _fileInfoCache;
-
-                _fileInfoCache = IsDirectory
-                    ? (FileSystemInfo) new DirectoryInfo(_name)
-                    : new FileInfo(_name);
-
-                return _fileInfoCache;
-            }
-        }
-
-        /// <summary>
-        ///     Content of directory, one line for each file
-        /// </summary>
-        public string DirectoryString => GetDirectoryString();
 
         string GetDirectoryString()
         {
@@ -232,65 +307,6 @@ namespace hw.Helper
                 EnsureIsExistentDirectory();
             return ((DirectoryInfo) FileSystemInfo).GetFileSystemInfos().ToArray();
         }
-
-        public SmbFile[] Items
-        {
-            get
-            {
-                return GetItems().Select(f => Create(f.FullName, AutoCreateDirectories)).ToArray();
-            }
-        }
-
-        /// <summary>
-        ///     Gets the directory of the source file that called this function
-        /// </summary>
-        /// <param name="depth"> The depth. </param>
-        /// <returns> </returns>
-        public static string SourcePath(int depth)
-            => new FileInfo(SourceFileName(depth + 1)).DirectoryName;
-
-        /// <summary>
-        ///     Gets the name of the source file that called this function
-        /// </summary>
-        /// <param name="depth"> stack depths of the function used. </param>
-        /// <returns> </returns>
-        public static string SourceFileName(int depth)
-        {
-            var sf = new StackTrace(true).GetFrame(depth + 1);
-            return sf.GetFileName();
-        }
-
-        /// <summary>
-        ///     Gets list of files that match given path and pattern
-        /// </summary>
-        /// <param name="filePattern"></param>
-        /// <returns></returns>
-        public static string[] Select(string filePattern)
-        {
-            var namePattern = filePattern.Split('\\').Last();
-            var path = filePattern.Substring(0, filePattern.Length - namePattern.Length - 1);
-            return Directory.GetFiles(path, namePattern);
-        }
-
-        public bool IsLocked
-        {
-            get
-            {
-                try
-                {
-                    System.IO.File.OpenRead(_name).Close();
-                    return false;
-                }
-                catch(IOException)
-                {
-                    return true;
-                }
-
-                //file is not locked
-            }
-        }
-
-        public DateTime ModifiedDate => FileSystemInfo.LastWriteTime;
 
         public void CopyTo(string destinationPath)
         {
@@ -350,6 +366,23 @@ namespace hw.Helper
 
                 filePaths = newList;
             }
+        }
+
+        public SmbFile PathCombine(string item) => FullName.PathCombine(item).ToSmbFile();
+
+        public bool Contains(SmbFile subFile) => subFile.FullName.StartsWith(FullName, true, null);
+
+        public void InitiateExternalProgram()
+        {
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    FileName = FullName
+                }
+            };
+            process.Start();
         }
     }
 }

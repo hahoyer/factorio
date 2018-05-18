@@ -1,51 +1,62 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
 
 namespace ManageModsAndSavefiles
 {
-    public sealed class SystemConfiguration
+    public sealed class SystemConfiguration : DumpableObject
     {
-        const string FileNameEnd = "Factorio\\config-path.cfg";
         const string ConfigPathTag = "config-path";
+        const string ExecutableName = "factorio.exe";
+        const string FileNameEnd = "Factorio\\config-path.cfg";
+        const string ProgramFolderName = "FactorioMmasf";
         const string SteamPathInRegistry = @"HKEY_CURRENT_USER\Software\Valve\Steam\SteamPath";
 
-        static readonly string SystemReadDataDir
+        static readonly SmbFile SystemReadDataDir
             = Environment
-                .GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+                .GetFolderPath(Environment.SpecialFolder.ProgramFiles)
+                .ToSmbFile();
 
-        static readonly string SteamPath
+        static readonly SmbFile SteamPath
             = SteamPathInRegistry
                 .Registry()
-                .GetValue<string>();
+                .GetValue<string>()
+                .ToSmbFile();
 
-        internal static string Path
+        public static readonly SmbFile Folder = Environment
+            .GetFolderPath(Environment.SpecialFolder.ApplicationData)
+            .PathCombine(ProgramFolderName)
+            .ToSmbFile();
+
+
+        internal static SmbFile Path
             => new[] {SteamPath, SystemReadDataDir}
                 .Where(f => f != null)
-                .Select(f => f.ToSmbFile())
-                .FindFilesThatEndsWith(FileNameEnd).First()
-                .FullName;
+                .FindFilesThatEndsWith(FileNameEnd)
+                .First();
 
-        internal static SystemConfiguration Create(string fileName, string commentString)
+        internal static SystemConfiguration Create(SmbFile fileName, string commentString)
             => new SystemConfiguration(fileName, commentString);
+
+        static void OnExternalModification() {throw new NotImplementedException();}
+
+        public static SmbFile ExecutablePath
+            => Path
+                .DirectoryName
+                .ToSmbFile()
+                .FindFilesThatEndsWith(ExecutableName)
+                .Single();
 
         readonly IniFile File;
 
-        SystemConfiguration(string fileName, string commentString)
+        SystemConfiguration(SmbFile fileName, string commentString)
         {
             Tracer.Assert
-                (fileName.ToSmbFile().Exists, "System configuration file not found: " + fileName);
+                (fileName.Exists, "System configuration file not found: " + fileName);
             File = new IniFile(fileName, commentString, OnExternalModification);
         }
 
-        void OnExternalModification() { throw new NotImplementedException(); }
-
-        public string ConfigurationPath => File.Global[ConfigPathTag].PathFromFactorioStyle();
-        const string ProgramFolderName = "FactorioMmasf";
-        public static readonly string Folder = Environment
-            .GetFolderPath(Environment.SpecialFolder.ApplicationData)
-            .PathCombine(ProgramFolderName);
+        public SmbFile ConfigurationPath => File.Global[ConfigPathTag].PathFromFactorioStyle();
     }
 }

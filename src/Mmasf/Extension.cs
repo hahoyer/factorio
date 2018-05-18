@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using hw.DebugFormatter;
@@ -38,9 +38,7 @@ namespace ManageModsAndSavefiles
             }
 
             public RegistryItem(string[] path)
-                : this(Map[path[0]], path.Skip(count: 1).Stringify(separator: "\\"))
-            {
-            }
+                : this(Map[path[0]], path.Skip(1).Stringify("\\")) {}
 
             public bool IsValidSubKey
             {
@@ -56,7 +54,7 @@ namespace ManageModsAndSavefiles
                 get
                 {
                     var path = Key.Split('\\');
-                    var key = path.Take(path.Length - 1).Stringify(separator: "\\");
+                    var key = path.Take(path.Length - 1).Stringify("\\");
                     var value = path.Last();
 
                     using(var item = Root.OpenSubKey(key))
@@ -67,7 +65,7 @@ namespace ManageModsAndSavefiles
             public T GetValue<T>()
             {
                 var path = Key.Split('\\');
-                var key = path.Take(path.Length - 1).Stringify(separator: "\\");
+                var key = path.Take(path.Length - 1).Stringify("\\");
                 var value = path.Last();
 
                 using(var item = Root.OpenSubKey(key))
@@ -75,13 +73,15 @@ namespace ManageModsAndSavefiles
             }
         }
 
-        const string SystemWriteDataPlaceholder = "__PATH__system-write-data__";
         internal const string SystemReadDataPlaceholder = "__PATH__system-read-data__";
 
-        internal static readonly string SystemWriteDataDir
+        const string SystemWriteDataPlaceholder = "__PATH__system-write-data__";
+
+        internal static readonly SmbFile SystemWriteDataDir
             = Environment
                 .GetFolderPath(Environment.SpecialFolder.ApplicationData)
-                .PathCombine("Factorio");
+                .PathCombine("Factorio")
+                .ToSmbFile();
 
         internal static IEnumerable<SmbFile> FindFilesThatEndsWith
             (this SmbFile root, string target)
@@ -90,7 +90,7 @@ namespace ManageModsAndSavefiles
         internal static IEnumerable<SmbFile> FindFilesThatEndsWith
             (this IEnumerable<SmbFile> root, string target)
             => root.SelectMany(f => f.RecursiveItems())
-                .Where(item => item.FullName.EndsWith(target));
+                .Where(item => item.FullName.EndsWith(target, true, null));
 
         static FileIniDataParser CreateFileIniDataParser(string commentString)
         {
@@ -101,11 +101,11 @@ namespace ManageModsAndSavefiles
         }
 
         internal static IniData FromIni
-            (this string name, string commentString) 
-            => CreateFileIniDataParser(commentString).ReadFile(name);
+            (this SmbFile name, string commentString)
+            => CreateFileIniDataParser(commentString).ReadFile(name.FullName);
 
-        internal static void SaveTo(this IniData data, string name, string commentString)
-            => CreateFileIniDataParser(commentString).WriteFile(name, data);
+        internal static void SaveTo(this IniData data, SmbFile name, string commentString)
+            => CreateFileIniDataParser(commentString).WriteFile(name.FullName, data);
 
         internal static T FromJson<T>(this string jsonText)
             => JsonConvert.DeserializeObject<T>(jsonText);
@@ -129,12 +129,13 @@ namespace ManageModsAndSavefiles
             => jsonFileName.ToSmbFile().String = o.ToJson();
 
         internal static string PathToFactorioStyle(this string name) =>
-            name.Replace(SystemWriteDataDir, SystemWriteDataPlaceholder)
-                .Replace(oldValue: "\\", newValue: "/");
+            name.Replace(SystemWriteDataDir.FullName, SystemWriteDataPlaceholder)
+                .Replace("\\", "/");
 
-        internal static string PathFromFactorioStyle(this string name) =>
-            name.Replace(SystemWriteDataPlaceholder, SystemWriteDataDir)
-                .Replace(oldValue: "/", newValue: "\\");
+        internal static SmbFile PathFromFactorioStyle(this string name) =>
+            name.Replace(SystemWriteDataPlaceholder, SystemWriteDataDir.FullName)
+                .Replace("/", "\\")
+                .ToSmbFile();
 
         public static IZipArchiveHandle ZipHandle(this string name, bool quirks = false)
             =>
@@ -175,6 +176,5 @@ namespace ManageModsAndSavefiles
         public static TimeSpan Seconds(this int value) => TimeSpan.FromSeconds(value);
         public static void WriteLine(this string value) => Tracer.Line(value);
         public static void WriteFlaggedLine(this string value) => Tracer.FlaggedLine(value, stackFrameDepth: 1);
-
     }
 }

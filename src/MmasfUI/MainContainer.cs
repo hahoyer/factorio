@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,16 +10,17 @@ namespace MmasfUI
 {
     public sealed class MainContainer : Application
     {
-        [STAThread]
-        public static void Main() => Instance.Run();
-
         internal static class Command
         {
-            internal const string ViewModDictionary = "ViewModDictionary";
             internal const string RereadConfigurations = "RereadConfigurations";
+            internal const string RunFactorio = "RunFactorio";
+            internal const string ViewModDictionary = "ViewModDictionary";
         }
 
         internal static readonly MainContainer Instance = new MainContainer();
+
+        [STAThread]
+        public static void Main() => Instance.Run();
 
         static Menu CreateMainMenu()
             => new Menu
@@ -52,13 +52,25 @@ namespace MmasfUI
                         Header = "_Tools",
                         Items =
                         {
+                            "Run _Factorio".MenuItem(Command.RunFactorio),
                             "_Reread Configurations".MenuItem(Command.RereadConfigurations)
                         }
                     }
                 }
             };
 
+        static void CleanupConfigArea() => SystemConfiguration.Cleanup();
+
+        internal readonly CommandManager CommandManager
+            = new CommandManager(typeof(MainContainer).Namespace);
+
+        internal bool IsClosing;
+        ContextView ContextView;
+
         ViewConfiguration[] ViewConfigurations = new ViewConfiguration[0];
+
+        ViewConfiguration ModDictionary => GetViewConfiguration("ModDictionary");
+        ModDictionaryView ModDictionaryView => (ModDictionaryView) ModDictionary.View;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -67,8 +79,6 @@ namespace MmasfUI
             ShowContextView();
             SystemConfiguration.OpenActiveViews();
         }
-
-        static void CleanupConfigArea() => SystemConfiguration.Cleanup();
 
         void ShowContextView()
         {
@@ -86,9 +96,6 @@ namespace MmasfUI
             main.Show();
         }
 
-        ViewConfiguration ModDictionary => GetViewConfiguration("ModDictionary");
-        ModDictionaryView ModDictionaryView => (ModDictionaryView) ModDictionary.View;
-
         [Command(Command.ViewModDictionary)]
         public void ViewModDictionary()
         {
@@ -96,6 +103,11 @@ namespace MmasfUI
             ModDictionary.ShowAndActivate();
         }
 
+        [Command(Command.RunFactorio)]
+        public void RunFactorio()
+            => ManageModsAndSavefiles.SystemConfiguration
+                .ExecutablePath
+                .InitiateExternalProgram();
 
         [Command(Command.ViewModDictionary)]
         public void ViewModDictionary(ModDescription currentItem)
@@ -119,12 +131,6 @@ namespace MmasfUI
             IsClosing = true;
             Shutdown();
         }
-
-        internal readonly CommandManager CommandManager
-            = new CommandManager(typeof(MainContainer).Namespace);
-
-        internal bool IsClosing;
-        ContextView ContextView;
 
         internal void RemoveViewConfiguration(ViewConfiguration viewConfiguration)
         {

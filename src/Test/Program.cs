@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
@@ -13,9 +14,24 @@ namespace Test
 {
     static class Program
 	{
-		public static void Main(string[] args) { Error788(); }
+		public static void Main(string[] args) { var result = T(new int[0]); }
 
-		static void Error788()
+
+        static int T(int[] A)
+	    {
+	        var p = 
+                A
+                .Where( i1=>i1>0)
+                .OrderBy(i1=>i1)
+                .Distinct()
+                .ToArray();
+	        var i = 1;
+	        for(; i < p.Length && i == p[i]; i++)
+	            continue;
+	        return i;
+	    }
+
+	    static void Error788()
 		{
 			var f = System.IO.File.OpenRead(@"c:\Users\hoyer\AppData\Roaming\Factorio\plain\mods\autofill_1.4.6.zip");
 			var z = new ZipFile(f);
@@ -28,7 +44,7 @@ namespace Test
 		{
 			var context = MmasfContext.Instance;
 			Tracer.Line(context.FactorioInformation);
-			Tracer.Line(context.SystemConfiguration.ConfigurationPath);
+			Tracer.Line(context.SystemConfiguration.ConfigurationPath.FullName);
 			Tracer.Line(context.UserConfigurations.Select(item => item.Path).Stringify("\n"));
 
 			var userConfiguration = context
@@ -57,7 +73,7 @@ namespace Test
 
 			var conflicts = userConfiguration.SaveFileConflicts.ToArray();
 
-			Tracer.Line(userConfiguration.Path);
+			Tracer.Line(userConfiguration.Path.FullName);
 		}
 
 		static void FindDifference(IEnumerable<FileCluster> saveFiles)

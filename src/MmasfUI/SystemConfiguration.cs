@@ -13,6 +13,7 @@ namespace MmasfUI
         internal static string ViewConfigurationPath
             => ManageModsAndSavefiles.SystemConfiguration
                 .Folder
+                .FullName
                 .PathCombine(ViewConfigurationFileName);
 
         internal static string GetConfigurationPath(string[] viewIdentifier)
