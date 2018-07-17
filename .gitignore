@@ -14,3 +14,5 @@ obj/
 /unity/Mmasf/Obj/
 /src/.idea
 .sync
+/src/MmasfUI/MmasfUI.csproj.DotSettings
+/src/MmasfUI/app.config

@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27428.2015
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CAC0A8EB-5914-4F0C-9471-1F4BD126069A}"
 	ProjectSection(SolutionItems) = preProject
@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{6EA8DC03
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MmasfUI", "MmasfUI\MmasfUI.csproj", "{E45A2DC4-C15F-4BB9-9957-2BA93273FF24}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lua", "Lua\Lua.csproj", "{EBB73C84-6622-4183-A28F-187178145326}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,8 +48,17 @@ Global
 		{E45A2DC4-C15F-4BB9-9957-2BA93273FF24}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E45A2DC4-C15F-4BB9-9957-2BA93273FF24}.Setup|Any CPU.ActiveCfg = Setup|Any CPU
 		{E45A2DC4-C15F-4BB9-9957-2BA93273FF24}.Setup|Any CPU.Build.0 = Setup|Any CPU
+		{EBB73C84-6622-4183-A28F-187178145326}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBB73C84-6622-4183-A28F-187178145326}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBB73C84-6622-4183-A28F-187178145326}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBB73C84-6622-4183-A28F-187178145326}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBB73C84-6622-4183-A28F-187178145326}.Setup|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBB73C84-6622-4183-A28F-187178145326}.Setup|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4E6DC549-1480-4BFE-B276-A189C2692A19}
 	EndGlobalSection
 EndGlobal
