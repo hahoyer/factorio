@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -120,10 +119,10 @@ namespace MmasfUI
         static void OnSelectionChangedForActivateSelectedItems(SelectionChangedEventArgs args)
         {
             foreach(var item in args.RemovedItems)
-                MainContainer.Instance.CommandManager.Activate(item, false);
+                MainContainer.Instance.CommandManager[item] = false;
 
             foreach(var item in args.AddedItems)
-                MainContainer.Instance.CommandManager.Activate(item);
+                MainContainer.Instance.CommandManager[item] = true;
         }
     }
 }

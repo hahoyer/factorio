@@ -90,12 +90,12 @@ namespace MmasfUI
             this.InstallPositionPersister(viewConfiguration.PositionPath);
             this.InstallMainMenu(CreateMenu());
             this.InstallStatusLine(StatusBar);
-            MainContainer.Instance.CommandManager.Activate(this);
+            MainContainer.Instance.CommandManager[this] = true;
         }
 
         protected override void OnClosed(EventArgs e)
         {
-            MainContainer.Instance.CommandManager.Activate(this, false);
+            MainContainer.Instance.CommandManager[this] = false;
             base.OnClosed(e);
         }
 

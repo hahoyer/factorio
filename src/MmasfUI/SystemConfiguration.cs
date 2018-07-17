@@ -1,7 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using hw.Helper;
+using ManageModsAndSavefiles;
 
 namespace MmasfUI
 {
@@ -10,9 +10,10 @@ namespace MmasfUI
         const string ViewConfigurationFileName = "UI";
         const string ViewIdentifierName = "Identifier";
 
-        internal static string ViewConfigurationPath
-            => ManageModsAndSavefiles.SystemConfiguration
-                .Folder
+        static string ViewConfigurationPath
+            => MmasfContext.Instance
+                .SystemConfiguration
+                .ProgramFolder
                 .FullName
                 .PathCombine(ViewConfigurationFileName);
 
@@ -20,14 +21,13 @@ namespace MmasfUI
             => GetConfigurationPath(viewIdentifier.Stringify("\n"));
 
         static string GetConfigurationPath(string viewIdentifier)
-            => GetKnownConfigurationPath(viewIdentifier)
-                ?? GetNewConfigurationPath(viewIdentifier);
+            => GetKnownConfigurationPath(viewIdentifier) ?? GetNewConfigurationPath(viewIdentifier);
 
         static string GetKnownConfigurationPath(string viewIdentifier)
         {
             var result = ConfigurationPathsForAllKnownFiles
                 .SingleOrDefault
-                (item => GetViewIdentifierString(item) == viewIdentifier);
+                    (item => GetViewIdentifierString(item) == viewIdentifier);
             return result;
         }
 

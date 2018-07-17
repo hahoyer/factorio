@@ -14,48 +14,37 @@ namespace MmasfUI
 {
     sealed class ModsView : Window, ViewConfiguration.IWindow
     {
-        readonly StatusBar StatusBar = new StatusBar();
-        readonly string ConfigurationName;
-        readonly DataGrid DataGrid;
-
-        Window ViewConfiguration.IWindow.Window => this;
-        void ViewConfiguration.IWindow.Refresh() => RefreshData();
-
-        internal ModsView(ViewConfiguration viewConfiguration)
+        sealed class FileClusterProxy : INotifyPropertyChanged
         {
-            ConfigurationName = viewConfiguration.Identifier[1];
-            DataGrid = CreateGrid(Data);
-            Content = DataGrid;
-            Title = viewConfiguration.Identifier.Stringify(" of ");
-            this.InstallPositionPersister(viewConfiguration.PositionPath);
-            this.InstallMainMenu(CreateMenu());
-            this.InstallStatusLine(StatusBar);
+            readonly FileCluster Data;
+
+            public FileClusterProxy(FileCluster data)
+            {
+                Data = data;
+                OnPropertyChanged();
+            }
+
+            public event PropertyChangedEventHandler PropertyChanged;
+
+            [UsedImplicitly]
+            public bool IsEnabled => Data.IsEnabled == true;
+
+            [UsedImplicitly]
+            public string Name => Data.Name;
+
+            [UsedImplicitly]
+            public string Title => Data.Title;
+
+            [UsedImplicitly]
+            public Version Version => Data.Version;
+
+            void OnPropertyChanged()
+                => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
         }
 
-        IEnumerable<FileClusterProxy> Data { get
-        {
-            return MmasfContext
-                .Instance
-                .UserConfigurations
-                .Single(u => u.Name == ConfigurationName)
-                .ModFiles
-                .Select(s => new FileClusterProxy(s))
-                .ToArray();
-        } }
-
-        void RefreshData()
-        {
-            var formerSelection = (FileClusterProxy)DataGrid.SelectedItem;
-            DataGrid.ItemsSource = null;
-            DataGrid.ItemsSource = Data;
-            Select(formerSelection);
-        }
-
-        void Select(FileClusterProxy item)
-        {
-            var proxyItem = item == null ? null : Data.Single(p => p.Name == item.Name);
-            DataGrid.SelectedItem = proxyItem;
-        }
+        static Exception MultipleConfigurationException
+            (IEnumerable<UserConfiguration> configurations) => throw new Exception
+            ("MultipleConfiguration: " + configurations.Select(i => i.Name).Stringify(", "));
 
 
         static DataGrid CreateGrid(IEnumerable<FileClusterProxy> data)
@@ -75,7 +64,7 @@ namespace MmasfUI
 
         static void OnAutoGeneratingColumns(DataGridAutoGeneratingColumnEventArgs args)
         {
-            if (args.PropertyName != "Created")
+            if(args.PropertyName != "Created")
                 return;
 
             var column = args.Column as DataGridTextColumn;
@@ -84,31 +73,6 @@ namespace MmasfUI
 
             column.SortDirection = ListSortDirection.Descending;
             column.CanUserSort = true;
-        }
-
-        sealed class FileClusterProxy : INotifyPropertyChanged
-        {
-            readonly FileCluster Data;
-
-            [UsedImplicitly]
-            public bool IsEnabled => Data.IsEnabled == true;
-            [UsedImplicitly]
-            public string Name => Data.Name;
-            [UsedImplicitly]
-            public string Title => Data.Title;
-            [UsedImplicitly]
-            public Version Version => Data.Version;
-
-            public FileClusterProxy(FileCluster data)
-            {
-                Data = data;
-                OnPropertyChanged();
-            }
-
-            public event PropertyChangedEventHandler PropertyChanged;
-
-            void OnPropertyChanged()
-                => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
         }
 
 
@@ -127,5 +91,56 @@ namespace MmasfUI
                     }
                 }
             };
+
+        readonly string ConfigurationName;
+        readonly DataGrid DataGrid;
+        readonly StatusBar StatusBar = new StatusBar();
+
+        internal ModsView(ViewConfiguration viewConfiguration)
+        {
+            ConfigurationName = viewConfiguration.Identifier[1];
+            DataGrid = CreateGrid(Data);
+            Content = DataGrid;
+            Title = viewConfiguration.Identifier.Stringify(" of ");
+            this.InstallPositionPersister(viewConfiguration.PositionPath);
+            this.InstallMainMenu(CreateMenu());
+            this.InstallStatusLine(StatusBar);
+        }
+
+        Window ViewConfiguration.IWindow.Window => this;
+        void ViewConfiguration.IWindow.Refresh() => RefreshData();
+
+        IEnumerable<FileClusterProxy> Data
+        {
+            get
+            {
+                return MmasfContext
+                    .Instance
+                    .UserConfigurations
+                    .Top
+                    (
+                        u => u.Name == ConfigurationName,
+                        multipleException: MultipleConfigurationException,
+                        enableEmpty: false
+                    )
+                    .ModFiles
+                    .Select(s => new FileClusterProxy(s))
+                    .ToArray();
+            }
+        }
+
+        void RefreshData()
+        {
+            var formerSelection = (FileClusterProxy) DataGrid.SelectedItem;
+            DataGrid.ItemsSource = null;
+            DataGrid.ItemsSource = Data;
+            Select(formerSelection);
+        }
+
+        void Select(FileClusterProxy item)
+        {
+            var proxyItem = item == null ? null : Data.Single(p => p.Name == item.Name);
+            DataGrid.SelectedItem = proxyItem;
+        }
     }
 }

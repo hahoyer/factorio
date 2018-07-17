@@ -1,6 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Windows.Controls;
 using System.Windows.Media;
 using ManageModsAndSavefiles;
@@ -13,13 +11,26 @@ namespace MmasfUI
         internal static class Command
         {
             internal const string OpenLocation = "UserConfiguration.OpenLocation";
+            internal const string RunLua = "UserConfiguration.RunLua";
             internal const string Select = "UserConfiguration.Select";
-            internal const string ViewSaves = "UserConfiguration.ViewSaves";
             internal const string ViewMods = "UserConfiguration.ViewMods";
+            internal const string ViewSaves = "UserConfiguration.ViewSaves";
         }
 
-        readonly MmasfContext Context;
+        static ContextMenu CreateContextMenu()
+            => new ContextMenu
+            {
+                Items =
+                {
+                    "S_elect".MenuItem(Command.Select),
+                    "View _Saves".MenuItem(Command.ViewSaves),
+                    "View _Mods".MenuItem(Command.ViewMods)
+                }
+            };
+
         readonly UserConfiguration Configuration;
+
+        readonly MmasfContext Context;
         new readonly ContextView Parent;
 
         internal UserConfigurationTile
@@ -56,16 +67,14 @@ namespace MmasfUI
             Content = result;
         }
 
-        static ContextMenu CreateContextMenu()
-            => new ContextMenu
-            {
-                Items =
-                {
-                    "S_elect".MenuItem(Command.Select),
-                    "View _Saves".MenuItem(Command.ViewSaves),
-                    "View _Mods".MenuItem(Command.ViewMods)
-                }
-            };
+
+        bool Selection.IAcceptor.IsSelected
+        {
+            set => MainContainer.Instance.CommandManager[this] = value;
+        }
+
+        [Command(Command.Select)]
+        public bool CanExecuteSelect => !Configuration.IsCurrent;
 
         [Command(Command.ViewSaves)]
         public void ViewSaves()
@@ -81,6 +90,13 @@ namespace MmasfUI
                 .GetViewConfiguration("Mods", Configuration.Name)
                 .ShowAndActivate();
 
+        [Command(Command.RunLua)]
+        public void RunLua()
+        {
+            Configuration.RunLua();
+            Parent.Refresh();
+        }
+
         [Command(Command.Select)]
         public void OnSelect()
         {
@@ -88,22 +104,16 @@ namespace MmasfUI
             Parent.Refresh();
         }
 
-        [Command(Command.Select)]
-        public bool CanExecuteSelect => !Configuration.IsCurrent;
-
         [Command(Command.OpenLocation)]
         public void OnOpenLocation()
         {
-            var process = new System.Diagnostics.Process();
-            var startInfo = new System.Diagnostics.ProcessStartInfo();
-            startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            var process = new Process();
+            var startInfo = new ProcessStartInfo();
+            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
             startInfo.FileName = "cmd.exe";
             startInfo.Arguments = "/C " + "explorer " + Configuration.Path;
             process.StartInfo = startInfo;
             process.Start();
         }
-
-
-        bool Selection.IAcceptor.IsSelected { set { MainContainer.Instance.CommandManager.Activate(this, value); } }
     }
 }

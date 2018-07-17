@@ -24,13 +24,19 @@ namespace ManageModsAndSavefiles
                 .GetValue<string>()
                 .ToSmbFile();
 
-        public static readonly SmbFile Folder = Environment
-            .GetFolderPath(Environment.SpecialFolder.ApplicationData)
-            .PathCombine(ProgramFolderName)
-            .ToSmbFile();
+        public readonly SmbFile ProgramFolder = GetProgramFolder();
 
+        internal static SmbFile GetProgramFolder()
+        {
+            return Environment
+                .GetFolderPath(Environment.SpecialFolder.ApplicationData)
+                .PathCombine(ProgramFolderName)
+                .ToSmbFile();
+        }
 
-        internal static SmbFile Path
+        internal SmbFile Path => PathCache ?? (PathCache = GetPath());
+
+        static SmbFile GetPath()
             => new[] {SteamPath, SystemReadDataDir}
                 .Where(f => f != null)
                 .FindFilesThatEndsWith(FileNameEnd)
@@ -41,14 +47,16 @@ namespace ManageModsAndSavefiles
 
         static void OnExternalModification() {throw new NotImplementedException();}
 
-        public static SmbFile ExecutablePath
-            => Path
-                .DirectoryName
-                .ToSmbFile()
-                .FindFilesThatEndsWith(ExecutableName)
-                .Single();
+        SmbFile GetExecutablePath() => Path
+            .DirectoryName
+            .ToSmbFile()
+            .FindFilesThatEndsWith(ExecutableName)
+            .Single();
 
         readonly IniFile File;
+
+        SmbFile ExecutablePathCache;
+        SmbFile PathCache;
 
         SystemConfiguration(SmbFile fileName, string commentString)
         {
@@ -56,6 +64,9 @@ namespace ManageModsAndSavefiles
                 (fileName.Exists, "System configuration file not found: " + fileName);
             File = new IniFile(fileName, commentString, OnExternalModification);
         }
+
+        public SmbFile ExecutablePath
+            => ExecutablePathCache ?? (ExecutablePathCache = GetExecutablePath());
 
         public SmbFile ConfigurationPath => File.Global[ConfigPathTag].PathFromFactorioStyle();
     }

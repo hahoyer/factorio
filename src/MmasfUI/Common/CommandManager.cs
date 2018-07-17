@@ -74,14 +74,17 @@ namespace MmasfUI.Common
             method.Invoke(target, parameter == null ? null : new[] {parameter});
         }
 
-        internal void Activate(object target, bool setIt = true)
+        internal bool this[object target]
         {
-            if(setIt)
-                ActiveObjects.Insert(0, target);
-            else
-                ActiveObjects.Remove(target);
-
-            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+            get => ActiveObjects.Contains(target);
+            set
+            {
+                if(value)
+                    ActiveObjects.Insert(0, target);
+                else
+                    ActiveObjects.Remove(target);
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+            }
         }
     }
 }

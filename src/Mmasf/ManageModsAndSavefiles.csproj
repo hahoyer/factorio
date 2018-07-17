@@ -4,6 +4,8 @@
     <ProjectGuid>{EBB73C84-6622-4183-A28F-B0DFF606006B}</ProjectGuid>
     <AssemblyName>ManageModsAndSavefiles</AssemblyName>
     <TargetTypeEx>CSharp.Library</TargetTypeEx>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <NoWarn>649,414</NoWarn>
@@ -56,6 +58,7 @@
     <Compile Include="hw\Helper\TypeNameExtender.cs" />
     <Compile Include="hw\Helper\ValueCache.cs" />
     <Compile Include="hw\Helper\ValueCacheExtension.cs" />
+    <Compile Include="LuaExtension.cs" />
     <Compile Include="ModConfiguration.cs" />
     <Compile Include="Reader\ArrayItem.cs" />
     <Compile Include="Reader\BinaryRead.cs" />
@@ -105,13 +108,11 @@
       <HintPath>..\packages\ini-parser.3.4.0\lib\net20\INIFileParser.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="JetBrains.Annotations, Version=10.4.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
-      <HintPath>..\packages\JetBrains.Annotations.10.4.0\lib\net\JetBrains.Annotations.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="JetBrains.Annotations, Version=11.1.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>..\packages\JetBrains.Annotations.11.1.0\lib\net20\JetBrains.Annotations.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="PresentationFramework" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -119,5 +120,18 @@
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Lua\Lua.csproj">
+      <Project>{ebb73c84-6622-4183-a28f-187178145326}</Project>
+      <Name>Lua</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="sys.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
 </Project>

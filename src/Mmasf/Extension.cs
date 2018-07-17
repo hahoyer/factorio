@@ -176,5 +176,20 @@ namespace ManageModsAndSavefiles
         public static TimeSpan Seconds(this int value) => TimeSpan.FromSeconds(value);
         public static void WriteLine(this string value) => Tracer.Line(value);
         public static void WriteFlaggedLine(this string value) => Tracer.FlaggedLine(value, stackFrameDepth: 1);
+
+        public static string Left(this string target, int targetLength, string pad = " ")
+        {
+            for(var delta = targetLength - target.Length; delta > 0; delta -= pad.Length)
+                target += pad;
+            return target.Substring(0, targetLength);
+        }
+
+        public static string Right(this string target, int targetLength, string pad = " ")
+        {
+            var delta = targetLength - target.Length;
+            for(; delta > 0; delta -= pad.Length)
+                target = pad + target;
+            return target.Substring(-delta);
+        }
     }
 }

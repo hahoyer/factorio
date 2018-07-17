@@ -34,6 +34,7 @@ namespace MmasfUI
                         {
                             "_Open Location".MenuItem(UserConfigurationTile.Command.OpenLocation),
                             "_Select".MenuItem(UserConfigurationTile.Command.Select),
+                            "Run _Lua".MenuItem(UserConfigurationTile.Command.RunLua),
                             "_Exit".MenuItem("Exit")
                         }
                     },
@@ -44,7 +45,7 @@ namespace MmasfUI
                         {
                             "_Saves".MenuItem(UserConfigurationTile.Command.ViewSaves),
                             "_Mods".MenuItem(UserConfigurationTile.Command.ViewMods),
-                            "Mod _dictionary".MenuItem(Command.ViewModDictionary)
+                            "Mod _dictionary".MenuItem(Command.ViewModDictionary),
                         }
                     },
                     new MenuItem
@@ -92,7 +93,7 @@ namespace MmasfUI
             ContextView.Selection.RegisterKeyboardHandler(main);
             main.InstallPositionPersister("Main");
             main.InstallMainMenu(CreateMainMenu());
-            CommandManager.Activate(this);
+            CommandManager[this] = true;
             main.Show();
         }
 
@@ -105,7 +106,9 @@ namespace MmasfUI
 
         [Command(Command.RunFactorio)]
         public void RunFactorio()
-            => ManageModsAndSavefiles.SystemConfiguration
+            => MmasfContext
+                .Instance
+                .SystemConfiguration
                 .ExecutablePath
                 .InitiateExternalProgram();
 

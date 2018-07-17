@@ -56,8 +56,8 @@ namespace MmasfUI.Common
 
         event EventHandler ICommand.CanExecuteChanged
         {
-            add { System.Windows.Input.CommandManager.RequerySuggested += value; }
-            remove { System.Windows.Input.CommandManager.RequerySuggested -= value; }
+            add => System.Windows.Input.CommandManager.RequerySuggested += value;
+            remove => System.Windows.Input.CommandManager.RequerySuggested -= value;
         }
     }
 }

@@ -12,7 +12,12 @@ namespace ManageModsAndSavefiles
         }
 
         const string FileNameEnd = "config.json";
-        static readonly SmbFile Path = SystemConfiguration.Folder.FullName.PathCombine(FileNameEnd).ToSmbFile();
+
+        static readonly SmbFile Path = SystemConfiguration
+            .GetProgramFolder()
+            .FullName
+            .PathCombine(FileNameEnd)
+            .ToSmbFile();
 
         static DataClass Create()
         {
@@ -20,7 +25,11 @@ namespace ManageModsAndSavefiles
 
             var systemPath = result.SystemPath?.ToSmbFile();
             if(systemPath?.Exists != true)
-                result.SystemPath = SystemConfiguration.Path.FullName;
+                result.SystemPath = MmasfContext
+                    .Instance
+                    .SystemConfiguration
+                    .Path
+                    .FullName;
 
             if(result.UserConfigurationRootPaths == null)
                 result.UserConfigurationRootPaths = new[] {Extension.SystemWriteDataDir.FullName};
