@@ -1,7 +1,11 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
+using HWBase;
+using Lua;
+using ManageModsAndSavefiles.Reader;
+
 
 namespace ManageModsAndSavefiles
 {
@@ -9,48 +13,46 @@ namespace ManageModsAndSavefiles
     {
         public static void Run(this SmbFile root)
         {
-            var basePath = root.PathCombine("data\\base\\data.lua");
-            var corePath = root.PathCombine("data\\core\\data.lua");
-
-            var lua = Lua.Extension.Instance;
-
-            lua["package.path"] = new[]
-                {
-                    "data\\core\\lualib",
-                    "data\\core",
-                    "data\\base",
-                    "data"
-                }
-                .Select(tail => root.PathCombine(tail).FullName + "\\?.lua")
-                .Stringify(";");
-
-
-            try
+            using(var lua = Lua.Extension.Instance)
             {
-                var r1 = lua.DoChunk
-                (
-                    @"
-data = {};
+                lua.PackagePath = new[]
+                    {
+                        "data\\core\\lualib",
+                        "data\\core",
+                        "data\\base",
+                        "data"
+                    }
+                    .Select(tail => root.PathCombine(tail).FullName + "\\?.lua");
 
-require(""dataloader"")
-require(""core.data"")
---require(""base.data"")                                      
+                var result = lua.Run("GameLoader.lua".ToSmbFile());
 
-",
-                    "root");
 
-                var result = lua.DoChunk(new StreamReader(corePath.Reader), corePath.Name);
-                Tracer.Dump(lua["data"]).WriteLine();
-
-                "S".WriteLine();
+                var value = lua["data"];
+                var data
+                    = lua.FromItem(value).TableAsDictionary;
+                var x = Find(data, "electronic-circuit", lua).ToArray();
+                Tracer.Dump(lua["data.raw.recipe"]).WriteLine();
+                Tracer.Dump(lua.FromItem(lua["data.raw"]).TableAsDictionary.Keys).WriteLine();
+                //Tracer.Dump(result).WriteLine();
             }
-            catch(LuaException e) {}
         }
 
-
-        internal static void Register()
+        static IEnumerable<string> Find(IDictionary<object, object> data, string target, IContext lua)
         {
-            //Tracer.Dumper.Configuration.Handlers.Add(typeof(LuaTable), (type, o) => ((LuaTable) o).Dump());
+            return data.SelectMany(p => Find(p, target, lua));
+        }
+
+        static IEnumerable<string> Find(KeyValuePair<object, object> data, string target, IContext lua)
+        {
+            if(data.Key is string key && key.Contains(target))
+                yield return key;
+
+            var deeperData = lua.FromItem(data.Value).TableAsDictionary;
+            if(deeperData == null)
+                yield break;
+
+            foreach(var searchResult in Find(deeperData, target, lua))
+                yield return data.Key + "." + searchResult;
         }
     }
 }

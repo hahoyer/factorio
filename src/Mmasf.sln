@@ -23,6 +23,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MmasfUI", "MmasfUI\MmasfUI.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lua", "Lua\Lua.csproj", "{EBB73C84-6622-4183-A28F-187178145326}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HWBase", "HWBase\HWBase.csproj", "{EBB73C84-6622-4183-A28F-187178152322}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NativeLua", "NativeLua\NativeLua.csproj", "{A990CDCE-D73D-4003-A773-5969B659F689}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,6 +58,18 @@ Global
 		{EBB73C84-6622-4183-A28F-187178145326}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EBB73C84-6622-4183-A28F-187178145326}.Setup|Any CPU.ActiveCfg = Debug|Any CPU
 		{EBB73C84-6622-4183-A28F-187178145326}.Setup|Any CPU.Build.0 = Debug|Any CPU
+		{EBB73C84-6622-4183-A28F-187178152322}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBB73C84-6622-4183-A28F-187178152322}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBB73C84-6622-4183-A28F-187178152322}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBB73C84-6622-4183-A28F-187178152322}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBB73C84-6622-4183-A28F-187178152322}.Setup|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBB73C84-6622-4183-A28F-187178152322}.Setup|Any CPU.Build.0 = Debug|Any CPU
+		{A990CDCE-D73D-4003-A773-5969B659F689}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A990CDCE-D73D-4003-A773-5969B659F689}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A990CDCE-D73D-4003-A773-5969B659F689}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A990CDCE-D73D-4003-A773-5969B659F689}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A990CDCE-D73D-4003-A773-5969B659F689}.Setup|Any CPU.ActiveCfg = Release|Any CPU
+		{A990CDCE-D73D-4003-A773-5969B659F689}.Setup|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using hw.DebugFormatter;
+using ManageModsAndSavefiles;
 
 namespace MmasfUI.Common
 {
@@ -61,12 +62,22 @@ namespace MmasfUI.Common
                 if(CurrentItem != null)
                     CurrentItem.ItemView.IsSelected = false;
 
-                CurrentItem = value == null ? null : Items.Single(i => i.Target.Equals(value));
+                CurrentItem = value == null ? null : Items.Single(i => IsMatchingTarget(value, i));
 
                 if(CurrentItem != null)
                     CurrentItem.ItemView.IsSelected = true;
             }
-        }                                           
+        }
+
+        static bool IsMatchingTarget(object value, Item i)
+        {
+            var targetTarget = i.Target as IIdentified<string>;
+            var valueTarget = value as IIdentified<string>;
+            if(targetTarget == null || valueTarget == null)
+                return i.Target.Equals(value);
+
+            return valueTarget.Identifier == targetTarget.Identifier;
+        }
 
         internal void RegisterKeyboardHandler(Window window) { window.KeyUp += GetKey; }
 

@@ -12,7 +12,7 @@
 
     <PropertyGroup>
         <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-        <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+        <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace Condition=" '$(RootNamespace)' == '' ">$(AssemblyName)</RootNamespace>
     </PropertyGroup>

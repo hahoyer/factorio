@@ -78,19 +78,21 @@ namespace hw.Helper
         {
             get
             {
-                if(!System.IO.File.Exists(_name))
+                if(!File.Exists(_name))
                     return null;
 
-                using(var f = System.IO.File.OpenText(_name))
+                using(var f = File.OpenText(_name))
                     return f.ReadToEnd();
             }
             set
             {
                 CheckedEnsureDirectoryOfFileExists();
-                using(var f = System.IO.File.CreateText(_name))
+                using(var f = File.CreateText(_name))
                     f.Write(value);
             }
         }
+
+        public string ModifiedDateString => ModifiedDate.DynamicShortFormat(true);
 
         /// <summary>
         ///     considers the file as a byte array
@@ -108,7 +110,7 @@ namespace hw.Helper
             }
             set
             {
-                var f = System.IO.File.OpenWrite(_name);
+                var f = File.OpenWrite(_name);
                 f.Write(value, 0, value.Length);
                 f.Close();
             }
@@ -213,7 +215,7 @@ namespace hw.Helper
             {
                 try
                 {
-                    System.IO.File.OpenRead(_name).Close();
+                    File.OpenRead(_name).Close();
                     return false;
                 }
                 catch(IOException)
@@ -228,11 +230,9 @@ namespace hw.Helper
         [DisableDump]
         public DateTime ModifiedDate => FileSystemInfo.LastWriteTime;
 
-        public string ModifiedDateString => ModifiedDate.DynamicShortFormat(true);
-
         public string SubString(long start, int size)
         {
-            if(!System.IO.File.Exists(_name))
+            if(!File.Exists(_name))
                 return null;
 
             using(var f = Reader)
@@ -275,7 +275,7 @@ namespace hw.Helper
             if(IsDirectory)
                 System.IO.Directory.Delete(_name, recursive);
             else
-                System.IO.File.Delete(_name);
+                File.Delete(_name);
         }
 
         /// <summary>
@@ -286,7 +286,7 @@ namespace hw.Helper
             if(IsDirectory)
                 System.IO.Directory.Move(_name, newName);
             else
-                System.IO.File.Move(_name, newName);
+                File.Move(_name, newName);
         }
 
         string GetDirectoryString()
@@ -302,17 +302,13 @@ namespace hw.Helper
         }
 
         FileSystemInfo[] GetItems()
-        {
-            if(AutoCreateDirectories)
-                EnsureIsExistentDirectory();
-            return ((DirectoryInfo) FileSystemInfo).GetFileSystemInfos().ToArray();
-        }
+            => ((DirectoryInfo) FileSystemInfo).GetFileSystemInfos().ToArray();
 
         public void CopyTo(string destinationPath)
         {
             if(IsDirectory)
             {
-                destinationPath.FileHandle().EnsureIsExistentDirectory();
+                destinationPath.ToSmbFile().EnsureIsExistentDirectory();
                 foreach(var sourceSubFile in Items)
                 {
                     var destinationSubPath = destinationPath.PathCombine(sourceSubFile.Name);
@@ -320,7 +316,7 @@ namespace hw.Helper
                 }
             }
             else
-                System.IO.File.Copy(FullName, destinationPath);
+                File.Copy(FullName, destinationPath);
         }
 
         public SmbFile[] GuardedItems()

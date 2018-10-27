@@ -13,8 +13,8 @@ using ManageModsAndSavefiles.Saves;
 namespace Test
 {
     static class Program
-	{
-		public static void Main(string[] args) { var result = T(new int[0]); }
+    {
+        public static void Main(string[] args) { ManageModsAndSavefiles.Game.Test(); }
 
 
         static int T(int[] A)

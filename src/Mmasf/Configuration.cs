@@ -15,9 +15,7 @@ namespace ManageModsAndSavefiles
 
         static readonly SmbFile Path = SystemConfiguration
             .GetProgramFolder()
-            .FullName
-            .PathCombine(FileNameEnd)
-            .ToSmbFile();
+            .PathCombine(FileNameEnd);
 
         static DataClass Create()
         {

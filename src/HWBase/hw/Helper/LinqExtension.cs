@@ -10,10 +10,16 @@ namespace hw.Helper
     public static class LinqExtension
     {
         public static bool AddDistinct<T>
-            (this IList<T> a, IEnumerable<T> b, Func<T, T, bool> isEqual) => InternalAddDistinct(a, b, isEqual);
+            (this IList<T> a, IEnumerable<T> b, Func<T, T, bool> isEqual)
+        {
+            return InternalAddDistinct(a, b, isEqual);
+        }
 
         public static bool AddDistinct<T>(this IList<T> a, IEnumerable<T> b, Func<T, T, T> combine)
-            where T : class => InternalAddDistinct(a, b, combine);
+            where T : class
+        {
+            return InternalAddDistinct(a, b, combine);
+        }
 
         static bool InternalAddDistinct<T>
             (ICollection<T> a, IEnumerable<T> b, Func<T, T, bool> isEqual)
@@ -82,12 +88,12 @@ namespace hw.Helper
         }
 
         [CanBeNull]
-        public static T Aggregate<T>(this IEnumerable<T> x)
+        public static T Aggregate<T>(this IEnumerable<T> x, Func<T> getDefault = null)
             where T : class, IAggregateable<T>
         {
             var xx = x.ToArray();
             if(!xx.Any())
-                return null;
+                return getDefault?.Invoke();
             var result = xx[0];
             for(var i = 1; i < xx.Length; i++)
                 result = result.Aggregate(xx[i]);
@@ -102,9 +108,6 @@ namespace hw.Helper
             var i = 0;
             return x.Aggregate("", (a, xx) => a + "[" + i++ + "] " + xx.Dump() + "\n");
         }
-
-        [Obsolete("use Stringify")]
-        public static string Format<T>(this IEnumerable<T> x, string separator) => Stringify(x, separator);
 
         public static string Stringify<T>
             (this IEnumerable<T> x, string separator, bool showNumbers = false)
@@ -275,13 +278,16 @@ namespace hw.Helper
             return
                 leftCommon.Union(rightCommon)
                     .GroupBy(t => t.Item1)
-                    .Select
+                    .Select<IGrouping<TKey, Tuple<TKey, TLeft, TRight>>, Tuple<TKey, TLeft, TRight>>
                         (Merge);
         }
 
         public static IEnumerable<Tuple<TKey, T, T>> Merge<TKey, T>
             (this IEnumerable<T> left, IEnumerable<T> right, Func<T, TKey> getKey)
-            where T : class => Merge(left, right, getKey, getKey);
+            where T : class
+        {
+            return Merge(left, right, getKey, getKey);
+        }
 
         public static Tuple<TKey, TLeft, TRight> Merge<TKey, TLeft, TRight>
             (IGrouping<TKey, Tuple<TKey, TLeft, TRight>> grouping)
@@ -319,10 +325,6 @@ namespace hw.Helper
             foreach(var item in newEntries.Where(x => !target.ContainsKey(x.Key)))
                 target.Add(item);
         }
-
-        [Obsolete("Use IndexWhere")]
-        public static int? IndexOf<T>(this IEnumerable<T> items, Func<T, bool> predicate) => IndexWhere
-            (items, predicate);
 
         /// <summary>Finds the index of the first item matching an expression in an enumerable.</summary>
         /// <param name="items">The enumerable to search.</param>
@@ -437,7 +439,7 @@ namespace hw.Helper
                 var result = enumerator.Current;
                 if(!enumerator.MoveNext())
                     return result;
-                
+
                 if(multipleException != null)
                     throw multipleException(target);
                 return enableMultiple ? result : target.Single();
@@ -465,6 +467,7 @@ namespace hw.Helper
             }
             while(enumerator.MoveNext());
         }
+
     }
 
     public interface IAggregateable<T>

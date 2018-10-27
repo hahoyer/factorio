@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="12.0">
+  <PropertyGroup>
+    <ProjectGuid>{EBB73C84-6622-4183-A28F-187178152322}</ProjectGuid>
+    <AssemblyName>HWBase</AssemblyName>
+    <TargetTypeEx>CSharp.Library</TargetTypeEx>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AssemblyInfo.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Extension.cs" />
+    <Compile Include="hw\DebugFormatter\Configuration.cs" />
+    <Compile Include="hw\DebugFormatter\DebugTextWriter.cs" />
+    <Compile Include="hw\DebugFormatter\DisableDumpAttribute.cs" />
+    <Compile Include="hw\DebugFormatter\Dumpable.cs" />
+    <Compile Include="hw\DebugFormatter\DumpableObject.cs" />
+    <Compile Include="hw\DebugFormatter\DumpAttribute.cs" />
+    <Compile Include="hw\DebugFormatter\DumpClassAttribute.cs" />
+    <Compile Include="hw\DebugFormatter\DumpDataClassAttribute.cs" />
+    <Compile Include="hw\DebugFormatter\DumpEnabledAttribute.cs" />
+    <Compile Include="hw\DebugFormatter\Dumper.cs" />
+    <Compile Include="hw\DebugFormatter\DumpToStringAttribute.cs" />
+    <Compile Include="hw\DebugFormatter\EnableDumpAttribute.cs" />
+    <Compile Include="hw\DebugFormatter\EnableDumpExceptAttribute.cs" />
+    <Compile Include="hw\DebugFormatter\EnableDumpWithExceptionPredicateAttribute.cs" />
+    <Compile Include="hw\DebugFormatter\Log4NetTextWriter.cs" />
+    <Compile Include="hw\DebugFormatter\Profiler.cs" />
+    <Compile Include="hw\DebugFormatter\TextWriters.cs" />
+    <Compile Include="hw\DebugFormatter\Tracer.cs" />
+    <Compile Include="hw\DebugFormatter\Writer.cs" />
+    <Compile Include="hw\Helper\Box.cs" />
+    <Compile Include="hw\Helper\DateRange.cs" />
+    <Compile Include="hw\Helper\DateTimeExtender.cs" />
+    <Compile Include="hw\Helper\EnumEx.cs" />
+    <Compile Include="hw\Helper\FunctionCache.cs" />
+    <Compile Include="hw\Helper\IUniqueIdProvider.cs" />
+    <Compile Include="hw\Helper\LinqExtension.cs" />
+    <Compile Include="hw\Helper\LongExtender.cs" />
+    <Compile Include="hw\Helper\ReflectionExtender.cs" />
+    <Compile Include="hw\Helper\SmbFile.cs" />
+    <Compile Include="hw\Helper\StringAligner.cs" />
+    <Compile Include="hw\Helper\StringExtender.cs" />
+    <Compile Include="hw\Helper\TypeLibrary.cs" />
+    <Compile Include="hw\Helper\TypeNameExtender.cs" />
+    <Compile Include="hw\Helper\ValueCache.cs" />
+    <Compile Include="hw\Helper\ValueCacheExtension.cs" />
+    <Compile Include="hw\UnitTest\CategoryAttribute.cs" />
+    <Compile Include="hw\UnitTest\DependantAttribute.cs" />
+    <Compile Include="hw\UnitTest\ITestFixture.cs" />
+    <Compile Include="hw\UnitTest\TestExtender.cs" />
+    <Compile Include="hw\UnitTest\TestMethod.cs" />
+    <Compile Include="hw\UnitTest\TestRunner.cs" />
+    <Compile Include="hw\UnitTest\TestType.cs" />
+    <None Include="packages.config">
+    </None>
+    <None Include="sys.targets">
+      <SubType>Designer</SubType>
+    </None>
+    <Content Include="AssemblyInfo.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>AssemblyInfo.cs</LastGenOutput>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="JetBrains.Annotations, Version=2018.2.1.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>..\packages\JetBrains.Annotations.2018.2.1\lib\net20\JetBrains.Annotations.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <Import Project="sys.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>

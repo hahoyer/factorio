@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using hw.Helper;
+using HWBase;
 using ManageModsAndSavefiles;
 using MmasfUI.Common;
 

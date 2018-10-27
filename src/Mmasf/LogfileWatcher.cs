@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using hw.DebugFormatter;
 using hw.Helper;
+using HWBase;
 
 namespace ManageModsAndSavefiles
 {

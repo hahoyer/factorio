@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
+using HWBase;
 using ManageModsAndSavefiles.Mods;
 using ManageModsAndSavefiles.Saves;
 
 namespace ManageModsAndSavefiles
 {
-    public sealed class UserConfiguration : DumpableObject
+    public sealed class UserConfiguration : DumpableObject, IIdentified<string>
     {
         internal const string LogfileName = "factorio-current.log";
         const string ModConfigurationFileName = "mod-list.json";
@@ -61,8 +62,6 @@ namespace ManageModsAndSavefiles
         readonly MmasfContext Parent;
         readonly ValueCache<Saves.FileCluster[]> SaveFilesCache;
 
-        static UserConfiguration() {LuaExtension.Register();}
-
         UserConfiguration(SmbFile path, SmbFile[] allPaths, MmasfContext parent)
         {
             Path = path;
@@ -71,8 +70,8 @@ namespace ManageModsAndSavefiles
             ModConfigurationCache = new ValueCache<IDictionary<string, bool>>(GetModConfiguration);
             ModFilesCache = new ValueCache<Mods.FileCluster[]>(GetModFiles);
             SaveFilesCache = new ValueCache<Saves.FileCluster[]>(GetSaveFiles);
-            RunLua();
             return;
+            RunLua();
             LogfileWatcher = new LogfileWatcher(Path);
         }
 
@@ -143,5 +142,6 @@ namespace ManageModsAndSavefiles
 
 
         public void RunLua() => Parent.SystemConfiguration.Path.Directory.Run();
+        string IIdentified<string>.Identifier => Name;
     }
 }

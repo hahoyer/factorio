@@ -4,7 +4,7 @@
     <ProjectGuid>{EBB73C84-6622-4183-A28F-B0DFF606006B}</ProjectGuid>
     <AssemblyName>ManageModsAndSavefiles</AssemblyName>
     <TargetTypeEx>CSharp.Library</TargetTypeEx>
-    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
@@ -23,43 +23,11 @@
     <Compile Include="Compression\IZipFileHandle.cs" />
     <Compile Include="Compression\Nuget\ZipArchiveHandle.cs" />
     <Compile Include="Compression\Nuget\ZipFileHandle.cs" />
-    <Compile Include="hw\DebugFormatter\Configuration.cs" />
-    <Compile Include="hw\DebugFormatter\DebugTextWriter.cs" />
-    <Compile Include="hw\DebugFormatter\DisableDumpAttribute.cs" />
-    <Compile Include="hw\DebugFormatter\Dumpable.cs" />
-    <Compile Include="hw\DebugFormatter\DumpableObject.cs" />
-    <Compile Include="hw\DebugFormatter\DumpAttribute.cs" />
-    <Compile Include="hw\DebugFormatter\DumpClassAttribute.cs" />
-    <Compile Include="hw\DebugFormatter\DumpDataClassAttribute.cs" />
-    <Compile Include="hw\DebugFormatter\DumpEnabledAttribute.cs" />
-    <Compile Include="hw\DebugFormatter\Dumper.cs" />
-    <Compile Include="hw\DebugFormatter\DumpToStringAttribute.cs" />
-    <Compile Include="hw\DebugFormatter\EnableDumpAttribute.cs" />
-    <Compile Include="hw\DebugFormatter\EnableDumpExceptAttribute.cs" />
-    <Compile Include="hw\DebugFormatter\EnableDumpWithExceptionPredicateAttribute.cs" />
-    <Compile Include="hw\DebugFormatter\Profiler.cs" />
-    <Compile Include="hw\DebugFormatter\TextWriters.cs" />
-    <Compile Include="hw\DebugFormatter\Tracer.cs" />
-    <Compile Include="hw\DebugFormatter\Writer.cs" />
-    <Compile Include="hw\Helper\Box.cs" />
-    <Compile Include="hw\Helper\DateRange.cs" />
-    <Compile Include="hw\Helper\DateTimeExtender.cs" />
-    <Compile Include="hw\Helper\EnumEx.cs" />
-    <Compile Include="hw\Helper\File.cs" />
-    <Compile Include="hw\Helper\FunctionCache.cs" />
-    <Compile Include="hw\Helper\IUniqueIdProvider.cs" />
-    <Compile Include="hw\Helper\LinqExtension.cs" />
-    <Compile Include="hw\Helper\LongExtender.cs" />
-    <Compile Include="hw\Helper\ReflectionExtender.cs" />
-    <Compile Include="hw\Helper\SmbFile.cs" />
-    <Compile Include="hw\Helper\StringAligner.cs" />
-    <Compile Include="hw\Helper\StringExtender.cs" />
-    <Compile Include="hw\Helper\TypeLibrary.cs" />
-    <Compile Include="hw\Helper\TypeNameExtender.cs" />
-    <Compile Include="hw\Helper\ValueCache.cs" />
-    <Compile Include="hw\Helper\ValueCacheExtension.cs" />
+    <Compile Include="Game.cs" />
+    <Compile Include="IIdentified.cs" />
     <Compile Include="LuaExtension.cs" />
     <Compile Include="ModConfiguration.cs" />
+    <Compile Include="Rational.cs" />
     <Compile Include="Reader\ArrayItem.cs" />
     <Compile Include="Reader\BinaryRead.cs" />
     <Compile Include="BooleanJsonConverter.cs" />
@@ -88,6 +56,9 @@
     <Compile Include="UserConfiguration.cs" />
     <Compile Include="Compression\Microsoft\ZipArchiveHandle.cs" />
     <Compile Include="Compression\Microsoft\ZipFileHandle.cs" />
+    <None Include="GameLoader.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
@@ -108,8 +79,8 @@
       <HintPath>..\packages\ini-parser.3.4.0\lib\net20\INIFileParser.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="JetBrains.Annotations, Version=11.1.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
-      <HintPath>..\packages\JetBrains.Annotations.11.1.0\lib\net20\JetBrains.Annotations.dll</HintPath>
+    <Reference Include="JetBrains.Annotations, Version=2018.2.1.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>..\packages\JetBrains.Annotations.2018.2.1\lib\net20\JetBrains.Annotations.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -124,11 +95,16 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\HWBase\HWBase.csproj">
+      <Project>{ebb73c84-6622-4183-a28f-187178152322}</Project>
+      <Name>HWBase</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Lua\Lua.csproj">
       <Project>{ebb73c84-6622-4183-a28f-187178145326}</Project>
       <Name>Lua</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="sys.targets" />
   <PropertyGroup>
     <PostBuildEvent>
