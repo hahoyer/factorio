@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace ManageModsAndSavefiles.Reader
+namespace ManageModsAndSaveFiles.Reader
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
     public sealed class Ignore : Attribute, BinaryRead.IAdvancer

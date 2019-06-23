@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ManageModsAndSavefiles.Reader
+namespace ManageModsAndSaveFiles.Reader
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
     public sealed class ArrayItem : Attribute

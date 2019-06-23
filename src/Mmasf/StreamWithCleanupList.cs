@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSaveFiles
 {
     public sealed class StreamWithCleanupList : Stream
     {

@@ -6,7 +6,7 @@ using hw.Helper;
 using hw.UnitTest;
 
 
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSaveFiles
 {
     public class Game : DumpableObject
     {

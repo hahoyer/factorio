@@ -1,5 +1,5 @@
 ﻿
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSaveFiles
 {
     public interface IIdentified<T>
     {

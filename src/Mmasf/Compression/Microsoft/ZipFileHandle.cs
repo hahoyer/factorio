@@ -5,9 +5,9 @@ using System.IO.Compression;
 using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
-using ManageModsAndSavefiles.Reader;
+using ManageModsAndSaveFiles.Reader;
 
-namespace ManageModsAndSavefiles.Compression.Microsoft
+namespace ManageModsAndSaveFiles.Compression.Microsoft
 {
     public sealed class ZipFileHandle : DumpableObject, IZipFileHandle
     {

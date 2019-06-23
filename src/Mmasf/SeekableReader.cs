@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using hw.DebugFormatter;
 
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSaveFiles
 {
     public sealed class SeekableReader : Stream
     {

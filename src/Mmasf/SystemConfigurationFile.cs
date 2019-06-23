@@ -4,7 +4,7 @@ using hw.DebugFormatter;
 using hw.Helper;
 using HWBase;
 
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSaveFiles
 {
     public sealed class SystemConfiguration : DumpableObject
     {
@@ -38,15 +38,10 @@ namespace ManageModsAndSavefiles
         internal SmbFile Path => PathCache ?? (PathCache = GetPath());
 
         static SmbFile GetPath()
-            => new[] {SteamPath, SystemReadDataDir}
+            => new[] { SteamPath, SystemReadDataDir }
                 .Where(f => f != null)
                 .FindFilesThatEndsWith(FileNameEnd)
                 .First();
-
-        internal static SystemConfiguration Create(SmbFile fileName, string commentString)
-            => new SystemConfiguration(fileName, commentString);
-
-        static void OnExternalModification() {throw new NotImplementedException();}
 
         SmbFile GetExecutablePath() => Path
             .DirectoryName
@@ -54,21 +49,28 @@ namespace ManageModsAndSavefiles
             .FindFilesThatEndsWith(ExecutableName)
             .Single();
 
-        readonly IniFile File;
-
         SmbFile ExecutablePathCache;
         SmbFile PathCache;
 
-        SystemConfiguration(SmbFile fileName, string commentString)
+        public SmbFile ExecutablePath
+            => ExecutablePathCache ?? (ExecutablePathCache = GetExecutablePath());
+    }
+    public sealed class SystemConfigurationFile : DumpableObject
+    {
+        const string ConfigPathTag = "config-path";
+
+        readonly IniFile File;
+
+        internal SystemConfigurationFile(SmbFile fileName)
         {
             Tracer.Assert
                 (fileName.Exists, "System configuration file not found: " + fileName);
-            File = new IniFile(fileName, commentString, OnExternalModification);
+            File = new IniFile(fileName, "#", OnExternalModification);
         }
 
-        public SmbFile ExecutablePath
-            => ExecutablePathCache ?? (ExecutablePathCache = GetExecutablePath());
-
         public SmbFile ConfigurationPath => File.Global[ConfigPathTag].PathFromFactorioStyle();
+
+        static void OnExternalModification() { throw new NotImplementedException(); }
+
     }
 }

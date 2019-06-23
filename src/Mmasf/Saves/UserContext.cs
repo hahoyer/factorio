@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using hw.DebugFormatter;
-using ManageModsAndSavefiles.Reader;
+using ManageModsAndSaveFiles.Reader;
 
-namespace ManageModsAndSavefiles.Saves
+namespace ManageModsAndSaveFiles.Saves
 {
     sealed class UserContext : DumpableObject, BinaryRead.IContext
     {
@@ -28,7 +28,7 @@ namespace ManageModsAndSavefiles.Saves
             if(captureIdentifier as string == "Lookahead")
             {
 	            // ReSharper disable once UnusedVariable
-                var value = reader.GetBytes(100);
+                var value = reader.LookAhead();
                 Tracer.TraceBreak();
                 return;
             }

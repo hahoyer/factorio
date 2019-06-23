@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSaveFiles
 {
     /// <summary>
     ///     Handles converting JSON string values into a C# boolean data type.

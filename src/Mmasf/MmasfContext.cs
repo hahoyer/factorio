@@ -1,45 +1,57 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
-using ManageModsAndSavefiles.Mods;
-using ManageModsAndSavefiles.Reader;
+using ManageModsAndSaveFiles.Mods;
+using ManageModsAndSaveFiles.Reader;
 
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSaveFiles
 {
     public sealed class MmasfContext : DumpableObject
     {
         public static readonly MmasfContext Instance = new MmasfContext();
 
-        readonly CompoundCache<Configuration> ConfigurationCache;
-        readonly CompoundCache<ModConfiguration> ModConfigurationCache;
-        readonly CompoundCache<SystemConfiguration> SystemConfigurationCache;
-        readonly CompoundCache<DataConfiguration> DataConfigurationCache;
-        readonly CompoundCache<UserConfiguration[]> UserConfigurationsCache;
+        static FunctionCache<Version, ModDescription> CreateModDescription(string name)
+            => new FunctionCache<Version, ModDescription>
+                (version => new ModDescription(name, version));
+
         public readonly FunctionCache<string, FunctionCache<Version, ModDescription>> ModDictionary;
+
         public Action OnExternalModification;
+        public Action OnModificationOnConfigPaths;
+
+        readonly CompoundCache<Configuration> ConfigurationCache;
+        readonly CompoundCache<DirectoryWatcher> ConfigurationWatcherCache;
+        readonly CompoundCache<DataConfiguration> DataConfigurationCache;
+        readonly CompoundCache<ModConfiguration> ModConfigurationCache;
+        readonly CompoundCache<SystemConfigurationFile> SystemConfigurationFileCache;
+        readonly CompoundCache<UserConfiguration[]> UserConfigurationsCache;
+        readonly CompoundCache<SystemConfiguration> SystemConfigurationCache;
 
         MmasfContext()
         {
-            ConfigurationCache = new CompoundCache<Configuration>(() => new Configuration());
-            ModConfigurationCache = new CompoundCache<ModConfiguration>(ModConfiguration.Create);
-
-            ModDictionary = new FunctionCache<string, FunctionCache<Version, ModDescription>>
-                (CreateModDescription);
-
-            SystemConfigurationCache = new CompoundCache<SystemConfiguration>
+            ConfigurationCache = new CompoundCache<Configuration>
             (
-                () => SystemConfiguration.Create(Configuration.SystemPath, "#"),
+                () => new Configuration(),
+                ConfigurationWatcherCache
+            );
+            ConfigurationWatcherCache = new CompoundCache<DirectoryWatcher>(CreateConfigurationWatcher);
+            ModConfigurationCache = new CompoundCache<ModConfiguration>(ModConfiguration.Create);
+            ModDictionary = new FunctionCache<string, FunctionCache<Version, ModDescription>>(CreateModDescription);
+            SystemConfigurationCache = new CompoundCache<SystemConfiguration>(()=> new SystemConfiguration());
+
+            SystemConfigurationFileCache = new CompoundCache<SystemConfigurationFile>
+            (
+                () => new SystemConfigurationFile(Configuration.SystemFile),
                 ConfigurationCache
             );
 
             DataConfigurationCache = new CompoundCache<DataConfiguration>
             (
                 () =>
-                    new DataConfiguration(SystemConfiguration.ConfigurationPath,OnExternalModification),
-                SystemConfigurationCache
+                    new DataConfiguration(SystemConfigurationFile.ConfigurationPath, OnExternalModification),
+                SystemConfigurationFileCache
             );
 
             UserConfigurationsCache = new CompoundCache<UserConfiguration[]>
@@ -50,11 +62,15 @@ namespace ManageModsAndSavefiles
                         .Select
                         (
                             item =>
-                                UserConfiguration.Create
-                                    (item, Configuration.UserConfigurationPaths, this))
-                        .ToArray());
+                                UserConfiguration
+                                    .Create(item, Configuration.UserConfigurationPaths, this)
+                        )
+                        .ToArray()
+            );
         }
 
+        [DisableDump]
+        public SystemConfiguration SystemConfiguration => SystemConfigurationCache.Value;
         [DisableDump]
         public Configuration Configuration => ConfigurationCache.Value;
 
@@ -62,7 +78,7 @@ namespace ManageModsAndSavefiles
         public ModConfiguration ModConfiguration => ModConfigurationCache.Value;
 
         [DisableDump]
-        public SystemConfiguration SystemConfiguration => SystemConfigurationCache.Value;
+        public SystemConfigurationFile SystemConfigurationFile => SystemConfigurationFileCache.Value;
 
         [DisableDump]
         public DataConfiguration DataConfiguration => DataConfigurationCache.Value;
@@ -77,7 +93,7 @@ namespace ManageModsAndSavefiles
             {
                 var result = "";
 
-                var executable = Configuration.SystemPath
+                var executable = Configuration.SystemFile
                     .DirectoryName
                     .PathCombine("bin\\x64\\factorio.exe");
 
@@ -91,15 +107,17 @@ namespace ManageModsAndSavefiles
             }
         }
 
-        static FunctionCache<Version, ModDescription> CreateModDescription(string name)
-            => new FunctionCache<Version, ModDescription>
-                (version => new ModDescription(name, version));
+        DirectoryWatcher CreateConfigurationWatcher()
+            => new DirectoryWatcher(Configuration.UserConfigurationRootPaths, Configuration.Exceptions)
+            {
+                OnExternalModification = OnModificationOnConfigPaths
+            };
 
         public void RenewUserConfigurationPaths()
         {
             Configuration.RenewUserConfigurationPaths();
-            ConfigurationCache.Invalidate();
-            UserConfigurationsCache.Invalidate();
+            ConfigurationCache.IsValid = false;
+            UserConfigurationsCache.IsValid = false;
         }
 
         internal ModDescription CreateModReferenceBefore014(int i, BinaryRead reader)
@@ -118,10 +136,12 @@ namespace ManageModsAndSavefiles
 
             var name = reader.GetNextString<byte>();
             // ReSharper disable once UnusedVariable
-            var lookAhead = reader.GetBytes(150);
+            var lookAhead = reader.LookAhead();
             var version = new Version
                 (reader.GetNext<byte>(), reader.GetNext<byte>(), reader.GetNext<byte>());
             return ModDictionary[name][version];
         }
+
+        public void ActivateWatcher() => ConfigurationWatcherCache.IsValid = true;
     }
 }

@@ -1,32 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Windows.Controls;
-using ManageModsAndSavefiles;
+﻿using System.Windows.Controls;
+using ManageModsAndSaveFiles;
 using MmasfUI.Common;
 
 namespace MmasfUI
 {
     sealed class ContextView : ContentControl
     {
-
         internal readonly Selection<UserConfiguration> Selection
             = new Selection<UserConfiguration>();
 
         internal ContextView()
         {
+            MmasfContext.Instance.OnExternalModification = () => Dispatcher.Invoke(Refresh);
+            MmasfContext.Instance.OnModificationOnConfigPaths = () => Dispatcher.Invoke(RereadConfigurations);
             CreateView();
         }
 
         void CreateView()
         {
-            var instance = MmasfContext.Instance;
-            instance.OnExternalModification = InvokeRefresh;
-            Content = instance.CreateView(Selection, this);
+            Content = MmasfContext.Instance.CreateView(Selection, this);
+            MmasfContext.Instance.ActivateWatcher();
         }
-
-        void InvokeRefresh() { Dispatcher.Invoke(Refresh); }
 
         internal void Refresh()
         {
@@ -36,5 +30,10 @@ namespace MmasfUI
             Selection.Current = oldSelection;
         }
 
+        public void RereadConfigurations()
+        {
+            MmasfContext.Instance.RenewUserConfigurationPaths();
+            Refresh();
+        }
     }
 }

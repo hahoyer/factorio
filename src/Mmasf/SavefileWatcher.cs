@@ -3,29 +3,29 @@ using System.IO;
 using hw.DebugFormatter;
 using hw.Helper;
 
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSaveFiles
 {
-    sealed class SavefileWatcher : DumpableObject
+    sealed class SaveFileWatcher : DumpableObject
     {
         readonly FileSystemWatcher Watcher;
 
-        SavefileWatcher(FileSystemWatcher watcher) { Watcher = watcher; }
+        SaveFileWatcher(FileSystemWatcher watcher) { Watcher = watcher; }
 
-        internal static SavefileWatcher Create(string path)
+        internal static SaveFileWatcher Create(string path)
         {
-            var m = new FileSystemWatcher(path.PathCombine(UserConfiguration.SaveDirectoryName))
+            var m = new FileSystemWatcher(path.PathCombine(Constants.SaveDirectoryName))
             {
                 NotifyFilter = NotifyFilters.CreationTime
-                    | NotifyFilters.LastAccess
-                    | NotifyFilters.LastWrite
-                    | NotifyFilters.Size,
+                               | NotifyFilters.LastAccess
+                               | NotifyFilters.LastWrite
+                               | NotifyFilters.Size,
                 EnableRaisingEvents = true
             };
             m.Changed += OnLogfileAppend;
             m.Created += OnLogfileAppend;
             m.Deleted += OnLogfileAppend;
             m.Renamed += OnLogfileAppend;
-            return new SavefileWatcher(m);
+            return new SaveFileWatcher(m);
         }
 
         static void OnLogfileAppend(object sender, FileSystemEventArgs e)

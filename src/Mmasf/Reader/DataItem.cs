@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace ManageModsAndSavefiles.Reader
+namespace ManageModsAndSaveFiles.Reader
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public sealed class DataItem : Attribute, BinaryRead.IAdvancer

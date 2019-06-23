@@ -8,7 +8,7 @@ using System.Text;
 using hw.DebugFormatter;
 using hw.Helper;
 
-namespace ManageModsAndSavefiles.Reader
+namespace ManageModsAndSaveFiles.Reader
 {
     public sealed class BinaryRead : DumpableObject
     {
@@ -25,14 +25,14 @@ namespace ManageModsAndSavefiles.Reader
 
         public bool IsEnd => Position >= Reader.Length;
 
-        public byte[] GetNextBytes(int count)
+        byte[] GetNextBytes(int count)
         {
             var result = GetBytes(count);
             Position += count;
             return result;
         }
 
-        public byte[] GetBytes(int count)
+        byte[] GetBytes(int count)
         {
             Tracer.Assert(count < 10000);
             var result = new byte[count];
@@ -43,7 +43,7 @@ namespace ManageModsAndSavefiles.Reader
 
         public T GetNext<T>() where T : new() => (T) GetNext(typeof(T));
 
-        public object GetNext(Type target)
+        object GetNext(Type target)
         {
             if(target == typeof(byte))
                 return GetNextBytes(1)[0];
@@ -56,8 +56,7 @@ namespace ManageModsAndSavefiles.Reader
                 return GetNextString<int>();
 
             var result = Activator.CreateInstance(target);
-            var readerResult = result as ISelfReader;
-            if(readerResult != null)
+            if(result is ISelfReader readerResult)
             {
                 readerResult.ReadFromAndAdvance(this);
                 return result;
@@ -78,7 +77,7 @@ namespace ManageModsAndSavefiles.Reader
                 .Concat(member.GetAttributes<DataItem>(false))
                 .OrderBy(aa => aa.Value);
 
-            foreach(var ignore in a.Select(advancer => advancer as Ignore))
+            foreach(var ignore in a.Select(advance => advance as Ignore))
                 if(ignore == null)
                     AssignAndAdvance(result, member);
                 else
@@ -133,27 +132,9 @@ namespace ManageModsAndSavefiles.Reader
             return GetNextString(length);
         }
 
-        public T[] GetNextArray<TLength, T>(int? maxLength = null)
-            where TLength : new()
-            where T : new()
-        {
-            var length = Convert.ToInt32(GetNext<TLength>());
-            if(maxLength != null)
-                Tracer.Assert(length < maxLength.Value);
-            return GetNextArray<T>(length);
-        }
-
-        public T[] GetNextArray<T>(int length)
-            where T : new()
-        {
-            return length
-                .Select(i => GetNext<T>())
-                .ToArray();
-        }
-
         public string GetNextString(int length) => Encoding.UTF8.GetString(GetNextBytes(length));
 
-        internal void AssignAndAdvance(object target, MemberInfo member)
+        void AssignAndAdvance(object target, MemberInfo member)
         {
             var fieldInfo = member as FieldInfo;
             var propertyInfo = member as PropertyInfo;
@@ -211,6 +192,8 @@ namespace ManageModsAndSavefiles.Reader
         {
             var countType = member.GetAttribute<StringSetup>(false)?.CountType ?? typeof(int);
             var length = Convert.ToInt32(GetNext(countType));
+            if(length > 1000000)
+                throw new Exception($"String not recognized in stream. Length would be {length}.");
             return GetNextString(length);
         }
 
@@ -223,7 +206,7 @@ namespace ManageModsAndSavefiles.Reader
 
             throw new InvalidException
             (
-                $"Return type of {readerType.Name} is {result.GetType().Name}, whitch is not a {type.Name}."
+                $"Return type of {readerType.Name} is {result.GetType().Name}, which is not a {type.Name}."
             );
         }
 
@@ -246,7 +229,7 @@ namespace ManageModsAndSavefiles.Reader
 
             var readerType = arraySetup?.Reader;
 
-            var elementType = type.GetElementType();
+            var elementType = type.GetElementType().AssertNotNull();
             var array = Array.CreateInstance(elementType, count);
             foreach(var o in count.Select
             (
@@ -287,5 +270,7 @@ namespace ManageModsAndSavefiles.Reader
         {
             object ReadAndAdvance(BinaryRead reader, Type type, MemberInfo member);
         }
+
+        internal byte[] LookAhead(int count = 100) {return GetBytes(count);}
     }
 }

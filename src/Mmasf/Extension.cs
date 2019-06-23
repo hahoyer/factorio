@@ -7,12 +7,12 @@ using hw.DebugFormatter;
 using hw.Helper;
 using IniParser;
 using IniParser.Model;
-using ManageModsAndSavefiles.Compression;
-using ManageModsAndSavefiles.Compression.Microsoft;
+using ManageModsAndSaveFiles.Compression;
+using ManageModsAndSaveFiles.Compression.Microsoft;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSaveFiles
 {
     public static class Extension
     {
@@ -107,5 +107,10 @@ namespace ManageModsAndSavefiles
             return default(TValue);
         }
 
+        internal static bool ContainsAnyPattern(this SmbFile file, SmbFile root, string[] patterns)
+        {
+            var name = file.FullName.Substring(root.FullName.Length);
+            return patterns.Any(exception => name.Matches(exception));
+        }
     }
 }

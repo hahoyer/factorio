@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
-using ManageModsAndSavefiles.Compression;
-using ManageModsAndSavefiles.Mods;
-using ManageModsAndSavefiles.Reader;
+using ManageModsAndSaveFiles.Compression;
+using ManageModsAndSaveFiles.Mods;
+using ManageModsAndSaveFiles.Reader;
 
-namespace ManageModsAndSavefiles.Saves
+namespace ManageModsAndSaveFiles.Saves
 {
     public sealed class FileCluster : DumpableObject
     {
@@ -46,7 +46,7 @@ namespace ManageModsAndSavefiles.Saves
 
         public bool IsDataRead
         {
-            get { return DataValue != null; }
+            get => DataValue != null;
             set
             {
                 if(value)
@@ -85,6 +85,8 @@ namespace ManageModsAndSavefiles.Saves
         public IEnumerable<ModConflict> RelevantConflicts
             => Conflicts.Where(c => c.IsRelevant);
 
+        public bool IsValidData => IsDataRead && Data.IsValid;
+
         ModConflict CreateConflict(ModDescription saveMod, Mods.FileCluster gameMod)
         {
             if(saveMod?.Version == gameMod?.Version)
@@ -104,9 +106,16 @@ namespace ManageModsAndSavefiles.Saves
             if(IsDataRead)
                 return;
 
-            var reader = Profiler.Measure(() => LevelDatReader);
-            reader.UserContext = new UserContext();
-            DataValue = reader.GetNext<BinaryData>();
+            try
+            {
+                var reader = Profiler.Measure(() => LevelDatReader);
+                reader.UserContext = new UserContext();
+                DataValue = reader.GetNext<BinaryData>();
+            }
+            catch(Exception exception)
+            {
+                DataValue = new BinaryData(false);
+            }
         }
 
 

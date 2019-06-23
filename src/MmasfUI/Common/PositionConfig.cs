@@ -92,7 +92,11 @@ namespace MmasfUI.Common
             LoadPosition();
         }
 
-        Rect? Position { get { return Convert(0, null, s => s.FromJson<Rect?>()); } set { Save(value, WindowState); } }
+        Rect? Position
+        {
+            get => Convert(0, null, s => s.FromJson<Rect?>());
+            set => Save(value, WindowState);
+        }
 
         string[] ParameterStrings => TargetValue == null ? null : FileHandle.String?.Split('\n');
 

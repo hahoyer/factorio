@@ -4,9 +4,9 @@ using System.IO.Compression;
 using System.Linq;
 using hw.DebugFormatter;
 // ReSharper disable once RedundantUsingDirective
-using ManageModsAndSavefiles.Compression.Nuget;
+using ManageModsAndSaveFiles.Compression.Nuget;
 
-namespace ManageModsAndSavefiles.Compression.Microsoft
+namespace ManageModsAndSaveFiles.Compression.Microsoft
 {
     public sealed class ZipArchiveHandle : DumpableObject, IDisposable, IZipArchiveHandle
     {

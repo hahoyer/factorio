@@ -3,7 +3,7 @@ using hw.DebugFormatter;
 using hw.Helper;
 
 
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSaveFiles
 {
     sealed class Rational : DumpableObject, IAggregateable<Rational>
     {

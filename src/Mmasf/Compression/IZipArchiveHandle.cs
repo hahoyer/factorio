@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ManageModsAndSavefiles.Compression
+namespace ManageModsAndSaveFiles.Compression
 {
     public interface IZipArchiveHandle
     {

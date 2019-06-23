@@ -8,7 +8,7 @@ using hw.DebugFormatter;
 using hw.Helper;
 using HWBase;
 
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSaveFiles
 {
     sealed class LogfileWatcher : DumpableObject
     {
@@ -22,7 +22,7 @@ namespace ManageModsAndSavefiles
 
         internal LogfileWatcher(SmbFile path)
         {
-            Logfile = path.PathCombine(UserConfiguration.LogfileName);
+            Logfile = path.PathCombine(Constants.LogfileName);
             Watcher = CreateWatcher(path);
 
             Timer = new Timer(OnTimer);
@@ -81,7 +81,7 @@ namespace ManageModsAndSavefiles
 
         FileSystemWatcher CreateWatcher(SmbFile path)
         {
-            var result = new FileSystemWatcher(path.FullName, UserConfiguration.PreviousLogfileName)
+            var result = new FileSystemWatcher(path.FullName, Constants.PreviousLogfileName)
             {
                 NotifyFilter = NotifyFilters.CreationTime
                                | NotifyFilters.LastAccess

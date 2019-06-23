@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using JetBrains.Annotations;
-using ManageModsAndSavefiles.Saves;
+using ManageModsAndSaveFiles.Saves;
 using MmasfUI.Common;
 
 namespace MmasfUI
@@ -17,7 +17,7 @@ namespace MmasfUI
 
         readonly FileCluster Data;
         readonly string ConfigurationName;
-        FileCluster DataIfRead => Data.IsDataRead ? Data : null;
+        FileCluster DataIfRead => Data.IsValidData ? Data : null;
         IEnumerable<ModConflict> Conflicts => DataIfRead?.RelevantConflicts;
 
         [UsedImplicitly]

@@ -4,7 +4,7 @@ using hw.Helper;
 using IniParser.Model;
 using JetBrains.Annotations;
 
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSaveFiles
 {
     sealed class IniFile
     {

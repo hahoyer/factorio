@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Windows.Controls;
 using System.Windows.Media;
-using ManageModsAndSavefiles;
+using ManageModsAndSaveFiles;
 using MmasfUI.Common;
 
 namespace MmasfUI
@@ -10,6 +10,7 @@ namespace MmasfUI
     {
         internal static class Command
         {
+            internal const string SelectAndRunFactorio = "UserConfiguration.SelectAndRunFactorio";
             internal const string OpenLocation = "UserConfiguration.OpenLocation";
             internal const string RunLua = "UserConfiguration.RunLua";
             internal const string Select = "UserConfiguration.Select";
@@ -23,6 +24,7 @@ namespace MmasfUI
                 Items =
                 {
                     "S_elect".MenuItem(Command.Select),
+                    "Select and run _Factorio".MenuItem(Command.SelectAndRunFactorio),
                     "View _Saves".MenuItem(Command.ViewSaves),
                     "View _Mods".MenuItem(Command.ViewMods)
                 }
@@ -68,12 +70,10 @@ namespace MmasfUI
         }
 
 
-        bool Selection.IAcceptor.IsSelected
-        {
-            set => MainContainer.Instance.CommandManager[this] = value;
-        }
+        bool Selection.IAcceptor.IsSelected {set => MainContainer.Instance.CommandManager[this] = value;}
 
         [Command(Command.Select)]
+        [Command(Command.SelectAndRunFactorio)]
         public bool CanExecuteSelect => !Configuration.IsCurrent;
 
         [Command(Command.ViewSaves)]
@@ -101,6 +101,14 @@ namespace MmasfUI
         public void OnSelect()
         {
             Context.DataConfiguration.CurrentUserConfigurationPath = Configuration.Path;
+            Parent.Refresh();
+        }
+
+        [Command(Command.SelectAndRunFactorio)]
+        public void OnSelectAndRunFactorio()
+        {
+            Context.DataConfiguration.CurrentUserConfigurationPath = Configuration.Path;
+            Extension.RunFactorio();
             Parent.Refresh();
         }
 

@@ -39,10 +39,12 @@ namespace MmasfUI.Common
 
         static bool IsRelevant(MemberInfo m, string identifier)
         {
-            var commandAttribute = m.GetAttribute<CommandAttribute>(false);
+            var commandAttribute = 
+                m
+                    .GetAttributes<CommandAttribute>(false)
+                    .SingleOrDefault(a => a.Name == identifier)
+                ;
             if(commandAttribute == null)
-                return false;
-            if(commandAttribute.Name != identifier)
                 return false;
 
             var mm = m as MethodInfo;
@@ -53,13 +55,13 @@ namespace MmasfUI.Common
 
         static bool IsRelevant(PropertyInfo p, string identifier)
         {
-            var attribute = p.GetAttribute<CommandAttribute>(false);
-            if(attribute == null)
-                return false;
-            if(attribute.Name != identifier)
-                return false;
-
-            return p.PropertyType == typeof(bool) && p.CanRead;
+            var attribute = p
+                .GetAttributes<CommandAttribute>(false)
+                .SingleOrDefault(a => a.Name == identifier)
+                ;
+            return attribute != null 
+                   && p.PropertyType == typeof(bool) 
+                   && p.CanRead;
         }
 
         public bool CanExecute(MethodInfo execute, PropertyInfo canExecute)

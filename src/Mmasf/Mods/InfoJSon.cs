@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 
-namespace ManageModsAndSavefiles.Mods
+namespace ManageModsAndSaveFiles.Mods
 {
     public sealed class InfoJSon : IEquatable<InfoJSon>
     {

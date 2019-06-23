@@ -1,34 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
 
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSaveFiles
 {
     sealed class CompoundCache<TValue> : CompoundCache
     {
         readonly ValueCache<TValue> Cache;
 
         public CompoundCache(Func<TValue> getValue, params CompoundCache[] dependsOn)
-            : base(dependsOn) { Cache = new ValueCache<TValue>(getValue); }
+            : base(dependsOn) => Cache = new ValueCache<TValue>(getValue);
 
         public TValue Value => Cache.Value;
+
+        public override bool IsValid {get => Cache.IsValid; set => Cache.IsValid = value;}
 
         public void OnChange()
         {
             foreach(var item in AllDependers)
-                item.Invalidate();
+                item.IsValid = false;
         }
-
-        public override void Invalidate() { Cache.IsValid = false; }
     }
 
     abstract class CompoundCache : DumpableObject
     {
         readonly CompoundCache[] DependsOn;
 
-        protected CompoundCache(CompoundCache[] dependsOn) { DependsOn = dependsOn; }
+        protected CompoundCache(CompoundCache[] dependsOn) => DependsOn = dependsOn;
 
         protected CompoundCache[] AllDependers
         {
@@ -50,6 +49,6 @@ namespace ManageModsAndSavefiles
             }
         }
 
-        public abstract void Invalidate();
+        public abstract bool IsValid {get; set;}
     }
 }

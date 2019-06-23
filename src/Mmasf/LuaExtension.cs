@@ -4,10 +4,10 @@ using hw.DebugFormatter;
 using hw.Helper;
 using HWBase;
 using Lua;
-using ManageModsAndSavefiles.Reader;
+using ManageModsAndSaveFiles.Reader;
 
 
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSaveFiles
 {
     static class LuaExtension
     {

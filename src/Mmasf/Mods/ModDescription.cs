@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using hw.DebugFormatter;
-using ManageModsAndSavefiles.Reader;
-using ManageModsAndSavefiles.Saves;
+using ManageModsAndSaveFiles.Reader;
+using ManageModsAndSaveFiles.Saves;
 
-namespace ManageModsAndSavefiles.Mods
+namespace ManageModsAndSaveFiles.Mods
 {
     public sealed class ModDescription : DumpableObject
     {
@@ -16,7 +16,7 @@ namespace ManageModsAndSavefiles.Mods
                 (BinaryRead reader, Type type, MemberInfo member)
             {
                 // ReSharper disable once UnusedVariable
-                var x = reader.GetBytes(100);
+                var x = reader.LookAhead();
                 var isBefore01414 = ((UserContext) reader.UserContext).IsBefore01414;
 
                 var result = isBefore01414
@@ -40,6 +40,9 @@ namespace ManageModsAndSavefiles.Mods
                             reader.GetNext<byte>()
                         )
                     };
+
+                if(result.name == "")
+                    throw new Exception("Mod not recognized in stream");
 
                 var mod = MmasfContext.Instance.ModDictionary[result.name];
                 return mod[result.version];

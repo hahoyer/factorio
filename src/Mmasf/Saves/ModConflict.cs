@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ManageModsAndSavefiles.Mods;
+using ManageModsAndSaveFiles.Mods;
 
-namespace ManageModsAndSavefiles.Saves
+namespace ManageModsAndSaveFiles.Saves
 {
     public sealed class ModConflict
     {

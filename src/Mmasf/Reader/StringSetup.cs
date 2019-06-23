@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ManageModsAndSavefiles.Reader
+namespace ManageModsAndSaveFiles.Reader
 {
     sealed class StringSetup : Attribute
     {

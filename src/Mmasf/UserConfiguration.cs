@@ -4,45 +4,18 @@ using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
 using HWBase;
-using ManageModsAndSavefiles.Mods;
-using ManageModsAndSavefiles.Saves;
+using ManageModsAndSaveFiles.Mods;
+using ManageModsAndSaveFiles.Saves;
 
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSaveFiles
 {
     public sealed class UserConfiguration : DumpableObject, IIdentified<string>
     {
-        internal const string LogfileName = "factorio-current.log";
-        const string ModConfigurationFileName = "mod-list.json";
-        internal const string ModDirectoryName = "mods";
-        const string PlayerDataFileName = "player-data.json";
-        internal const string PreviousLogfileName = "factorio-previous.log";
-        const string ReadDataTag = "read-data";
-        internal const string SaveDirectoryName = "saves";
-
-        internal static SmbFile[] Paths(SmbFile root)
-            => root
-                .RecursiveItems()
-                .Where(IsRelevantPathCandidate)
-                .ToArray();
-
-        static bool IsRelevantPathCandidate(SmbFile item)
-            =>
-                item.IsDirectory &&
-                IsExistent(item, PlayerDataFileName, false) &&
-                IsExistent(item, SaveDirectoryName, true) &&
-                IsExistent(item, ModDirectoryName, true);
-
-        static bool IsExistent(SmbFile item, string fileName, bool isDictionary)
-        {
-            var fileHandle = item.FullName.PathCombine(fileName).ToSmbFile();
-            return fileHandle.Exists && fileHandle.IsDirectory == isDictionary;
-        }
-
         internal static UserConfiguration Create
             (SmbFile item, SmbFile[] allPaths, MmasfContext parent)
             => new UserConfiguration(item, allPaths, parent);
 
-        static string FilePosn(string rawLocation)
+        static string FilePosition(string rawLocation)
         {
             if(rawLocation == null)
                 return "(null)";
@@ -50,8 +23,8 @@ namespace ManageModsAndSavefiles
             var location = rawLocation.Left(lp);
             var lineNr = int.Parse(rawLocation.Right(rawLocation.Length - lp - 1)) - 1;
 
-            var filePosn = Tracer.FilePosn(location, lineNr, 0, lineNr, 0, "lua");
-            return filePosn;
+            var filePosition = Tracer.FilePosn(location, lineNr, 0, lineNr, 0, "lua");
+            return filePosition;
         }
 
         public readonly SmbFile Path;
@@ -93,7 +66,7 @@ namespace ManageModsAndSavefiles
 
         Saves.FileCluster[] GetSaveFiles()
         {
-            var fileHandle = FilesPath(SaveDirectoryName);
+            var fileHandle = FilesPath(Constants.SaveDirectoryName);
             if(!fileHandle.Exists)
                 return new Saves.FileCluster[0];
 
@@ -106,7 +79,7 @@ namespace ManageModsAndSavefiles
 
         Mods.FileCluster[] GetModFiles()
         {
-            var fileHandle = FilesPath(ModDirectoryName);
+            var fileHandle = FilesPath(Constants.ModDirectoryName);
             if(!fileHandle.Exists)
                 return new Mods.FileCluster[0];
 
@@ -121,8 +94,8 @@ namespace ManageModsAndSavefiles
 
         IDictionary<string, bool> GetModConfiguration()
         {
-            var fileHandle = FilesPath(ModDirectoryName)
-                .PathCombine(ModConfigurationFileName);
+            var fileHandle = FilesPath(Constants.ModDirectoryName)
+                .PathCombine(Constants.ModConfigurationFileName);
 
             if(!fileHandle.Exists)
                 return new Dictionary<string, bool>();
@@ -132,11 +105,6 @@ namespace ManageModsAndSavefiles
             var modConfigurationCells = result.Cells;
             return modConfigurationCells.ToDictionary(item => item.Name, item => item.IsEnabled);
         }
-
-        public void InitializeFrom(UserConfiguration source)
-            =>
-                source.FilesPath(PlayerDataFileName)
-                    .CopyTo(FilesPath(PlayerDataFileName).FullName);
 
         protected override string GetNodeDump() => Path.Name;
 

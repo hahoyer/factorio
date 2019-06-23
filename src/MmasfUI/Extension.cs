@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
-using ManageModsAndSavefiles;
+using ManageModsAndSaveFiles;
 using MmasfUI.Common;
 
 namespace MmasfUI
@@ -124,5 +124,12 @@ namespace MmasfUI
             foreach(var item in args.AddedItems)
                 MainContainer.Instance.CommandManager[item] = true;
         }
+
+        public static void RunFactorio()
+            => MmasfContext
+                .Instance
+                .SystemConfiguration
+                .ExecutablePath
+                .InitiateExternalProgram();
     }
 }

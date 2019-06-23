@@ -5,7 +5,7 @@ using hw.DebugFormatter;
 using hw.Helper;
 using Newtonsoft.Json;
 
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSaveFiles
 {
     public sealed class ModConfiguration
     {

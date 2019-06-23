@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using ManageModsAndSavefiles;
-using ManageModsAndSavefiles.Mods;
+using ManageModsAndSaveFiles;
+using ManageModsAndSaveFiles.Mods;
 using MmasfUI.Common;
 
 namespace MmasfUI
@@ -105,12 +105,7 @@ namespace MmasfUI
         }
 
         [Command(Command.RunFactorio)]
-        public void RunFactorio()
-            => MmasfContext
-                .Instance
-                .SystemConfiguration
-                .ExecutablePath
-                .InitiateExternalProgram();
+        public void RunFactorio() => Extension.RunFactorio();
 
         [Command(Command.ViewModDictionary)]
         public void ViewModDictionary(ModDescription currentItem)
@@ -121,11 +116,7 @@ namespace MmasfUI
         }
 
         [Command(Command.RereadConfigurations)]
-        public void RereadConfigurations()
-        {
-            MmasfContext.Instance.RenewUserConfigurationPaths();
-            ContextView.Refresh();
-        }
+        public void RereadConfigurations() {ContextView.RereadConfigurations();}
 
         [Command("Exit")]
         public void OnExit()

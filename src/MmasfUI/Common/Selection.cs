@@ -4,7 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using hw.DebugFormatter;
-using ManageModsAndSavefiles;
+using ManageModsAndSaveFiles;
 
 namespace MmasfUI.Common
 {
@@ -62,7 +62,7 @@ namespace MmasfUI.Common
                 if(CurrentItem != null)
                     CurrentItem.ItemView.IsSelected = false;
 
-                CurrentItem = value == null ? null : Items.Single(i => IsMatchingTarget(value, i));
+                CurrentItem = value == null ? null : Items.FirstOrDefault(i => IsMatchingTarget(value, i));
 
                 if(CurrentItem != null)
                     CurrentItem.ItemView.IsSelected = true;

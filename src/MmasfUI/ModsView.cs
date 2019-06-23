@@ -6,8 +6,8 @@ using System.Windows;
 using System.Windows.Controls;
 using hw.Helper;
 using JetBrains.Annotations;
-using ManageModsAndSavefiles;
-using ManageModsAndSavefiles.Mods;
+using ManageModsAndSaveFiles;
+using ManageModsAndSaveFiles.Mods;
 using MmasfUI.Common;
 
 namespace MmasfUI

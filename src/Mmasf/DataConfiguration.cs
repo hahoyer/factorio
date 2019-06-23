@@ -1,7 +1,7 @@
 ﻿using System;
 using hw.Helper;
 
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSaveFiles
 {
     public sealed class DataConfiguration
     {

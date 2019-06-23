@@ -1,68 +1,93 @@
 ﻿using System.Linq;
 using hw.Helper;
 
-namespace ManageModsAndSavefiles
+namespace ManageModsAndSaveFiles
 {
     public sealed class Configuration
     {
-        public class DataClass
+        sealed class DataClass
         {
+            public string[] Exceptions;
             public string SystemPath;
             public string[] UserConfigurationRootPaths;
         }
 
-        const string FileNameEnd = "config.json";
-
         static readonly SmbFile Path = SystemConfiguration
             .GetProgramFolder()
-            .PathCombine(FileNameEnd);
+            .PathCombine(Constants.FileNameEnd);
 
-        static DataClass Create()
+        SmbFile[] GetUserConfigurationPaths(SmbFile root)
+            => root
+                .RecursiveItems()
+                .Where(file=>!file.ContainsAnyPattern(root, Exceptions))
+                .Where(IsRelevantPathCandidate)
+                .ToArray();
+
+        static bool IsRelevantPathCandidate(SmbFile item)
+            =>
+                item.IsDirectory &&
+                IsExistent(item, Constants.SaveDirectoryName, true) &&
+                IsExistent(item, Constants.ModDirectoryName, true);
+
+        static bool IsExistent(SmbFile item, string fileName, bool isDictionary)
         {
-            var result = Path.FullName.FromJsonFile<DataClass>() ?? new DataClass();
-
-            var systemPath = result.SystemPath?.ToSmbFile();
-            if(systemPath?.Exists != true)
-                result.SystemPath = MmasfContext
-                    .Instance
-                    .SystemConfiguration
-                    .Path
-                    .FullName;
-
-            if(result.UserConfigurationRootPaths == null)
-                result.UserConfigurationRootPaths = new[] {Extension.SystemWriteDataDir.FullName};
-
-            return result;
+            var fileHandle = item.FullName.PathCombine(fileName).ToSmbFile();
+            return fileHandle.Exists && fileHandle.IsDirectory == isDictionary;
         }
 
-        readonly DataClass Data;
+        internal readonly string[] UserConfigurationRootPaths;
+        internal readonly string[] Exceptions;
+        readonly string SystemPath;
 
         readonly ValueCache<SmbFile[]> UserConfigurationPathsCache;
 
         public Configuration()
         {
-            Data = Create();
+            var jsonFile = Path.FullName.FromJsonFile<DataClass>();
+            SystemPath = jsonFile?.SystemPath;
+            UserConfigurationRootPaths = jsonFile?.UserConfigurationRootPaths;
+            Exceptions = jsonFile?.Exceptions;
+
+            var systemPath = SystemPath?.ToSmbFile();
+            if(systemPath?.Exists != true)
+                SystemPath = MmasfContext
+                    .Instance
+                    .SystemConfiguration
+                    .Path
+                    .FullName;
+
+            if(UserConfigurationRootPaths == null)
+                UserConfigurationRootPaths = new[] {Extension.SystemWriteDataDir.FullName};
+
+            if(Exceptions == null)
+                Exceptions = new string[0];
+
             UserConfigurationPathsCache = new ValueCache<SmbFile[]>
             (
                 ()
                     => UserConfigurationRootPaths
-                        .SelectMany(UserConfiguration.Paths)
+                        .Select(x => x.ToSmbFile())
+                        .SelectMany(GetUserConfigurationPaths)
                         .ToArray());
             Persist();
         }
 
-        public SmbFile SystemPath => Data.SystemPath.ToSmbFile();
-
-        public SmbFile[] UserConfigurationRootPaths => Data.UserConfigurationRootPaths.Select
-                (x => x.ToSmbFile())
-            .ToArray();
+        public SmbFile SystemFile => SystemPath.ToSmbFile();
 
         public SmbFile[] UserConfigurationPaths => UserConfigurationPathsCache.Value;
 
         void Persist()
         {
             Path.EnsureDirectoryOfFileExists();
-            Path.FullName.ToJsonFile(Data);
+            Path.FullName.ToJsonFile
+            (
+                new DataClass
+                {
+                    SystemPath = SystemPath,
+                    UserConfigurationRootPaths = UserConfigurationRootPaths, 
+                    Exceptions = Exceptions
+                }
+            );
         }
 
         public void RenewUserConfigurationPaths() {UserConfigurationPathsCache.IsValid = false;}

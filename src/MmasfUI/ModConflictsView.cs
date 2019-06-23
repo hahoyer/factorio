@@ -8,9 +8,9 @@ using System.Windows.Controls;
 using hw.DebugFormatter;
 using hw.Helper;
 using JetBrains.Annotations;
-using ManageModsAndSavefiles;
-using ManageModsAndSavefiles.Mods;
-using ManageModsAndSavefiles.Saves;
+using ManageModsAndSaveFiles;
+using ManageModsAndSaveFiles.Mods;
+using ManageModsAndSaveFiles.Saves;
 using MmasfUI.Common;
 
 namespace MmasfUI

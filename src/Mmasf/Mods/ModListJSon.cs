@@ -1,7 +1,7 @@
 ﻿using hw.DebugFormatter;
 using Newtonsoft.Json;
 
-namespace ManageModsAndSavefiles.Mods
+namespace ManageModsAndSaveFiles.Mods
 {
     sealed class ModListJSon : DumpableObject
     {

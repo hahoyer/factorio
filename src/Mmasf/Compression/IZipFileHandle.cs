@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace ManageModsAndSavefiles.Compression
+namespace ManageModsAndSaveFiles.Compression
 {
     public interface IZipFileHandle
     {

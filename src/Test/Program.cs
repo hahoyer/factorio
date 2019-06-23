@@ -5,8 +5,8 @@ using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
 using ICSharpCode.SharpZipLib.Zip;
-using ManageModsAndSavefiles;
-using ManageModsAndSavefiles.Saves;
+using ManageModsAndSaveFiles;
+using ManageModsAndSaveFiles.Saves;
 // ReSharper disable UnusedVariable
 // ReSharper disable UnusedMember.Local
 
@@ -14,7 +14,7 @@ namespace Test
 {
     static class Program
     {
-        public static void Main(string[] args) { ManageModsAndSavefiles.Game.Test(); }
+        public static void Main(string[] args) { ManageModsAndSaveFiles.Game.Test(); }
 
 
         static int T(int[] A)
@@ -44,7 +44,7 @@ namespace Test
 		{
 			var context = MmasfContext.Instance;
 			Tracer.Line(context.FactorioInformation);
-			Tracer.Line(context.SystemConfiguration.ConfigurationPath.FullName);
+			Tracer.Line(context.SystemConfigurationFile.ConfigurationPath.FullName);
 			Tracer.Line(context.UserConfigurations.Select(item => item.Path).Stringify("\n"));
 
 			var userConfiguration = context

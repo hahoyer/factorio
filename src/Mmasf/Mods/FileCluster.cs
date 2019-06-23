@@ -4,7 +4,7 @@ using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
 
-namespace ManageModsAndSavefiles.Mods
+namespace ManageModsAndSaveFiles.Mods
 {
     public sealed class FileCluster : DumpableObject
     {
@@ -25,7 +25,7 @@ namespace ManageModsAndSavefiles.Mods
 
             var index = paths
                 .OrderByDescending(item => item.FullName.Split('\\').Length)
-                .ThenBy(item => item)
+                .ThenBy(item => item.FullName)
                 .IndexWhere(file => file.Contains(dictionary))
                 .AssertValue();
 
