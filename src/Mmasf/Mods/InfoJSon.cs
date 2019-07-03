@@ -21,14 +21,13 @@ namespace ManageModsAndSaveFiles.Mods
 
             if(Dependencies != other.Dependencies)
             {
-                if (Dependencies.Length != other.Dependencies.Length)
+                if(Dependencies.Length != other.Dependencies.Length)
                     return false;
-                if (Dependencies.Any(d => !other.Dependencies.Contains(d)))
+                if(Dependencies.Any(d => !other.Dependencies.Contains(d)))
                     return false;
-
             }
 
-            if (!string.Equals(Description, other.Description))
+            if(!string.Equals(Description, other.Description))
                 return false;
             if(!string.Equals(FactorioVersion, other.FactorioVersion))
                 return false;
@@ -52,30 +51,35 @@ namespace ManageModsAndSaveFiles.Mods
             return a != null && Equals(a);
         }
 
-        public override int GetHashCode()
-        {
-	        return 0;
-        }
+        public override int GetHashCode() {return 0;}
 
-        public static bool operator ==(InfoJSon left, InfoJSon right) => Equals(left, right);
-        public static bool operator !=(InfoJSon left, InfoJSon right) => !Equals(left, right);
+        public static bool operator==(InfoJSon left, InfoJSon right) => Equals(left, right);
+        public static bool operator!=(InfoJSon left, InfoJSon right) => !Equals(left, right);
 
         [JsonProperty(PropertyName = "author")]
         internal string Author;
+
         [JsonProperty(PropertyName = "contact")]
         internal string Contact;
+
         [JsonProperty(PropertyName = "dependencies")]
         internal string[] Dependencies;
+
         [JsonProperty(PropertyName = "description")]
         internal string Description;
+
         [JsonProperty(PropertyName = "factorio_version")]
         internal string FactorioVersion;
+
         [JsonProperty(PropertyName = "homepage")]
         internal string Homepage;
+
         [JsonProperty(PropertyName = "name")]
         internal string Name;
+
         [JsonProperty(PropertyName = "title")]
         internal string Title;
+
         [JsonProperty(PropertyName = "version")]
         internal string Version;
     }

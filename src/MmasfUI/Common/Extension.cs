@@ -10,7 +10,6 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using hw.DebugFormatter;
 using hw.Helper;
-using Newtonsoft.Json;
 
 namespace MmasfUI.Common
 {
@@ -26,23 +25,6 @@ namespace MmasfUI.Common
             };
 
         public static byte[] AsciiToByteArray(this string value) => Encoding.ASCII.GetBytes(value);
-
-        public static T FromJson<T>(this string jsonText)
-            => JsonConvert.DeserializeObject<T>(jsonText);
-
-        public static object FromJson(this string jsonText, Type resultType)
-            => JsonConvert.DeserializeObject(jsonText, resultType);
-
-        public static string ToJson<T>(this T o)
-            => JsonConvert.SerializeObject(o, Formatting.Indented);
-
-        public static T FromJsonFile<T>(this string jsonFileName)
-            where T : class
-            => jsonFileName.ToSmbFile().String?.FromJson<T>();
-
-        public static void ToJsonFile<T>(this string jsonFileName, T o)
-            where T : class
-            => jsonFileName.ToSmbFile().String = o.ToJson();
 
         public static string UnescapeComma(this string value)
             => value
@@ -123,15 +105,15 @@ namespace MmasfUI.Common
             DockPanel.SetDock(content, Dock.Top);
         }
 
-        internal static void InstallPositionPersister(this Window main, string configFileName) 
-	        // ReSharper disable once ObjectCreationAsStatement
-			=> new PositionConfig
-	        (() => configFileName)
-	        {
-		        Target = main
-	        };
+        internal static void InstallPositionPersister(this Window main, string configFileName)
+            // ReSharper disable once ObjectCreationAsStatement
+            => new PositionConfig
+                (() => configFileName)
+                {
+                    Target = main
+                };
 
-	    internal static string ToValidFileName(this string value)
+        internal static string ToValidFileName(this string value)
         {
             return value.Select(ToValidFileChar).Aggregate("", (c, n) => c + n);
         }

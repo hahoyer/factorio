@@ -4,6 +4,8 @@ using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
 using Microsoft.Win32;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace HWBase
 {
@@ -89,6 +91,36 @@ namespace HWBase
                 target = pad + target;
             return target.Substring(-delta);
         }
+
+        public static string ToJson<T>(this T o)
+            => JsonConvert.SerializeObject
+            (
+                o,
+                Formatting.Indented,
+                new JsonSerializerSettings
+                {
+                    DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate
+                });
+
+        public static T FromJsonFile<T>(this string jsonFileName)
+            where T : class
+            => jsonFileName.ToSmbFile().String?.FromJson<T>();
+
+        public static JObject FromJsonFile(this string jsonFileName)
+            => jsonFileName.ToSmbFile().String?.FromJson();
+
+        public static JObject FromJson(this string jsonText)
+            => JObject.Parse(jsonText);
+
+        public static void ToJsonFile<T>(this string jsonFileName, T o)
+            where T : class
+            => jsonFileName.ToSmbFile().String = o.ToJson();
+
+        public static T FromJson<T>(this string jsonText)
+            => JsonConvert.DeserializeObject<T>(jsonText);
+
+        public static object FromJson(this string jsonText, Type resultType)
+            => JsonConvert.DeserializeObject(jsonText, resultType);
 
     }
 }

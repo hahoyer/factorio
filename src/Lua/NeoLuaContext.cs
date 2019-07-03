@@ -13,7 +13,7 @@ namespace Lua
 
         readonly LuaGlobalPortable Data;
 
-        NeoLuaContext() { Data = new Neo.IronLua.Lua().CreateEnvironment(); }
+        NeoLuaContext() {Data = new Neo.IronLua.Lua().CreateEnvironment();}
 
         object IContext.this[string key]
         {
@@ -29,8 +29,8 @@ namespace Lua
 
         object IContext.Run(string value) => FromItem(Data.DoChunk(value, "root"));
         object IContext.Run(SmbFile value) => throw new NotImplementedException();
-        IData IContext.FromItem(object value) { return FromItem(value); }
-        object IContext.ToItem(IData value) { return ToItem(value); }
+        IData IContext.FromItem(object value) {return FromItem(value);}
+        object IContext.ToItem(IData value) {return ToItem(value);}
 
         object ToItem(IData value)
         {

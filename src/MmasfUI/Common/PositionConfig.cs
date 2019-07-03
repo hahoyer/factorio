@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Forms;
 using hw.DebugFormatter;
 using hw.Helper;
+using HWBase;
 using JetBrains.Annotations;
 
 namespace MmasfUI.Common
@@ -34,7 +35,8 @@ namespace MmasfUI.Common
         /// </summary>
         public Window Target
         {
-            [UsedImplicitly] get { return TargetValue; }
+            [UsedImplicitly]
+            get {return TargetValue;}
             set
             {
                 Disconnect();
@@ -92,11 +94,7 @@ namespace MmasfUI.Common
             LoadPosition();
         }
 
-        Rect? Position
-        {
-            get => Convert(0, null, s => s.FromJson<Rect?>());
-            set => Save(value, WindowState);
-        }
+        Rect? Position {get => Convert(0, null, s => s.FromJson<Rect?>()); set => Save(value, WindowState);}
 
         string[] ParameterStrings => TargetValue == null ? null : FileHandle.String?.Split('\n');
 
@@ -116,8 +114,8 @@ namespace MmasfUI.Common
 
         WindowState WindowState
         {
-            get { return Convert(1, WindowState.Normal, s => s.Parse<WindowState>()); }
-            set { Save(Position, value); }
+            get {return Convert(1, WindowState.Normal, s => s.Parse<WindowState>());}
+            set {Save(Position, value);}
         }
 
         T Convert<T>(int position, T defaultValue, Func<string, T> converter)
@@ -145,6 +143,7 @@ namespace MmasfUI.Common
                 TargetValue.WindowState = WindowState;
                 //TargetValue.ResumeLayout(true);
             }
+
             LoadPositionCalled = true;
         }
 

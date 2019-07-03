@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using hw.Helper;
+using HWBase;
 
 namespace ManageModsAndSaveFiles
 {

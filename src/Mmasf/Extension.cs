@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading;
-using hw.DebugFormatter;
 using hw.Helper;
 using IniParser;
 using IniParser.Model;
 using ManageModsAndSaveFiles.Compression;
 using ManageModsAndSaveFiles.Compression.Microsoft;
-using Microsoft.Win32;
-using Newtonsoft.Json;
 
 namespace ManageModsAndSaveFiles
 {
@@ -49,27 +44,6 @@ namespace ManageModsAndSaveFiles
 
         internal static void SaveTo(this IniData data, SmbFile name, string commentString)
             => CreateFileIniDataParser(commentString).WriteFile(name.FullName, data);
-
-        internal static T FromJson<T>(this string jsonText)
-            => JsonConvert.DeserializeObject<T>(jsonText);
-
-        internal static string ToJson<T>(this T o)
-            => JsonConvert.SerializeObject
-            (
-                o,
-                Formatting.Indented,
-                new JsonSerializerSettings
-                {
-                    DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate
-                });
-
-        internal static T FromJsonFile<T>(this string jsonFileName)
-            where T : class
-            => jsonFileName.ToSmbFile().String?.FromJson<T>();
-
-        internal static void ToJsonFile<T>(this string jsonFileName, T o)
-            where T : class
-            => jsonFileName.ToSmbFile().String = o.ToJson();
 
         internal static string PathToFactorioStyle(this string name) =>
             name.Replace(SystemWriteDataDir.FullName, SystemWriteDataPlaceholder)
