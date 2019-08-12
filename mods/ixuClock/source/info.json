@@ -1,9 +1,9 @@
 {
     "name": "ixuClock",
     "author": "hahoyer",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "factorio_version": "0.17",
     "title": "ixuClock",
-    "description": "Shows playtime, crashdays, daytime and brightness in minimalistic format in the upper left corner.",
+    "description": "Shows playtime, crashdays and local daytime in minimalistic format in the upper left corner.",
     "dependencies": [ "base >= 0.17.0"]
 }

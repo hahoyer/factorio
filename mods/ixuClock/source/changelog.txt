@@ -1,4 +1,8 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.2
+Date: 2019-08-12
+  Features:
+    - darkness value removed, it is not really required
 Version: 0.1.0
 Date: 2019-07-03
   Features:

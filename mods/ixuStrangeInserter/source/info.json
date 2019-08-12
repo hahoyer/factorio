@@ -1,0 +1,9 @@
+{
+    "name": "ixuStrangeInserter",
+    "author": "hahoyer",
+    "version": "0.1.0",
+    "factorio_version": "0.17",
+    "title": "ixuStrangeInserter",
+    "description": "Extends inserter to pickup from input and insert into output .",
+    "dependencies": [ "base >= 0.17.0"]
+}
