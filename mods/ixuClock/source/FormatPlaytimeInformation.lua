@@ -5,8 +5,6 @@ play_time_seconds = -1
 function FormatPlaytimeInformation(player)
     local ticks  = game.tick
     local daytime = player.surface.daytime + 0.5
-    local windSpeed = player.surface.wind_speed
-    local windOrientation = player.surface.wind_orientation
     local crashdays = game.tick / player.surface.ticks_per_day
 
     local seconds = math.floor(ticks / 60)
@@ -24,13 +22,10 @@ function FormatPlaytimeInformation(player)
     local dayhour = math.floor(daytime * 24 ) % 24
     local daytimeString = string.format("%02d:%02d", dayhour, dayminutes)
 
-    local windSpeedString = tostring(windSpeed)
-    local directions = {"N","NNE","NE","ENE","E","ESE","SE","SSE", "S", "SSW","SW","WSW","W","WNW","NW", "NNW","N"}
-    local windOrientationString = directions[math.floor(windOrientation*16 + 0.5)]
-
     return hourString
             .. playtimeString .. " "
-            .. crashdaysString
+            .. crashdaysString .. " "
+            .. daytimeString
 end
 
 function ShowFormatPlaytimeInformation(event)
