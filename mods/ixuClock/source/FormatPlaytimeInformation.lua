@@ -30,8 +30,7 @@ function FormatPlaytimeInformation(player)
 
     return hourString
             .. playtimeString .. " "
-            .. crashdaysString .. " "
-            .. daytimeString
+            .. crashdaysString
 end
 
 function ShowFormatPlaytimeInformation(event)
