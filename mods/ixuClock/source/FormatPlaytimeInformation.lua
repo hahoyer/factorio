@@ -10,9 +10,14 @@ function FormatPlaytimeInformation(player)
     local seconds = math.floor(ticks / 60)
     local minutes = math.floor(seconds / 60)
     local hours = math.floor(minutes / 60)
+    local days = math.floor(hours / 24)
     local hourString = ""
     if hours > 0 then
-        hourString = string.format("%d:", hours)
+        hourString = string.format("%d:", hours % 24)
+    end
+    local dayString = ""
+    if days > 0 then
+        dayString = string.format("%d.", days)
     end
     local playtimeString = string.format("%02d:%02d", minutes % 60, seconds % 60)
 
@@ -22,7 +27,8 @@ function FormatPlaytimeInformation(player)
     local dayhour = math.floor(daytime * 24 ) % 24
     local daytimeString = string.format("%02d:%02d", dayhour, dayminutes)
 
-    return hourString
+    return dayString
+            .. hourString
             .. playtimeString .. " "
             .. crashdaysString .. " "
             .. daytimeString
