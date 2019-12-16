@@ -1,0 +1,8 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.1.0
+Date: 2019-12-15
+  Features:
+    - initial version
+    - disables cliffs
+    - disables enemies
+    - enables research queue
