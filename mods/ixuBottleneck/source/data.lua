@@ -25,7 +25,7 @@ local stoplight = {
     type = "simple-entity-with-force",
     name = "bottleneck-stoplight",
     flags = {"not-blueprintable", "not-deconstructable", "not-on-map", "placeable-off-grid"},
-    icon = "__Bottleneck__/graphics/red.png",
+    icon = "__BottleneckSimple__/graphics/red.png",
     icon_size = 32,
     max_health = 100,
     selectable_in_game = false,
@@ -40,7 +40,7 @@ local stoplight = {
     {
         {
             --1 off
-            filename = "__Bottleneck__/graphics/stoplights.png",
+            filename = "__BottleneckSimple__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
             y = 0,
@@ -52,7 +52,7 @@ local stoplight = {
         },
         {
             --2 green
-            filename = "__Bottleneck__/graphics/stoplights.png",
+            filename = "__BottleneckSimple__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
             y = 32,
@@ -63,7 +63,7 @@ local stoplight = {
         },
         {
             --3 red
-            filename = "__Bottleneck__/graphics/stoplights.png",
+            filename = "__BottleneckSimple__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
             y = 64,
@@ -74,7 +74,7 @@ local stoplight = {
         },
         {
             --4 yellow
-            filename = "__Bottleneck__/graphics/stoplights.png",
+            filename = "__BottleneckSimple__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
             y = 96,
@@ -85,7 +85,7 @@ local stoplight = {
         },
         {
             --5 blue
-            filename = "__Bottleneck__/graphics/stoplights.png",
+            filename = "__BottleneckSimple__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
             y = 128,
@@ -96,7 +96,7 @@ local stoplight = {
         },
         {
             --6 red x
-            filename = "__Bottleneck__/graphics/stoplights.png",
+            filename = "__BottleneckSimple__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
             y = 160,
@@ -107,7 +107,7 @@ local stoplight = {
         },
         {
             --7 yellow -
-            filename = "__Bottleneck__/graphics/stoplights.png",
+            filename = "__BottleneckSimple__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
             y = 192,
@@ -118,7 +118,7 @@ local stoplight = {
         },
         {
             --8 off small
-            filename = "__Bottleneck__/graphics/stoplights.png",
+            filename = "__BottleneckSimple__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
             y = 0,
@@ -129,7 +129,7 @@ local stoplight = {
         },
         {
             --9 green small
-            filename = "__Bottleneck__/graphics/stoplights.png",
+            filename = "__BottleneckSimple__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
             y = 32,
@@ -140,7 +140,7 @@ local stoplight = {
         },
         {
             --10 red small
-            filename = "__Bottleneck__/graphics/stoplights.png",
+            filename = "__BottleneckSimple__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
             y = 64,
@@ -151,7 +151,7 @@ local stoplight = {
         },
         {
             --11 yellow small
-            filename = "__Bottleneck__/graphics/stoplights.png",
+            filename = "__BottleneckSimple__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
             y = 96,
@@ -162,7 +162,7 @@ local stoplight = {
         },
         {
             --12 blue small
-            filename = "__Bottleneck__/graphics/stoplights.png",
+            filename = "__BottleneckSimple__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
             y = 128,
@@ -173,7 +173,7 @@ local stoplight = {
         },
         {
             --13 red x small
-            filename = "__Bottleneck__/graphics/stoplights.png",
+            filename = "__BottleneckSimple__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
             y = 160,
@@ -184,7 +184,7 @@ local stoplight = {
         },
         {
             --14 yellow - small
-            filename = "__Bottleneck__/graphics/stoplights.png",
+            filename = "__BottleneckSimple__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
             y = 192,
