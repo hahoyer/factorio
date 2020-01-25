@@ -3,9 +3,9 @@ require("util")
 function PatchMapPresets()
     local mapGenPresets = data.raw["map-gen-presets"].default
     for key,value in pairs(mapGenPresets) do
-        log("before: "..key .. "=" .. serpent.block(value))
+        --log("before: "..key .. "=" .. serpent.block(value))
         PatchMapPreset(mapGenPresets, key)
-        log("after: "..key .. "=" .. serpent.block(value))
+        --log("after: "..key .. "=" .. serpent.block(value))
     end
 end
 
