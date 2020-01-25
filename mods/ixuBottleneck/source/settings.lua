@@ -12,8 +12,8 @@ data:extend{
 		type = "string-setting",
 		name = "bottleneck-show-running-as",
 		setting_type = "runtime-global",
-		default_value = "green",
-		allowed_values = { "off", "green", "red", "yellow",	"blue",	"redx","yellowmin","offsmall","greensmall","redsmall","yellowsmall","bluesmall","redxsmall","yellowminsmall"}, 
+		default_value = "off",
+		allowed_values = { "off", "green", "red", "yellow",	"blue",	"redx","yellowmin","offsmall","greensmall","redsmall","yellowsmall","bluesmall","redxsmall","yellowminsmall"},
         order = "bottleneck-ad[show-running-as]"
 	},
 	{
@@ -21,15 +21,15 @@ data:extend{
 		name = "bottleneck-show-stopped-as",
 		setting_type = "runtime-global",
 		default_value = "red",
-		allowed_values = { "off", "green", "red", "yellow",	"blue",	"redx","yellowmin","offsmall","greensmall","redsmall","yellowsmall","bluesmall","redxsmall","yellowminsmall"}, 
+		allowed_values = { "off", "green", "red", "yellow",	"blue",	"redx","yellowmin","offsmall","greensmall","redsmall","yellowsmall","bluesmall","redxsmall","yellowminsmall"},
         order = "bottleneck-ae[show-stopped-as]"
 	},
 	{
 		type = "string-setting",
 		name = "bottleneck-show-full-as",
 		setting_type = "runtime-global",
-		default_value = "yellow",
-		allowed_values = { "off", "green", "red", "yellow",	"blue",	"redx","yellowmin","offsmall","greensmall","redsmall","yellowsmall","bluesmall","redxsmall","yellowminsmall"}, 
+		default_value = "blue",
+		allowed_values = { "off", "green", "red", "yellow",	"blue",	"redx","yellowmin","offsmall","greensmall","redsmall","yellowsmall","bluesmall","redxsmall","yellowminsmall"},
         order = "bottleneck-af[show-full-as]"
 	},
 }

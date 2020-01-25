@@ -1,10 +1,10 @@
 {
-	"name":"Bottleneck",
-	"author":"Troels Bjerre Lund",
+	"name":"BottleneckSimple",
+	"author":"ixu",
 	"version":"0.10.5",
 	"factorio_version": "0.18",
-	"title":"Bottleneck",
+	"title":"Bottleneck, the simple version",
 	"homepage":"https://forums.factorio.com/viewtopic.php?f=144&t=28817",
-	"description":"A tool for locating input starved machines.",
+	"description":"A tool for locating input starved machines, spawned from Bottleneck-mod by trold",
 	"dependencies": ["base >= 0.18.0"]
 }

@@ -1,0 +1,7 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.10.5
+Date: 2020-01-25
+  Features:
+    - initial spawn from Bottleneck-Mod since beginning with 0.11 it is far too complex to configure
+    - default settings changed to my personal preferences
+    - German localization improved
