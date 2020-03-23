@@ -1,7 +1,7 @@
 {
     "name": "ixuPatchMapPreset",
     "author": "hahoyer",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "factorio_version": "0.18",
     "title": "ixuPatchMapPreset",
     "description": "Patches all map presets (except default).",
