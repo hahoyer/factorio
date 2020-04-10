@@ -65,6 +65,7 @@ namespace hw.Helper
         {
             _name = name;
             AutoCreateDirectories = autoCreateDirectories;
+            //Tracer.Assert(_name.Length == FullName.Length);
         }
 
         public SmbFile() => _name = "";

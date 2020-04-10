@@ -1,0 +1,9 @@
+{
+    "name": "ixuMetalab",
+    "author": "ixu",
+    "version": "0.1.1",
+    "factorio_version": "0.18",
+    "title": "ixuMetalab",
+    "description": "Monitor and control lab complex.",
+    "dependencies": [ "base >= 0.18.0", "RaiLuaLib"]
+}

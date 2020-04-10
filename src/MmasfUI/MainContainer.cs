@@ -90,8 +90,10 @@ namespace MmasfUI
                 Title = "MmasfContext"
             };
 
+            
             ContextView.Selection.RegisterKeyboardHandler(main);
-            main.InstallPositionPersister("Main");
+            var configFileName = MmasfContext.Instance.SystemConfiguration.ProgramFolder.PathCombine("Main").FullName;
+            main.InstallPositionPersister(configFileName);
             main.InstallMainMenu(CreateMainMenu());
             CommandManager[this] = true;
             main.Show();
