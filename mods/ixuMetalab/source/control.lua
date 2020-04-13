@@ -3,46 +3,37 @@ local Table = require('Table')
 
 
 local function Names(lab, name)
-  if Table
-  :new(lab.get_inventory(defines.inventory.lab_input))
-  :Any(function(slot) return slot.valid_for_read and slot.name == name and slot.count > 0 end)
+  local inventory = lab.get_inventory(defines.inventory.lab_input)
+  if Table.Any(inventory, function(slot) return slot.valid_for_read and slot.name == name and slot.count > 0 end)
   then return 0
   else return 1
   end
 end
 
-local function CountNotFoundIngredients(name)
-  return Table
-  :new(game.surfaces[1].find_entities_filtered{name="lab"})
-  :Where(function(lab) return lab.status == defines.entity_status.missing_science_packs end)
-  :Select(function(lab) return Names(lab,name) end)
-  :Sum()
+local function CountNotFoundIngredients(inactivelabs, name)
+  local ingredients = Table.Select(inactivelabs, function(lab) return Names(lab,name) end)
+  return Table.Sum(ingredients)
 end
 
-local function CountLabs()
-  return Table
-  :new(game.surfaces[1].find_entities_filtered{name="lab"})
-  :Count()
-end
-
-local function CountInactiveLabs()
-  return Table
-  :new(game.surfaces[1].find_entities_filtered{name="lab"})
-  :Where(function(lab) return lab.status == defines.entity_status.missing_science_packs end)
-  :Count()
+local function GetInactiveLabs(labs)
+  return Table.Where(labs, function(lab) return lab.status == defines.entity_status.missing_science_packs end)
 end
 
 local function CollectCurrentResearchIngredients()
-  local result = {}
+  local labs = game.surfaces[1].find_entities_filtered{name="lab"}
+  local inactiveLabs = GetInactiveLabs(labs)
   local currentResearch = game.forces.player.current_research
+  
+  local result = {}
   if currentResearch == nil then return result end
   local ingredients = currentResearch.research_unit_ingredients
   for _, ingredient in ipairs(ingredients) do
-    result[ingredient.name] = CountNotFoundIngredients(ingredient.name)
+    result[ingredient.name] = CountNotFoundIngredients(inactiveLabs, ingredient.name)
   end
   result = {MissingIngredients = result}
-  result.Labs =  CountLabs()
-  result.InactiveLabs =  CountInactiveLabs()
+
+  result.Labs = #labs 
+  result.InactiveLabs = #inactiveLabs
   return result
 end
 
@@ -51,8 +42,6 @@ local function SetSignals(metalab, signals)
   for index = 1,behavior.signals_count do behavior.set_signal(index, nil) end
 
   local configuration = global.monitor[metalab.unit_number]
-
-
   local index = 0
 
   if signals.MissingIngredients then
@@ -73,15 +62,13 @@ local function SetSignals(metalab, signals)
     index = index+1
     behavior.set_signal(index, {signal=configuration.InactiveLabsSignal, count=signals.InactiveLabs})
   end
-
-
 end
 
 local function CalculateSignals()
-  local metaLab = Table:new(game.surfaces[1].find_entities_filtered{name="metalab-monitor"})
-  if not metaLab:Any() then return end
+  local metaLab = game.surfaces[1].find_entities_filtered{name="metalab-monitor"}
+  if not Table.Any(metaLab) then return end
   local signals = CollectCurrentResearchIngredients()
-  metaLab:Select(function(behavior)return SetSignals(behavior, signals, metaLab) end)
+  Table.Select(metaLab, function(behavior)return SetSignals(behavior, signals) end)
   local cc = metaLab
 end
 
@@ -92,7 +79,6 @@ local function on_tick(a)
   nextTick = a.tick + 60
 
   CalculateSignals()
-  log(serpent.block(CollectCurrentResearchIngredients()))
 end
 
 local function OpenGui(player, entity)

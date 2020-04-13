@@ -34,9 +34,15 @@ end
 return result
 end
 
-function Result:Count()
-  return #self
-end
+function Result:Count(predicate)
+  local length = #self
+  if not predicate then return length end
+  local result = 0
+  for index = 1, length do
+    if predicate(self[index]) then result = result+1 end
+  end
+  return result
+  end
   
 function Result:Where(predicate)
 local result = Result:new{}
