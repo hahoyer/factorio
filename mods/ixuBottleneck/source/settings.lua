@@ -1,35 +1,54 @@
-data:extend{
-    {
-        type = "int-setting",
-        name = "bottleneck-signals-per-tick",
-        setting_type = "runtime-global",
-        default_value = 40,
-        maximum_value = 2000,
-        minimum_value = 1,
-        order = "bottleneck-ac[signals-per-tick]"
-    },
-	{
-		type = "string-setting",
-		name = "bottleneck-show-running-as",
-		setting_type = "runtime-global",
-		default_value = "off",
-		allowed_values = { "off", "green", "red", "yellow",	"blue",	"redx","yellowmin","offsmall","greensmall","redsmall","yellowsmall","bluesmall","redxsmall","yellowminsmall"},
-        order = "bottleneck-ad[show-running-as]"
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-stopped-as",
-		setting_type = "runtime-global",
-		default_value = "red",
-		allowed_values = { "off", "green", "red", "yellow",	"blue",	"redx","yellowmin","offsmall","greensmall","redsmall","yellowsmall","bluesmall","redxsmall","yellowminsmall"},
-        order = "bottleneck-ae[show-stopped-as]"
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-full-as",
-		setting_type = "runtime-global",
-		default_value = "blue",
-		allowed_values = { "off", "green", "red", "yellow",	"blue",	"redx","yellowmin","offsmall","greensmall","redsmall","yellowsmall","bluesmall","redxsmall","yellowminsmall"},
-        order = "bottleneck-af[show-full-as]"
-	},
+local colors = {
+  "off",
+  "white",
+  "blue",
+  "red",
+  "green",
+  "yellow"
 }
+
+data:extend{
+  {
+    type = "int-setting",
+    name = "bottleneck-signals-per-tick",
+    setting_type = "runtime-global",
+    default_value = 40,
+    maximum_value = 2000,
+    minimum_value = 1,
+    order = "bottleneck-01",
+  },
+  {
+    type = "string-setting",
+    name = "bottleneck-color-for-ok",
+    setting_type = "runtime-global",
+    default_value = "off",
+    order = "bottleneck-02",
+    allowed_values = colors,
+  },
+  {
+    type = "string-setting",
+    name = "bottleneck-color-for-empty",
+    setting_type = "runtime-global",
+    default_value = "red",
+    order = "bottleneck-03",
+    allowed_values = colors,
+  },
+  {
+    type = "string-setting",
+    name = "bottleneck-color-for-full",
+    setting_type = "runtime-global",
+    default_value = "blue",
+    order = "bottleneck-04",
+    allowed_values = colors
+  },
+  {
+    type = "string-setting",
+    name = "bottleneck-color-for-disabled",
+    setting_type = "runtime-global",
+    default_value = "white",
+    order = "bottleneck-05",
+    allowed_values = colors
+  },
+}
+
+

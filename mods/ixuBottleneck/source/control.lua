@@ -1,66 +1,64 @@
+local OriginalSettings = require("originalSettings")
+
 -------------------------------------------------------------------------------
 --[[Bottleneck]]--
 -------------------------------------------------------------------------------
 
 local bn_signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
 
---[[ code modified from AutoDeconstruct mod by mindmix https://mods.factorio.com/mods/mindmix ]]
-local function check_drill_depleted(data)
-    local drill = data.entity
-    local position = drill.position
-    local range = drill.prototype.mining_drill_radius
-    local top_left = {x = position.x - range, y = position.y - range}
-    local bottom_right = {x = position.x + range, y = position.y + range}
-    local resources = drill.surface.find_entities_filtered{area={top_left, bottom_right}, type='resource'}
-    for _, resource in pairs(resources) do
-        if resource.prototype.resource_category == 'basic-solid' and resource.amount > 0 then
-            return false
-        end
-    end
-    data.drill_depleted = true
-    return true
-end
-
---Api request sent to make this faster
---https://forums.factorio.com/viewtopic.php?f=28&t=48100
-local function has_fluid_output_available(entity)
-    local fluidbox = entity.fluidbox
-    local recipe = entity.get_recipe()
-    if recipe and fluidbox and #fluidbox > 0 then
-        for _, product in pairs(recipe.products) do
-            if product.type == 'fluid' then
-                for i = 1, #fluidbox do
-                    local fluid = fluidbox[i]
-                    if fluid and (fluid.name == product.name) and (fluid.amount > 0) then
-                        return true
-                    end
-                end
-            end
-        end
-    end
-end
-
-local LIGHT = {
-    off = 1, green = 2, red = 3, yellow = 4, blue = 5, redx = 6, yellowmin = 7,
-    offsmall = 8,  greensmall = 9, redsmall = 10, yellowsmall = 11,
-    bluesmall = 12, redxsmall = 13, yellowminsmall = 14,
+local LIGHT = { off = 1 }
+local colors = { "white", "blue", "red", "green", "yellow" }
+local icons = {
+  "none",
+  "none small",
+  "alert",
+  "alert small",
+  "cross",
+  "cross small",
+  "minus",
+  "minus small",
+  "pause",
+  "pause small",
+  "stop",
+  "stop small",
+  "alert3D",
+  "alert3D small",
+  "cross3D",
+  "cross3D small",
+  "minus3D",
+  "minus3D small",
+  "pause3D",
+  "pause3D small",
+  "stop3D",
+  "stop3D small"
 }
 
-local STATES = {
-    OFF = 1, RUNNING = 2, STOPPED = 3, FULL = 4,
+local icon_count = table_size(icons)
+
+for color_index, color in pairs(colors) do
+  for icon_index, icon  in pairs(icons) do
+    --log("LIGHT[" .. color .. " " .. icon .. "] = " .. ( (color_index - 1) * icon_count ) + icon_index + 2)
+    LIGHT[color .. " " .. icon] = ( (color_index - 1) * icon_count ) + icon_index + 1
+  end
+end
+
+local STYLE = {}
+
+local SUPPORTED_TYPES = {
+    ["assembling-machine"] = true,
+    ["lab"] = true,
+    ["furnace"] = true,
+    ["mining-drill"] = true,
+    ["rocket-silo"] = true,
 }
 
-local STYLE = {
-    LIGHT.off,
-    LIGHT[settings.global["bottleneck-show-running-as"].value],
-    LIGHT[settings.global["bottleneck-show-stopped-as"].value],
-    LIGHT[settings.global["bottleneck-show-full-as"].value],
+local BLACKLIST_NAMES = {
+    ["factory-port-marker"] = true
 }
 
 --Faster to just change the color than it is to check it first.
 local function change_signal(data, status)
-    data.signal.graphics_variation = STYLE[status] or 1
-    data.status = status or STATES.OFF
+  data.signal.graphics_variation = STYLE[status] or 1
 end
 
 --[[ Remove the LIGHT]]
@@ -91,12 +89,12 @@ local function get_signal_position_from(entity)
     local x = (width > 1.25 and center - 0.5) or center
     local y = right_bottom.y
     --Calculating bottom center of the selection box
-    return {x = entity.position.x + x, y = entity.position.y + y}
+    return {x = entity.position.x + x, y = entity.position.y + y - 0.23}
 end
 
 local function new_signal(entity, variation)
     local signal = entity.surface.create_entity{name = "bottleneck-stoplight", position = get_signal_position_from(entity), force = entity.force}
-    signal.graphics_variation = (global.show_bottlenecks < 1 and LIGHT["off"]) or variation or LIGHT["red"]
+    signal.graphics_variation = (global.show_bottlenecks < 1 and LIGHT["off"]) or variation or STYLE[entity.status] or LIGHT["off"]
     signal.destructible = false
     return signal
 end
@@ -105,90 +103,31 @@ local function entity_moved(event, data)
     data = data or global.overlays[event.moved_entity.unit_number]
     if data then
         if data.signal and data.signal.valid then
-            data.drill_depleted = false
             local position = get_signal_position_from(event.moved_entity)
             data.signal.teleport(position)
         end
     end
 end
 
-local update = {}
-function update.drill(data)
-    if not data.drill_depleted then
-        local entity = data.entity
-        local progress = data.progress
-        if (entity.energy == 0) or (entity.mining_target == nil and check_drill_depleted(data)) then
-            change_signal(data, STATES.STOPPED)
-        elseif (entity.mining_progress == progress) then
-            local fluidbox = entity.fluidbox
-            if #fluidbox > 0 then
-                local fluid = fluidbox[1]
-                if fluid and fluid.amount > 0 then
-                    change_signal(data, STATES.FULL)
-                else
-                    change_signal(data, STATES.STOPPED)
-                end
-            else
-                change_signal(data, STATES.FULL)
-            end
-        else
-            change_signal(data, STATES.RUNNING)
-            data.progress = entity.mining_progress
-        end
-    end
-end
-
-function update.machine(data)
-    local entity = data.entity
-    if entity.energy == 0 then
-        change_signal(data, STATES.STOPPED)
-    elseif entity.is_crafting() and (entity.crafting_progress < 1) and (entity.bonus_progress < 1) then
-        change_signal(data, STATES.RUNNING)
-    elseif (entity.crafting_progress >= 1) or (entity.bonus_progress >= 1) or (not entity.get_output_inventory().is_empty()) or (has_fluid_output_available(entity)) then
-        change_signal(data, STATES.FULL)
-    else
-        change_signal(data, STATES.STOPPED)
-    end
-end
-
-function update.furnace(data)
-    local entity = data.entity
-    if entity.energy == 0 then
-        change_signal(data, STATES.STOPPED)
-    elseif entity.is_crafting() and (entity.crafting_progress < 1) and (entity.bonus_progress < 1) then
-        change_signal(data, STATES.RUNNING)
-    elseif (entity.crafting_progress >= 1) or (entity.bonus_progress >= 1) or (not entity.get_output_inventory().is_empty()) or (has_fluid_output_available(entity)) then
-        change_signal(data, STATES.FULL)
-    else
-        change_signal(data, STATES.STOPPED)
-    end
-end
-
 --[[ A function that is called whenever an entity is built (both by player and by robots) ]]--
 local function built(event)
     local entity = event.created_entity or event.entity
-    local data
+
     -- If the entity that's been built is an assembly machine or a furnace...
-    if entity.type == "assembling-machine" then
-        data = { update = "machine" }
-    elseif entity.type == "furnace" then
-        data = { update = "furnace" }
-    elseif entity.type == "mining-drill" and entity.name ~= "factory-port-marker" then
-        data = { update = "drill" }
-    end
+    if (SUPPORTED_TYPES[entity.type] and not BLACKLIST_NAMES[entity.name]) then
+        local data = {}
+        if not global.overlays[entity.unit_number] then
+            data.entity = entity
+            data.signal = new_signal(entity)
 
-    if data and not global.overlays[entity.unit_number] then
-        data.entity = entity
-        data.signal = new_signal(entity)
-        data.status = STATES.STOPPED
-
-        --update[data.update](data)
-        global.overlays[entity.unit_number] = data
-        -- if we are in the process of removing LIGHTs, we need to restart
-        -- that, since inserting into the overlays table may mess up the
-        -- iteration order.
-        if global.show_bottlenecks == -1 then
-            global.update_index = nil
+            --update[data.update](data)
+            global.overlays[entity.unit_number] = data
+            -- if we are in the process of removing LIGHTs, we need to restart
+            -- that, since inserting into the overlays table may mess up the
+            -- iteration order.
+            if global.show_bottlenecks == -1 then
+                global.update_index = nil
+            end
         end
     end
 end
@@ -209,19 +148,11 @@ local function rebuild_overlays()
             stoplight.destroy()
         end
 
-        --[[Find all assembling machines within the bounds, and pretend that they were just built]]--
-        for _, am in pairs(surface.find_entities_filtered{type="assembling-machine"}) do
-            built({created_entity = am})
-        end
-
-        --[[Find all furnaces within the bounds, and pretend that they were just built]]--
-        for _, am in pairs(surface.find_entities_filtered{type="furnace"}) do
-            built({created_entity = am})
-        end
-
-        --[[Find all mining-drills within the bounds, and pretend that they were just built]]--
-        for _, am in pairs(surface.find_entities_filtered{type="mining-drill"}) do
-            built({created_entity = am})
+        --[[rebuild signals for all supported entity types]]
+        for type in pairs(SUPPORTED_TYPES) do
+          for _, entity in pairs(surface.find_entities_filtered{type=type}) do
+            built({created_entity = entity})
+          end
         end
     end
 end
@@ -250,9 +181,10 @@ local function on_tick()
             if entity.valid then -- if entity is valid, update it, otherwise remove the signal and the associated data
                 if data.signal.valid then
                     if show_bottlenecks > 0 then
-                        update[data.update](data)
+                        --Faster to just change the color than it is to check it first.
+                        data.signal.graphics_variation = STYLE[data.entity.status] or 1
                     else
-                        change_signal(data, STATES.OFF)
+                        data.signal.graphics_variation = LIGHT["off"]
                     end
                 else -- Rebuild the icon something broke it!
                     data.signal = new_signal(entity)
@@ -277,19 +209,19 @@ local function on_tick()
     end
 end
 
-local function update_settings(event)
-    if event.setting == "bottleneck-signals_per_tick" then
-        bn_signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
+local function update_settings(_)
+  bn_signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
+  for status_name, status in pairs(defines.entity_status) do
+    local color = OriginalSettings.get(status_name).color
+    if color == "off" then
+      --log("Setting:" .. status_name .. " - " .. "off" .. "(" ..LIGHT["off"] ..")")
+      STYLE[status] = LIGHT["off"]
+    else
+      local icon =  OriginalSettings.get(status_name).icon
+      --log("Setting:" .. status_name .. " - " .. color .. " " .. icon .. "(" ..LIGHT[color .. " " .. icon] ..")")
+      STYLE[status] = LIGHT[color .. " " .. icon]
     end
-    if event.setting == "bottleneck-show-running-as" then
-        STYLE[STATES.RUNNING] = LIGHT[settings.global["bottleneck-show-running-as"].value]
-    end
-    if event.setting == "bottleneck-show-stopped-as" then
-        STYLE[STATES.STOPPED] = LIGHT[settings.global["bottleneck-show-stopped-as"].value]
-    end
-    if event.setting == "bottleneck-show-full-as" then
-        STYLE[STATES.FULL] = LIGHT[settings.global["bottleneck-show-full-as"].value]
-    end
+  end
 end
 script.on_event(defines.events.on_runtime_mod_setting_changed, update_settings)
 
@@ -308,6 +240,7 @@ end
 local function init()
     global.overlays = {}
     global.show_bottlenecks = 1
+    update_settings(nil)
     --register the tick handler if we are showing bottlenecks
     if global.show_bottlenecks then
         script.on_event(defines.events.on_tick, on_tick)
@@ -317,7 +250,10 @@ local function init()
 end
 
 local function on_load()
-    register_conditional_events()
+  if # STYLE == 0 then
+    update_settings(nil)
+  end
+  register_conditional_events()
 end
 
 local function on_configuration_changed(event)
@@ -327,6 +263,7 @@ local function on_configuration_changed(event)
         local changes = event.mod_changes["Bottleneck"]
         if changes then -- THIS Mod has changed
             game.print("Bottleneck: Updated from ".. tostring(changes.old_version) .. " to " .. tostring(changes.new_version))
+            update_settings(nil)
             global.show_bottlenecks = global.show_bottlenecks or 1
             --Clean up old variables
             global.lights_per_tick = nil
@@ -390,7 +327,6 @@ interface.rebuild = rebuild_overlays
 --allow other mods to interact with bottleneck
 interface.entity_moved = entity_moved
 interface.get_lights = function() return LIGHT end
-interface.get_states = function() return STATES end
 interface.new_signal = new_signal
 interface.change_signal = change_signal --function(data, color) change_signal(signal, color) end
 --get a place position for a signal

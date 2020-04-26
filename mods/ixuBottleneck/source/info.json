@@ -1,10 +1,10 @@
 {
 	"name":"ixuBottleneck",
 	"author":"ixu",
-	"version":"0.1.1",
-	"factorio_version": "0.18",
-	"title":"ixuBottleneck",
-	"homepage":"https://forums.factorio.com/viewtopic.php?f=144&t=28817",
-	"description":"A tool for locating input starved machines, spawned from trolds Bottleneck-mod 0.10.5 (the time it was simple).",
-	"dependencies": ["base >= 0.18.0"]
+  "version": "0.2.0",
+  "factorio_version": "0.18",
+	"title":"Bottleneck, the simple version",
+  "homepage": "https://forums.factorio.com/viewtopic.php?f=144&t=28817",
+	"description":"A tool for locating input starved machines, spawned from Bottleneck-mod 0.11.3 by trold",
+  "dependencies": ["base >= 0.18.0", "! Bottleneck"]
 }

@@ -1,5 +1,10 @@
 ---------------------------------------------------------------------------------------------------
-Version: 0.10.5
+Version: 0.2
+Date: 2020-04-26
+  Features:
+    - another spawn from Bottleneck-Mod (Version 0.11.3)
+---------------------------------------------------------------------------------------------------
+Version: 0.1.1
 Date: 2020-01-25
   Features:
     - initial spawn from Bottleneck-Mod since beginning with 0.11 it is far too complex to configure
