@@ -1,6 +1,7 @@
+local Constants = require("constants")
 local Result = {}
 
-local MOD_NAME = 'metalab'
+local MOD_NAME = Constants.ModName
 local LOCALE_CATEGORY = MOD_NAME..'-gui'
 
 local function build_list(specs, root)
