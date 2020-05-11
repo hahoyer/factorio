@@ -132,7 +132,11 @@ function LumberJack:new(target)
 end
 
 function LumberJack:IsPassive()
-  return self.Entity.to_be_deconstructed("player")
+  if self.Entity.to_be_deconstructed("player") then return true end
+  
+  local sleepTime = self.SleepTime or 0
+  self.SleepTime = (sleepTime + 1) % Constants.ChoppingTreshold
+  return sleepTime > 0
 end
 
 function LumberJack:FindTree()
@@ -168,10 +172,9 @@ function LumberJack:SetIsActive(value)
 end
 
 function LumberJack:OnTick()
-  self:SetIsActive(false)
-
   if self:IsPassive() then return end
 
+  self:SetIsActive(false)
   local tree = self:FindTree()
   if not tree then
     self.Entity.order_deconstruction("player")
