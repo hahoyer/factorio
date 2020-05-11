@@ -1,0 +1,9 @@
+{
+    "name": "ixuLumberJack",
+    "author": "hahoyer",
+    "version": "0.1.0",
+    "factorio_version": "0.18",
+    "title": "ixuLumberJack",
+    "description": "Provides a chest with a lumberjack.",
+    "dependencies": [ "base >= 0.18.0"]
+}
