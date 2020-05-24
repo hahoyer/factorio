@@ -1,0 +1,9 @@
+{
+  "name": "ixuAutoCrafting",
+  "version": "0.1.0",
+  "title": "ixuAutoCrafting - Automatic handcrafting",
+  "author": "ixu, taken from Qon",
+  "factorio_version":"0.18",
+  "dependencies": ["base >= 0.18.4"],
+  "description": "Automatically start handcrafting an item on the quickbar that you don't have enough of whenever your crafting queue is empty. Prioritises items in your cursor. Change settings with hotkeys. It's like logistics slots for early game!"
+}

@@ -1,0 +1,186 @@
+---------------------------------------------------------------------------------------------------
+Version: 1.8.0
+  Info:
+    - Updated for Factorio v0.18
+---------------------------------------------------------------------------------------------------
+Version: 1.7.15
+  Changes:
+    - Updated dependencies to exclude Factorio < 0.17.12
+---------------------------------------------------------------------------------------------------
+Version: 1.7.14
+  Bugfixes:
+    - Fixed a bug that crashed ixuAutoCrafting if your settings contained settings for items that were later removed.
+      Thanks to Razunter for [reporting](https://mods.factorio.com/mod/ixuAutoCrafting/discussion/5ce7f87e78d342000bbf7eeb)
+---------------------------------------------------------------------------------------------------
+Version: 1.7.13
+  Optimisations:
+    - Thanks to OvermindDL1 and Morcam for reporting a [performance issue](https://mods.factorio.com/mod/ixuAutoCrafting/discussion/5cb2d0aa4ec28f000bcc41d4)
+      and again to Morcam for also [suggesting a fix](https://mods.factorio.com/mod/ixuAutoCrafting/discussion/5cde4b427b286b000c4ed671)
+      for when mods add a lot of recipes which caused UPS problems with ixuAutoCrafting. Due to parts of the factorio API being not that optimized and
+      called needlessly.
+  Changes:
+    - Some refactoring and cleanup of the code.
+---------------------------------------------------------------------------------------------------
+Version: 1.7.12
+  Bugfixes:
+    - Fixed a crash. Well it's an attempt at least.
+      Reported by Recon777 https://mods.factorio.com/mod/ixuAutoCrafting/discussion/5cd9b1ed0a8bc6000c0b7ee4
+---------------------------------------------------------------------------------------------------
+Version: 1.7.11
+  Bugfixes:
+    - Fixed an internal function (filter).
+---------------------------------------------------------------------------------------------------
+Version: 1.7.10
+  Bugfixes:
+    - Fixed the player/character breaking mod api change in Factorio 0.17.35.
+      You will need to update to at least [Factorio 0.17.35] for this to work for you.
+---------------------------------------------------------------------------------------------------
+Version: 1.7.9
+  Features:
+    - Added a shortcut toggle button for enabling/pausing and show you current enable state.
+      Current icon kindly provided by drd_avel. It wasn't intended by the artist for such a tiny button,
+      that silly decision is my fault. But I'm not a graphic artist so I'm pushing the 144x144 icon I have and push it into the 32x32 slot.
+---------------------------------------------------------------------------------------------------
+Version: 1.7.8
+  Changes:
+    - Altered crafting sound playing logic slightly.
+
+---------------------------------------------------------------------------------------------------
+Version: 1.7.7
+  Info:
+    - Changed item printout so that it uses fancy icons in messages. Go [item=assembling-machine-2] stuff!
+
+---------------------------------------------------------------------------------------------------
+Version: 1.7.6
+  Bugfixes:
+    - Fixed a rare crash reported by OvermindDL1 - https://mods.factorio.com/mod/ixuAutoCrafting/discussion/5ca909a96ffc54000d0a7e3e
+
+---------------------------------------------------------------------------------------------------
+Version: 1.7.5
+  Info:
+    - Changed changelog format for the changelog parser.
+
+---------------------------------------------------------------------------------------------------
+Version: 1.7.4
+  Sounds:
+    - Re-Enabled playing sounds for hand crafting that was started manually, with a setting to disable the sound for completed crafts started by ixuAutoCrafting.
+      The sound plays at a approximation of the logic Factorio uses to decide if sounds should be played because of limitations in documentation and the mod API.
+      I might be able to improve this further in the future. But it should be better than just all on or off for all at least.
+
+---------------------------------------------------------------------------------------------------
+Version: 1.7.3
+  Sounds:
+    - Disabled the crafting_finished sound because it was commonly requested.
+      It is currently disabled for all manual handcrafting not started by HH also.
+
+---------------------------------------------------------------------------------------------------
+Version: 1.7.2
+  Features:
+    - Enabled autocrafting of items in your main inventory that are not on your quickbar if you have manually set a crafting amount for that item.
+
+---------------------------------------------------------------------------------------------------
+Version: 1.7.1
+  Bugfixes:
+    - Fixed a crash when using the editor.
+
+---------------------------------------------------------------------------------------------------
+Version: 1.7.0
+  Other:
+    - Updated to work with Factorio v0.17!
+
+---------------------------------------------------------------------------------------------------
+Version: 1.5.1
+  Locale:
+    - Fixed locale according to new 0.15 format.
+
+---------------------------------------------------------------------------------------------------
+Version: 1.5.0
+  Other:
+    - Updated "factorio_version" to 0.15
+  Changes:
+    - Changed default hotkeys to U & J instead of I & K since factorio 0.15 uses K for something else.
+
+---------------------------------------------------------------------------------------------------
+Version: 1.4.0
+  Optimisations:
+    - Some performance impovements
+  Modding:
+    - added 'paused' to the remote interface to s/get paused state for players
+
+---------------------------------------------------------------------------------------------------
+Version: 1.3.0
+  Other:
+    - Works with factorio_version 0.14
+
+---------------------------------------------------------------------------------------------------
+Version: 1.2.4
+  Bugfixes:
+    - Factorio crash workaround (Thanks Nexela, Riffz711) and ghost checks for multiplayer deaths.
+
+---------------------------------------------------------------------------------------------------
+Version: 1.2.3
+  Bugfixes:
+    - Fixed migration bugs causing loss of ixuAutoCrafting setting if loading a savefile made with ixuAutoCrafting 1.2.x in a later version.
+
+---------------------------------------------------------------------------------------------------
+Version: 1.2.2
+  Bugfixes:
+    - Fixed error when loading old saves without the mod installed. Thanks R3CONN3R for reporting!
+
+---------------------------------------------------------------------------------------------------
+Version: 1.2.1
+  Bugfixes:
+    - Fixed error when autocrafting in god mode. Thanks again mindmix for finding...
+
+---------------------------------------------------------------------------------------------------
+Version: 1.2.0
+  Features:
+    - Ammo crafting! Treat ammo slots as if they were filtered with the ammo they contain.
+      firearms-magazine defaults to 0.05 stacks on first join so that you don't lose your starting iron.
+    - Default stack size is 0.2
+    - Pause feature! If you cancel a craft that was started by ixuAutoCrafting then the autocrafting is paused.
+    - Treat stacks >= 500 is if they were 1/10 the size. So a setting of 1 stack of a 500 stack item just gives you 50.
+      The text output doesn't give you this info yet.
+    - New autocraft limits available: 0.2 and 0.8 stacks. (and all the others are still there) Settings code is now easier to modify for other stack sizes.
+  Modding:
+    - Remote interfaces added for coders who want to read or set ixuAutoCrafting settings. Also the code was restructured and commented for readability.
+
+---------------------------------------------------------------------------------------------------
+Version: 1.1.2
+  Bugfixes:
+    - Implemented the other half of the bugfix that was started in v.1.1.1
+
+---------------------------------------------------------------------------------------------------
+Version: 1.1.1
+  Bugfixes:
+    - Fixed error when autocrafting in god mode. Thanks mindmix for finding!
+
+---------------------------------------------------------------------------------------------------
+Version: 1.1.0
+  Major Features:
+    - Use hotkeys to choose the amount of stacks you want to autocraft.
+    - If you hold something in your hand and use the hotkeys you change the setting
+      for that item.
+
+---------------------------------------------------------------------------------------------------
+Version: 1.0.2
+  Bugfixes:
+    - Limits autocrafting to trash slot amount when it's lower than the stack size.
+      This means you don't constantly craft items that go straight to trash slots.
+
+---------------------------------------------------------------------------------------------------
+Version: 1.0.1
+  Bugfixes:
+    - Fix crash when there is no recipe for a certain item.
+    - Better support for cheat_mode.
+      * Now disregards if recipe is researched when cheat mode is on.
+      * Now disregards if there are enough ingredients for crafting the item when cheat_mode is on.
+      * Crafts the amount needed for full stack instead of 1 at a time since it's instant with cheat_mode.
+      * Still doesn't craft raw-fish in cheat mode though since it has no recipe.
+  Optimisations:
+    - Small performance tweaks.
+
+---------------------------------------------------------------------------------------------------
+Version: 1.0.0
+  Major Features:
+    - Initial release
