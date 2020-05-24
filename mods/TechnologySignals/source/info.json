@@ -1,0 +1,8 @@
+{
+    "name": "TechnologySignals",
+    "author": "hahoyer",
+    "version": "0.1.0",
+    "factorio_version": "0.18",
+    "title": "TechnologySignals",
+    "dependencies": [ "base >= 0.18.0", "rusty-locale>=1.0.9"]
+}
