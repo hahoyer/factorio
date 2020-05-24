@@ -1,0 +1,9 @@
+{
+    "name": "LabControl",
+    "author": "ixu",
+    "version": "0.1.0",
+    "factorio_version": "0.18",
+    "title": "LabControl",
+    "description": "Control lab complex.",
+    "dependencies": [ "base >= 0.18.0", "TechnologySignals"]
+}
