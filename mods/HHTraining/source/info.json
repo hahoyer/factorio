@@ -1,0 +1,8 @@
+{
+    "name": "HHTraining",
+    "author": "hahoyer",
+    "version": "0.18.0",
+    "factorio_version": "0.18",
+    "title": "HHTraining",
+    "dependencies": [ "base >= 0.18.0"]
+}
