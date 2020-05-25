@@ -1,7 +1,7 @@
-local Constants = require("constants")
+local Constants = require("Constants")
 
 local entity = table.deepcopy(data.raw['constant-combinator']['constant-combinator'])
-entity.name = "Labcontrol"
+entity.name = Constants.ControllerName
 entity.icon = Constants.GraphicsPath..'icons/monitor.png'
 entity.minable.result = entity.name
 entity.item_slot_count = 1

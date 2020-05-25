@@ -1,4 +1,4 @@
-local Constants = require("constants")
+local Constants = require("Constants")
 local Result = {}
 
 local MOD_NAME = Constants.ModName

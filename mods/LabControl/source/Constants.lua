@@ -1,7 +1,7 @@
 local result = 
 {
-    ModName = "LabControl"
-
+    ModName = "LabControl",
+    ControllerName = "LabController"
 }
 
 result.GraphicsPath = "__"..result.ModName.."__/graphics/"

@@ -1,18 +1,22 @@
-local Constants = require("constants")
+local Constants = require("Constants")
 local Table = require("Table")
+local Array = Table.Array
+local Dictionary = Table.Dictionary
 local Gui = require("gui")
 local showLog = false
 
 local function AddTechnology(result, technology, count)
   if not technology or technology.researched == true then
-    return 
+    return
   end
-  local prerequisites = Table:new(technology.prerequisites):Where(function(prerequisite)return not prerequisite.researched end)
+  local prerequisites =
+    Table
+    :new(technology.prerequisites)
+    :Clone(function(prerequisite)return not prerequisite.researched end)
   if prerequisites:Any() then
-    for _, prerequisite in ipairs(prerequisites) do
-      AddTechnology(result, prerequisite, count)
-    end
-    return 
+    prerequisites
+    :Select(function(prerequisite) AddTechnology(result, prerequisite, count) end)
+    return
   end
   result[technology.name] = (result[technology.name] or 0) + count
 end
@@ -35,16 +39,16 @@ local function AddSignals(result, entity, wire)
 end
 
 function GetGroupWithMaxValue(target)
-  local result = Table:new {}
+  local result = Array:new {}
 
   local maxValue = nil
   for key, value in pairs(target) do
     if not maxValue or maxValue < value then
       maxValue = value
-      result = Table:new {}
+      result = Array:new {}
     end
     if maxValue == value then
-      table.insert(result, key)
+      table.insert(result,key)
     end
   end
 
@@ -92,7 +96,7 @@ function GetCheapestGroup(target, force)
     return target
   end
 
-  local result = Table:new {}
+  local result = Array:new {}
 
   local minValue = nil
   for _, technologyName in ipairs(target) do
@@ -100,10 +104,10 @@ function GetCheapestGroup(target, force)
 
     if not minValue or minValue > value then
       minValue = value
-      result = Table:new {}
+      result = Array:new {}
     end
     if minValue == value then
-      table.insert(result, technologyName)
+       table.insert(result,technologyName)
     end
   end
 
@@ -122,15 +126,11 @@ local function AddResearchRequests(result, labControl)
 end
 
 local function GetRecentResearchRequests()
-  local requests = Table:new {}
-  for _, labControl in pairs(global.Labcontrols) do
-    requests[labControl.Entity.force.index] = Table:new {}
-  end
-
-  for _, labControl in pairs(global.Labcontrols) do
-    AddResearchRequests(requests[labControl.Entity.force.index], labControl)
-  end
-
+  
+  local labControls = Table:new(global.LabControllers)
+  local requests = labControls:ToDictionary(function(labControl)return {Key=labControl.Entity.force.index, Value=Array:new{}}end)
+  labControls:Select(function(labControl) AddResearchRequests(requests[labControl.Entity.force.index], labControl) end)
+  
   return requests
 end
 
@@ -162,14 +162,10 @@ local function HandleRequestForPlayer(force, requests)
 end
 
 local function CalculateSignals()
-  local actors = global.Labcontrols
-  if not actors or not Table.Any(actors) then
+  if not next(global.LabControllers) then
     return
   end
-  local requestsForPlayers = GetRecentResearchRequests()
-  for index, value in pairs(requestsForPlayers) do
-    HandleRequestForPlayer(game.forces[index], value)
-  end
+  GetRecentResearchRequests():Select(function(value, index)HandleRequestForPlayer(game.forces[index], value) end)
 end
 
 local function on_tick()
@@ -177,12 +173,12 @@ local function on_tick()
 end
 
 local function OpenGui(player, entity)
-  local data = global.Labcontrols[entity.unit_number]
+  local data = global.LabControllers[entity.unit_number]
   Gui.entity(
     entity,
     {
       Gui.section {
-        name = "Labcontrol"
+        name = Constants.ControllerName
       }
     }
   ):open(player)
@@ -193,7 +189,7 @@ local function on_gui_opened(event)
   if not entity then
     return
   end
-  if entity.name == "Labcontrol" then
+  if entity.name == Constants.ControllerName then
     OpenGui(game.players[event.player_index], entity)
   end
 end
@@ -206,13 +202,13 @@ local function on_gui_closed(event)
 end
 
 local function on_init()
-  global.Labcontrols = global.Labcontrols or {}
+  global.LabControllers = global.LabControllers or {}
 end
 
 local function on_built(event)
   local entity = event.created_entity or event.entity
-  if entity and entity.name == "Labcontrol" then
-    global.Labcontrols[entity.unit_number] = {
+  if entity and entity.name == Constants.ControllerName then
+    global.LabControllers[entity.unit_number] = {
       Entity = entity
     }
   end
@@ -220,8 +216,8 @@ end
 
 local function on_destroyed(event)
   local entity = event.entity
-  if entity and entity.name == "Labcontrol" then
-    global.Labcontrols[entity.unit_number] = nil
+  if entity and entity.name == Constants.ControllerName then
+    global.LabControllers[entity.unit_number] = nil
   end
 end
 
@@ -233,10 +229,10 @@ local function on_gui_elem_changed(event)
   local element = event.element
   if element and element.valid and element.name and element.name:match("^" .. Constants.ModName .. ":") then
     local gui_name, unit_number, elementPath = Gui.parse_entity_gui_name(element.name)
-    if gui_name == "Labcontrol" then
+    if gui_name == Constants.ControllerName then
       local parts = Gui.split(elementPath, ":")
-      if parts[1] == "Labcontrol" then
-        global.Labcontrols[unit_number][parts[2]] = element.elem_value
+      if parts[1] == Constants.ControllerName then
+        global.LabControllers[unit_number][parts[2]] = element.elem_value
       end
     end
   end
