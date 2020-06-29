@@ -1,0 +1,128 @@
+---------------------------------------------------------------------------------------------------
+Version: 1.8.2
+Date: 2020.06.29
+  Info:
+    - Spawned from  research-queue-the-old-new-thing 1.8.1
+  Bugfixes:
+    - Not using obsolete frame style anymore 
+---------------------------------------------------------------------------------------------------
+Version: 1.8.1
+Date: 2020.02.25
+  Info:
+    - This is a port of a fix in 1.7.12.
+  Bugfixes:
+    - Fixed nesting of localised strings of arbitrary depth.
+---------------------------------------------------------------------------------------------------
+Version: 1.8.0
+Date: 2020.02.16
+  Info:
+    - Updated for factorio version 0.18.
+---------------------------------------------------------------------------------------------------
+Version: 1.7.12
+Date: 2020.02.25
+  Bugfixes:
+    - Fixed nesting of localised strings of arbitrary depth.
+---------------------------------------------------------------------------------------------------
+Version: 1.7.11
+Date: 2019.12.21
+  Bugfixes:
+    - Fixed handling of entity removal.
+---------------------------------------------------------------------------------------------------
+Version: 1.7.10
+Date: 2019.12.18
+  Bugfixes:
+    - Fixed handling of game events raised by third party mods (e.g. `on_built_entity`).
+  Optimisations:
+    - Estimation of time to finish research is no longer calculated when there are no players with the GUI open.
+---------------------------------------------------------------------------------------------------
+Version: 1.7.9
+Date: 2019.12.17
+  Bugfixes:
+    - Fixed initialisation of science pack prototypes when a mod is removed.
+---------------------------------------------------------------------------------------------------
+Version: 1.7.8
+Date: 2019.12.15
+  Optimisations:
+    - Added filters for events that tracked lab construction and destruction.
+---------------------------------------------------------------------------------------------------
+Version: 1.7.7
+Date: 2019.11.02
+  Bugfixes:
+    - Fixed crash for very low table width settings. This could be abused in multiplayer games to perform denial of service attacks.
+---------------------------------------------------------------------------------------------------
+Version: 1.7.6
+Date: 2019.10.31
+  Info:
+    - Added standard changelog!
+  Bugfixes:
+    - Fixed initialisation of the mod. This fixes issues with changes on the state introduced by new mods added to an already existing game.
+  Optimisations:
+    - Restricted iteration of player collections to online players in general.
+---------------------------------------------------------------------------------------------------
+Version: 1.7.5
+Date: 2019.04.15
+  Gui:
+    - Updated bob's alien technology and modules filters. Now they are buttons instead of checkboxes just like the rest of the filters.
+    - Ingredient display in the queue GUI was improved a little bit by making ingredient icons bigger. A tooltip was added to the time cost component to make its meaning clearer too.
+---------------------------------------------------------------------------------------------------
+Version: 1.7.4
+Date: 2019.04.09
+  Bugfixes:
+    - Fixed `remove_research` when it was only removing the research from the mod queue.
+---------------------------------------------------------------------------------------------------
+Version: 1.7.3
+Date: 2019.04.09
+  Info:
+    - Updated the mod to use the new research APIs `LuaForce::add_research` and `LuaForce::cancel_current_research`.
+  Minor Features:
+    - Added a button to toggle the native research queue. When the native research queue is enabled, elements queued there are prioritized. The mod will only start up research tasks when there are no tasks in the native queue. Report any issues in the discussion threads for the mod page in the mod portal.
+  Gui:
+    - Added ingredient details for technologies to their tooltips. Thanks to Thedrah for the suggestion.
+    - Manually cleaned up the mod's sprites. I don't think it was a good job but I still think they look better now. Previously, it was a bit hard to distinguish the state of a few buttons.
+---------------------------------------------------------------------------------------------------
+Version: 1.7.2
+Date: 2019.04.07
+  Bugfixes:
+    - Fixed a crash that occurred when drawing the queue GUI when there was no active research but the queue was not empty.
+    - Fixed a crash that occurred when moving a research to the top of the queue when there was no active research.
+---------------------------------------------------------------------------------------------------
+Version: 1.7.1
+Date: 2019.04.06
+  Bugfixes:
+    - Fixed a crash that occurred when `on_research_finished` was triggered by another mod during initialization.
+---------------------------------------------------------------------------------------------------
+Version: 1.7.0
+Date: 2019.03.04
+  Info:
+    - Changed name to "Research Queue: The Old New Thing" to cleanly separate development from the original mod.
+    - This version adds compatibility for Factorio v0.17.
+  Gui:
+    - Several GUI prototype definitions were removed. Checkboxes can't be customized in the same way that they could be in v0.16.51.
+    - To help with the resulting impact in the GUI, I added a few more tooltips to GUI elements. The toggles for Bob's modules and Bob's alien artifacts are still inconsistent with the rest of the mod though. They display as plain checkboxes. Some of the old checkboxes were changed into buttons but still need a bit of work to look like the science pack buttons.
+---------------------------------------------------------------------------------------------------
+Version: 1.6.9
+Date: 2019.03.04
+  Info:
+    - This version consists of minor cleanups and refactorizations mostly.
+  Bugfixes:
+    - Fixed a crash that occurred when a research was completed while the GUI was open.
+  Control:
+    - Added support for faster queue navigation with Alt, Control and Shift modifiers. They behave just like they do for moving technologies.
+  Minor Features:
+    - Time estimation was improved. It should be able to estimate more accurately modded labs, but I didn't get around to testing it in depth. It didn't crash nor behave strangely at least.
+---------------------------------------------------------------------------------------------------
+Version: 1.6.8
+Date: 2019.02.10
+  Info:
+    - Experimental version!
+  Bugfixes:
+    - Limited redrawing the GUI when there are no changes other than time estimation. This fixes an annoying issue where interaction with the GUI is interrupted at random.
+    - Fixed time estimation to take into account saved progress on technologies present in the queue.
+  Optimisations:
+    - Added event-local memoization of recursive calls. This improved performance when filtering technologies for certain ingredients.
+  Gui:
+    - Reworked all GUI elements to use sprite buttons and avoid defining styles for each technology or ingredient.
+    - Modified the GUI layout in general in order to stabilize buttons. There is some mild success in this regard, but further work may be needed; especially when taking into account non-default options or localisations other than english.
+    - The research queue GUI is now destroyed if it is still open when a player leaves. This should mainly result in a performance improvement but ensures stability too in the context of the GUI rework. Thanks to Devious Null for the idea of filtering disconnected players.
+  Locale:
+    - Added a whole bunch of localised strings. This opens up the possibility of future localisation efforts.

@@ -1,0 +1,9 @@
+{
+ "name": "research-queue-0-18-34",
+ "version": "1.8.2",
+ "factorio_version": "0.18",
+ "title": "Research Queue: The Old New Thing, 0.18.34 fix",
+ "author": "ixu",
+ "description": "Allows players to queue research, filter research according to required science packs, and automatically queue prerequisites for desired tech. The current maintainer is Saeuissimus. Originally developed by Mr Doomah, with updates by Doomquill, Chrisgbk and thelordodin.",
+ "dependencies": ["base >= 0.17", "? bobmodules >= 0.1", "? bobenemies >= 0.1", "? angelsrefining >= 0.1", "? angelssmelting >= 0.1", "? bobelectronics >= 0.1", "? angelsbioprocessing >= 0.1", "? dark-matter-replicators >= 0.1"]
+}
