@@ -66,75 +66,148 @@ local function RegisterSubgroupForIngredientCombination()
     end
 end
 
-local function GetLocalizedNames (value)
-    if value.type == "technology"then
-
-        local result =  {}
+local function GetLocalizedNames(value)
+    if value.type == "technology" then
+        local result = {}
 
         local name, index = value.name:match("^(.*)%-(%d*)$")
         if value.localised_name then
-            result.Name = value.localised_name 
+            result.Name = value.localised_name
         elseif name then
-            result.Name ={"technology-name."..name,value.name}
+            result.Name = {"technology-name." .. name, value.name}
         else
-            result.Name ={"technology-name."..value.name}
+            result.Name = {"technology-name." .. value.name}
         end
 
         if value.localised_description then
             result.Description = value.localised_description
         end
         if value.description then
-            log("value.description="..value.description)
+            log("value.description=" .. value.description)
             local x = value / 2
         end
-        
-        
+
         return result
     end
 end
 
+local function EnsureLayerdIcons(value)
+    if not value.icons then
+        value.icons = {}
+    end
+    if value.icon then
+        table.insert(value.icons, {icon = value.icon, icon_size = value.icon_size, icon_mipmaps = value.icon_mipmaps})
+        value.icon = nil
+        value.icon_size = nil
+        value.icon_midmaps = nil
+    end
+end
+
+local function GetLayerdIcons(value)
+    local result = value.icons or {}
+    if value.icon then
+        table.insert(result, {icon = value.icon, icon_size = value.icon_size, icon_mipmaps = value.icon_mipmaps})
+    end
+    return result
+end
+
+local function ScaleSingleIcon(target, value)
+    local scale = target.scale or 1
+    scale = (target.scale or 1) * value
+    if scale == 1 then
+        scale = nil
+    end
+
+    local shift = target.shift or {0, 0}
+    shift = {shift[1] * value, shift[2] * value}
+    if shift[1] == 0 and shift[2] == 0 then
+        shift = nil
+    end
+
+    return {
+        icon = target.icon,
+        icon_size = target.icon_size,
+        icon_mipmaps = target.icon_mipmaps,
+        tint = target.tint,
+        scale = scale,
+        shift = shift
+    }
+end
+
+local function ShiftSingleIcon(target, value)
+    local shift = target.shift or {0, 0}
+    shift = {
+        shift[1] + value[1] * target.icon_size,
+        shift[2] + value[2] * target.icon_size
+    }
+    if shift[1] == 0 and shift[2] == 0 then
+        shift = nil
+    end
+    return {
+        icon = target.icon,
+        icon_size = target.icon_size,
+        icon_mipmaps = target.icon_mipmaps,
+        tint = target.tint,
+        scale = target.scale,
+        shift = shift
+    }
+end
+
+local function TransformIcon(target, scale, shift)
+    local result = {}
+    for _, value in ipairs(target) do
+        value = ScaleSingleIcon(value, scale)
+        value = ShiftSingleIcon(value, shift)
+        table.insert(result, value)
+    end
+    return result
+end
+
+local function CombileIcons(targets)
+    local result = {}
+    for _, target in ipairs(targets) do
+        for _, icon in ipairs(target) do
+            table.insert(result, icon)
+        end
+    end
+    return result
+end
 
 local function RegisterTechnologySignals()
     local ingredients = GetIngredients()
 
+    local labIcon = TransformIcon(GetLayerdIcons(data.raw["lab"]["lab"]), 0.2, {-0.2, -0.2})
+
     for _, value in pairs(data.raw["technology"]) do
         local locale = GetLocalizedNames(value)
+
+        local icon = GetLayerdIcons(value)
 
         local signal = {
             type = "virtual-signal",
             name = "technology-" .. value.name,
-            localised_name = {"TechnologySignals.technology",locale.Name},
+            localised_name = {"TechnologySignals.technology", locale.Name},
             localised_description = locale.Description,
             group = "TechnologySignals",
             subgroup = GetSubgroup(value, ingredients),
-            icon = value.icon,
-            icon_size = value.icon_size,
-            icon_mipmaps = value.icon_mipmaps,
+            icons = CombileIcons {icon, labIcon},
             order = value.order
         }
 
-        if value.description then 
-           log(serpent.block(value))
-           local x = value/3
-        end
         data:extend {signal}
     end
 end
 
 local function RegisterTechnologySignalGroup()
-    local lab = data.raw["lab"]["lab"]
+    local icons = GetLayerdIcons(data.raw["lab"]["lab"])
     local signals = data.raw["item-group"]["signals"]
-
-    data:extend {
-        {
-            type = "item-group",
-            name = "TechnologySignals",
-            icon = lab.icon,
-            icon_size = lab.icon_size,
-            icon_mipmaps = lab.icon_mipmaps,
-            order = signals.order .. "1"
-        }
+    local group = {
+        type = "item-group",
+        name = "TechnologySignals",
+        icons = icons,
+        order = signals.order .. "1"
     }
+    data:extend {group}
 end
 
 function result.RegisterData()
