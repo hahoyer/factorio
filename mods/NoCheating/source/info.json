@@ -1,0 +1,8 @@
+{
+    "name": "NoCheating",
+    "author": "hahoyer",
+    "version": "0.1.0",
+    "factorio_version": "0.18",
+    "title": "NoCheating",
+    "dependencies": [ "base >= 0.18.0"]
+}
