@@ -1,6 +1,8 @@
 local big_size = 64
 local small_size = 32
 local tiny_size = 24
+local ModName = "research-queue-0-18-34"
+
 
 data.raw["gui-style"].default["rqon-tool-selected-filter"] =
 {
@@ -44,7 +46,7 @@ data:extend(
     {
         type = "sprite",
         name = "rqon-text-view-icon",
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         width = 32,
         height = 32,
         x = 0,
@@ -53,7 +55,7 @@ data:extend(
     {
         type = "sprite",
         name = "rqon-completed-research-icon",
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         width = 32,
         height = 32,
         x = 0,
@@ -62,7 +64,7 @@ data:extend(
     {
         type = "sprite",
         name = "rqon-native-queue-icon",
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         width = 32,
         height = 32,
         x = 0,
@@ -72,7 +74,7 @@ data:extend(
     {
         type = "sprite",
         name = "rqon-extend-icon",
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         width = 32,
         height = 32,
         x = 0,
@@ -81,7 +83,7 @@ data:extend(
     {
         type = "sprite",
         name = "rqon-compact-icon",
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         width = 32,
         height = 32,
         x = 0,
@@ -90,7 +92,7 @@ data:extend(
     {
         type = "sprite",
         name = "rqon-up-icon",
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         width = 32,
         height = 16,
         x = 32,
@@ -99,7 +101,7 @@ data:extend(
     {
         type = "sprite",
         name = "rqon-down-icon",
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         width = 32,
         height = 16,
         x = 32,
@@ -108,7 +110,7 @@ data:extend(
     {
         type = "sprite",
         name = "rqon-cancel-icon",
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         width = 32,
         height = 32,
         x = 32,
@@ -223,7 +225,7 @@ data.raw["gui-style"].default["rqon-button"] =
     default_graphical_set =
     {
         border = 2,
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         width = 32,
         height = 32,
         x = 96,
@@ -233,7 +235,7 @@ data.raw["gui-style"].default["rqon-button"] =
     hovered_graphical_set =
     {
         border = 2,
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         width = 32,
         height = 32,
         x = 0,
@@ -266,7 +268,7 @@ data.raw["gui-style"].default["rqon-dummy-button"] =
     default_graphical_set =
     {
         border = 2,
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         width = 32,
         height = 32,
         x = 96,
@@ -276,7 +278,7 @@ data.raw["gui-style"].default["rqon-dummy-button"] =
     hovered_graphical_set =
     {
         border = 2,
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         width = 32,
         height = 32,
         x = 96,
@@ -469,7 +471,7 @@ data.raw["gui-style"].default["rqon-done-button"] =
     default_graphical_set =
     {
         type = "composition",
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         corner_size = {3, 3},
         position = {0, 32}
     },
@@ -477,7 +479,7 @@ data.raw["gui-style"].default["rqon-done-button"] =
     hovered_graphical_set =
     {
         type = "composition",
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         corner_size = {3, 3},
         position = {8, 32}
     },
@@ -485,7 +487,7 @@ data.raw["gui-style"].default["rqon-done-button"] =
     clicked_graphical_set =
     {
         type = "composition",
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         corner_size = {3, 3},
         position = {16, 32}
     }
@@ -512,7 +514,7 @@ data.raw["gui-style"].default["rqon-inq-button"] =
     default_graphical_set =
     {
         type = "composition",
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         corner_size = {3, 3},
         position = {0, 40}
     },
@@ -520,7 +522,7 @@ data.raw["gui-style"].default["rqon-inq-button"] =
     hovered_graphical_set =
     {
         type = "composition",
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         corner_size = {3, 3},
         position = {8, 40}
     },
@@ -528,7 +530,7 @@ data.raw["gui-style"].default["rqon-inq-button"] =
     clicked_graphical_set =
     {
         type = "composition",
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         corner_size = {3, 3},
         position = {16, 40}
     }
@@ -555,7 +557,7 @@ data.raw["gui-style"].default["rqon-available-button"] =
     default_graphical_set =
     {
         type = "composition",
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         corner_size = {3, 3},
         position = {0, 48}
     },
@@ -563,7 +565,7 @@ data.raw["gui-style"].default["rqon-available-button"] =
     hovered_graphical_set =
     {
         type = "composition",
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         corner_size = {3, 3},
         position = {8, 48}
     },
@@ -571,7 +573,7 @@ data.raw["gui-style"].default["rqon-available-button"] =
     clicked_graphical_set =
     {
         type = "composition",
-        filename = "__research-queue-the-old-new-thing__/graphics/gui_elements.png",
+        filename = "__" .. ModName .. "__/graphics/gui_elements.png",
         corner_size = {3, 3},
         position = {16, 48}
     }
