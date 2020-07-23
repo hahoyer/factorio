@@ -1,10 +1,21 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.2
+Date: 2020-07-23
+  Bugfixes:
+    - Fixed Frequency dialog does not show up when prefix is already set
+    - on_player_created cannot show gui sometimes. Changed to on_player_joined_game
+---------------------------------------------------------------------------------------------------
+Version: 0.1.1
+Date: 2020-07-23
+  Bugfixes:
+    - Fixed The lua function "require" is case sensitive inside zip file
+---------------------------------------------------------------------------------------------------
+Version: 0.1.0
+Date: 2020-07-23
+  Bugfixes:
+    - Fixed The time format is hmmss not hhmmss
+---------------------------------------------------------------------------------------------------
 Version: 0.0.1
 Date: 2020-07-22
   Features:
     - inital release
----------------------------------------------------------------------------------------------------
-Version: 0.1.0
-Date: 2020-07-23
-  Bugfixs:
-    - Fixed The time format is hmmss not hhmmss

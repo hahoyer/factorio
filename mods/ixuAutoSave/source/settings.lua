@@ -1,4 +1,4 @@
-local Constants = require('constants')
+local Constants = require('Constants')
 data:extend({
   {
     name = Constants.GlobalPrefix,

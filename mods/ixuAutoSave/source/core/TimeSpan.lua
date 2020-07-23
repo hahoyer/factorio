@@ -2,7 +2,7 @@ local Result = {}
 
 local function modulo(n, d)
     local q, r = math.modf(n / d)
-    r = math.floor(r * d)
+    r = math.floor( r * d + 0.5)
     return q, r
   end
   
@@ -50,14 +50,17 @@ end
 function Result.FromTicks(target)
   local result = Result:new()
 
+  local ticks
+  target, ticks = modulo(target, 60)
   target, result.Seconds = modulo(target, 60)
+  if ticks > 0 then result.Seconds = result.Seconds + ticks / 60 end
   target, result.Minutes = modulo(target, 60)
   result.Days, result.Hours = modulo(target, 24)
   return result
 end
 
 function Result:getTicks()
-  return math.floor((((self.Days * 24 + self.Hours) * 60 + self.Minutes) * 60 + self.Seconds) * 60)
+  return math.floor((((self.Days * 24 + self.Hours) * 60 + self.Minutes) * 60 + math.floor(self.Seconds + 0.5)) * 60)
 end
 
 function Result:getTimeAsHHMMSS()

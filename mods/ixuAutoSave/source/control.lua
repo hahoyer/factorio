@@ -1,9 +1,14 @@
-local Constants = require("constants")
+local Constants = require("Constants")
 local TimeSpan = require("core/TimeSpan")
 
+local function GetFrequencySetting()
+local result = settings.global[Constants.Frequency].value
+if result and result ~= "" then return result end
+end
+
 local function GetFrequency()
-  local frequencyValue = settings.global[Constants.Frequency].value
-  if not frequencyValue or frequencyValue == "" then
+  local frequencyValue = GetFrequencySetting()
+  if not frequencyValue then
     return
   end
   local frequency = TimeSpan.FromString(frequencyValue)
@@ -12,10 +17,16 @@ local function GetFrequency()
   end
 end
 
-local function CheckFrequency()
-  local frequencyValue = settings.global[Constants.Frequency].value
+local function IsValidFrequencySetting()
+  return not GetFrequencySetting() or GetFrequency() ~= nil
+end
 
-  if not frequencyValue or frequencyValue == "" then
+
+
+local function CheckFrequency()
+  local frequencyValue = GetFrequencySetting()
+
+  if not frequencyValue then
     return
   end
 
@@ -54,10 +65,6 @@ local function on_gui_closed(args)
 end
 
 local function OpenGui(player)
-  if global.Prefix then
-    return
-  end
-
   game.tick_paused = true
 
   local frame = {type = "frame", caption = "Prefix", direction = "vertical"}
@@ -86,7 +93,7 @@ local function on_tick(event)
       dayPart = days .. "."
     end
     if timeSpan.Days >= 10 then
-      dayPart = "d" .. days.len .. "." + dayPart
+      dayPart = "d" .. #days .. "." .. dayPart
     end
 
     name = global.Prefix .. dayPart .. timeSpan:getTimeAsHHMMSS()
@@ -98,19 +105,20 @@ local function on_tick(event)
   end
 end
 
-local function on_player_created(event)
-  script.on_event(defines.events.on_player_created, nil)
+local function on_player_joined_game(event)
+  script.on_event(defines.events.on_player_joined_game, nil)
   OpenGui(game.players[event.player_index])
 end
 
 local function RegisterOnTickHandler()
+  -- Deregister former handler
+  if global.Frequency and IsValidFrequencySetting() then
+    script.on_nth_tick(global.Frequency)
+  end
+
   local frequency = GetFrequency()
   if not frequency then return end
 
-  -- Deregister former handler
-  if global.Frequency then
-    script.on_nth_tick(global.Frequency)
-  end
   
   script.on_nth_tick(frequency, on_tick)
   global.Frequency = frequency
@@ -119,7 +127,7 @@ end
 local function on_init()
   RegisterOnTickHandler()
   if settings.global[Constants.EnterPrefixOnInit].value then
-    script.on_event(defines.events.on_player_created, on_player_created)
+    script.on_event(defines.events.on_player_joined_game, on_player_joined_game)
   else
     global.Prefix = settings.global[Constants.GlobalPrefix].value or ""
   end
