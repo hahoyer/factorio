@@ -4,6 +4,7 @@ Date: 2020-07-23
   Bugfixes:
     - Fixed Frequency dialog does not show up when prefix is already set
     - on_player_created cannot show gui sometimes. Changed to on_player_joined_game
+    - incorrect time span calculations
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.1
 Date: 2020-07-23
