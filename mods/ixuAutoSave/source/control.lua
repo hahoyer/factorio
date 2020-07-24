@@ -74,6 +74,7 @@ local function OpenGui(player)
   textField = frame.add(textField)
   player.opened = frame
   frame.force_auto_center()
+  textField.focus()
 
   script.on_event(defines.events.on_gui_confirmed, on_gui_confirmed)
   script.on_event(defines.events.on_gui_closed, on_gui_closed)
