@@ -2,7 +2,7 @@ data:extend{
   {
     type = "sprite",
     name = "qt-export-blueprint-white",
-    filename = "__QuickbarTemplates__/graphics/icons/export-blueprint-x32-white.png",
+    filename = "__QuickbarTemplates-1-0-0__/graphics/icons/export-blueprint-x32-white.png",
     size = 32,
     mipmap_count = 2,
     flags = {"icon"}
@@ -10,7 +10,7 @@ data:extend{
   {
     type = "sprite",
     name = "qt-import-blueprint-white",
-    filename = "__QuickbarTemplates__/graphics/icons/import-blueprint-x32-white.png",
+    filename = "__QuickbarTemplates-1-0-0__/graphics/icons/import-blueprint-x32-white.png",
     size = 32,
     mipmap_count = 2,
     flags = {"icon"}
