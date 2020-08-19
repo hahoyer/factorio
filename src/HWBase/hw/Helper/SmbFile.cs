@@ -93,7 +93,7 @@ namespace hw.Helper
             }
         }
 
-        public string ModifiedDateString => ModifiedDate.DynamicShortFormat(true);
+        public string ModifiedDateString => ModifiedDate.DynamicShortFormat( true);
 
         /// <summary>
         ///     considers the file as a byte array
@@ -209,7 +209,7 @@ namespace hw.Helper
             get {return GetItems().Select(f => Create(f.FullName, AutoCreateDirectories)).ToArray();}
         }
 
-        [EnableDumpExcept(false)]
+        [DisableDump]
         public bool IsLocked
         {
             get

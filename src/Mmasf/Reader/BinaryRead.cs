@@ -197,6 +197,11 @@ namespace ManageModsAndSaveFiles.Reader
             return GetNextString(length);
         }
 
+        class Exception : SystemException
+        {
+            internal Exception(string message): base(message) { }
+        }
+
         object GetNextWithReader(Type readerType, Type type, MemberInfo member)
         {
             var result = ((IReaderProvider) Activator.CreateInstance(readerType))
@@ -249,7 +254,7 @@ namespace ManageModsAndSaveFiles.Reader
                     ? arrayItem.Count
                     : Convert.ToInt32(GetNext(arrayItem?.CountType ?? typeof(int)));
 
-        public sealed class InvalidArrayException : Exception
+        sealed class InvalidArrayException : System.Exception
         {
             public InvalidArrayException(string message)
                 : base(message) { }

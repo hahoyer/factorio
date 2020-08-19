@@ -4,6 +4,7 @@ using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
 using HWBase;
+using Newtonsoft.Json;
 
 namespace ManageModsAndSaveFiles
 {
@@ -43,6 +44,7 @@ namespace ManageModsAndSaveFiles
         }
 
         [DisableDump]
+        [JsonIgnore]
         public bool IsDirty
         {
             get

@@ -1,0 +1,9 @@
+{
+    "name": "QuickbarTemplates-1-0-0",
+    "version": "1.0.5",
+    "title": "Quickbar Templates, 1.0.0 (half-)fix",
+    "author": "ixu",
+    "factorio_version": "1.0",
+    "dependencies": ["base >= 1.0.0"],
+    "description": "Import and export quickbar filters as blueprints. Set a default template that will be applied when you start a new game."
+}

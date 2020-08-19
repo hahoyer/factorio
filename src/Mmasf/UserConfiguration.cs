@@ -58,6 +58,7 @@ namespace ManageModsAndSaveFiles
         public IEnumerable<Saves.FileCluster> SaveFiles => SaveFilesCache.Value;
         IDictionary<string, bool> ModConfiguration => ModConfigurationCache.Value;
 
+        [DisableDump]
         public IEnumerable<ModConflict> SaveFileConflicts
             => SaveFiles
                 .SelectMany(save => save.Conflicts);

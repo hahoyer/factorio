@@ -30,7 +30,7 @@ namespace ManageModsAndSaveFiles
 
         static void OnLogfileAppend(object sender, FileSystemEventArgs e)
         {
-            (DateTime.Now.DynamicShortFormat(showMiliseconds: true) + " " + e.FullPath)
+            (DateTime.Now.DynamicShortFormat(showMilliseconds: true) + " " + e.FullPath)
                 .WriteLine();
         }
     }

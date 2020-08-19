@@ -25,7 +25,7 @@ namespace hw.Helper
             return result;
         }
 
-        public static string DynamicShortFormat(this DateTime dateTime, bool showMiliseconds)
+        public static string DynamicShortFormat(this DateTime dateTime, bool showMilliseconds = false)
         {
             var result = "";
             result += dateTime.Hour.ToString("00");
@@ -33,12 +33,13 @@ namespace hw.Helper
             result += dateTime.Minute.ToString("00");
             result += ":";
             result += dateTime.Second.ToString("00");
-            if(showMiliseconds)
+
+            if(showMilliseconds)
             {
                 result += ".";
                 result += dateTime.Millisecond.ToString("000");
             }
-
+            
             var nowDate = DateTime.Now.Date;
             var sameYear = nowDate.Year == dateTime.Year;
             var sameMonth = sameYear && nowDate.Month == dateTime.Month;

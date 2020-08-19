@@ -14,7 +14,12 @@ namespace Test
 {
     static class Program
     {
-        public static void Main(string[] args) { ManageModsAndSaveFiles.Game.Test(); }
+        public static void Main(string[] args)
+        {
+            new ProfilerParser("develop").Format();
+            
+            // ManageModsAndSaveFiles.Game.Test();
+        }
 
 
         static int T(int[] A)

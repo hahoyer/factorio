@@ -13,6 +13,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AssemblyInfo.tt</DependentUpon>
     </Compile>
+    <Compile Include="ProfilerParser.cs" />
     <Compile Include="Program.cs" />
     <None Include="app.config" />
     <None Include="packages.config" />
