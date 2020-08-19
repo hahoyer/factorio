@@ -1,9 +1,9 @@
 {
     "title": "ixuAutoSave",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "name": "ixuAutoSave",
     "author": "ixu",
     "description": "Configurable autosave",
-    "factorio_version": "0.18",
+    "factorio_version": "1.0",
     "dependencies": []
 }

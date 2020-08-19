@@ -52,15 +52,15 @@ local function FinalizeGui()
   CheckFrequency()
 end
 
-local function on_gui_confirmed(args)
+local function on_gui_confirmed(args, frame)
   global.Prefix = args.element.text
-  game.players[args.player_index].opened.destroy()
+  frame.destroy()
   FinalizeGui()
 end
 
-local function on_gui_closed(args)
+local function on_gui_closed(frame)
   global.Prefix = settings.global[Constants.GlobalPrefix].value or ""
-  args.element.destroy()
+  frame.destroy()
   FinalizeGui()
 end
 
@@ -76,8 +76,8 @@ local function OpenGui(player)
   frame.force_auto_center()
   textField.focus()
 
-  script.on_event(defines.events.on_gui_confirmed, on_gui_confirmed)
-  script.on_event(defines.events.on_gui_closed, on_gui_closed)
+  script.on_event(defines.events.on_gui_confirmed, function(args) on_gui_confirmed(args, frame) end)
+  script.on_event(defines.events.on_gui_closed, function(args) on_gui_closed(frame) end)
 end
 
 local function on_tick(event)
