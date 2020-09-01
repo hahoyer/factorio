@@ -67,4 +67,8 @@ function Result:getTimeAsHHMMSS()
   return string.sub(tostring(1000000 + self.Hours * 10000 + self.Minutes * 100 + math.floor(self.Seconds)), 2)
 end
 
+function Result:toString()
+  return self.Days .. "." .. self.Hours ..":".. self.Minutes ..":".. self.Seconds
+end
+
 return Result

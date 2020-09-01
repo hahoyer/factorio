@@ -38,11 +38,11 @@ local function CheckFrequency()
   end
 
   if frequency:getTicks() < Constants.MinFrequencyTicks then
-    game.print({"message.tooSmallFrequency", serpent.block(frequency)}, {r=1})
+    game.print({"message.tooSmallFrequency", frequency:toString()}, {r=1})
     return
   end
 
-  game.print{"message.actualFrequency", serpent.block(frequency)}
+  game.print{"message.actualFrequency", frequency:toString()}
 end
 
 local function FinalizeGui()
@@ -77,7 +77,7 @@ local function OpenGui(player)
   textField.focus()
 
   script.on_event(defines.events.on_gui_confirmed, function(args) on_gui_confirmed(args, frame) end)
-  script.on_event(defines.events.on_gui_closed, function(args) on_gui_closed(frame) end)
+  script.on_event(defines.events.on_gui_closed, function() on_gui_closed(frame) end)
 end
 
 local function on_tick(event)
@@ -114,15 +114,18 @@ end
 local function RegisterOnTickHandler()
   -- Deregister former handler
   if global.Frequency and IsValidFrequencySetting() then
-    script.on_nth_tick(global.Frequency)
+    script.on_nth_tick(global.Frequency, nil)
   end
 
   local frequency = GetFrequency()
   if not frequency then return end
-
   
   script.on_nth_tick(frequency, on_tick)
   global.Frequency = frequency
+end
+
+local function on_load()
+  RegisterOnTickHandler()
 end
 
 local function on_init()
@@ -141,5 +144,6 @@ local function on_runtime_mod_setting_changed(args)
   end
 end
 
+script.on_load(on_load)
 script.on_init(on_init)
 script.on_event(defines.events.on_runtime_mod_setting_changed, on_runtime_mod_setting_changed)
