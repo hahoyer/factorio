@@ -33,7 +33,7 @@ namespace BuildFactorioMod
 
             ("building release " + version).WriteLine();
 
-            CreateZipFile(zipFile, x.Source.ToSmbFile(), releaseFileName);
+            CreateZipFile(zipFile, x.Source.ToSmbFile(), name.ToString());
             "done".WriteLine();
         }
 
