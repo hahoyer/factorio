@@ -1,0 +1,9 @@
+{
+    "title": "ingteb",
+    "version": "0.1.0",
+    "name": "ingteb",
+    "author": "ixu",
+    "description": "Ingame technology browser, rusty-locale >= 1.0.13",
+    "factorio_version": "1.0",
+    "dependencies": ["? base >= 1.0.0", "flib >= 0.3.2", "rusty-locale >= 1.0.13"]
+}

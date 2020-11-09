@@ -1,0 +1,34 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.1.4
+Date: 2020-09-01
+  Bugfixes:
+    - Fixed Autosave does not work when started from a savefile
+  Minor:
+    - log improved
+---------------------------------------------------------------------------------------------------
+Version: 0.1.3
+Date: 2020-08-15
+  Bugfixes:
+    - Fixed Close of starting gui caused null pointer exception
+---------------------------------------------------------------------------------------------------
+Version: 0.1.2
+Date: 2020-07-23
+  Bugfixes:
+    - Fixed Frequency dialog does not show up when prefix is already set
+    - on_player_created cannot show gui sometimes. Changed to on_player_joined_game
+    - incorrect time span calculations
+---------------------------------------------------------------------------------------------------
+Version: 0.1.1
+Date: 2020-07-23
+  Bugfixes:
+    - Fixed The lua function "require" is case sensitive inside zip file
+---------------------------------------------------------------------------------------------------
+Version: 0.1.0
+Date: 2020-07-23
+  Bugfixes:
+    - Fixed The time format is hmmss not hhmmss
+---------------------------------------------------------------------------------------------------
+Version: 0.0.1
+Date: 2020-07-22
+  Features:
+    - inital release
