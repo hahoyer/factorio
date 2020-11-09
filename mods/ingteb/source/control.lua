@@ -226,10 +226,6 @@ local function SpreadItemOut(target, player)
 end
 
 local function SpreadItem(target, player)
-    if target.probability and target.probability ~= 1 then
-        local x = a / b
-    end
-
     return {Tag = FormatTag(target), In = SpreadItemIn(target, player), Out = SpreadItemOut(target, player)}
 end
 
@@ -423,7 +419,9 @@ local function CreateCraftingGroupsPane(frame, target, caption)
     )
 end
 
-local function CreateGui(frame, target)
+local function CreateGui(target, player)
+    local frame = player.gui.screen.add {type = "frame", caption = "ingteb", direction = "vertical"}
+
     if target.Localize then
         local localize = frame.add {type = "flow", direction = "horizontal"}
         if target.Localize.Name then
@@ -441,49 +439,37 @@ local function CreateGui(frame, target)
         direction = "vertical",
         name = "frame"
     }
+
     local inOutframe = scrollframe.add {type = "frame", direction = "horizontal", name = "frame"}
+
     CreateCraftingGroupsPane(
         inOutframe,
         target.In,
         target.Tag.RichText .. "[img=utility/go_to_arrow][img=utility/missing_icon]"
     )
+
     CreateCraftingGroupsPane(
         inOutframe,
         target.Out,
         "[img=utility/missing_icon][img=utility/go_to_arrow]" .. target.Tag.RichText
     )
-end
-
-local function OpenGui(player, targets)
-    game.tick_paused = true
-
-    currentLinks = {}
-
-    local frame = {type = "frame", caption = "Help", direction = "vertical", name = "frame"}
-    frame = player.gui.screen.add(frame)
-
-    local selector
-    if #targets > 1 then
-        selector = frame.add {type = "frame", direction = "vertical"}
-        local list = selector.add {type = "list-box", name = "list"}
-        for i = 1, #targets do
-            local target = targets[i]
-            local name = "[entity=" .. target.name .. "] (" .. target.type .. ")"
-            list.add_item(name)
-        end
-    end
-    local index = 1
-    local target = targets[index]
-
-    local data = Spread(target, player)
-    if not data then
-        return
-    end
-    CreateGui(frame, data)
 
     player.opened = frame
     currentFrame = frame
     frame.force_auto_center()
+    game.tick_paused = true
+end
+
+local function OpenGui(player, targets)
+    currentLinks = {}
+
+    local index = 1
+    local target = targets[index]
+
+    local data = Spread(target, player)
+    if data then
+        CreateGui(data, player)
+    end
 end
 
 local function get_targets(player)
@@ -542,10 +528,9 @@ local function on_lua_shortcut(player)
 end
 
 local function on_gui_click(event)
-    local player = game.players[event.player_index]
-    local target = currentLinks[event.element.index]
-
+    local target = currentLinks and currentLinks[event.element.index]
     if target then
+        local player = game.players[event.player_index]
         on_gui_closed(player)
         OpenGui(player, {target})
     end
@@ -557,6 +542,7 @@ event.register(
         on_gui_closed(game.players[event.player_index])
     end
 )
+
 event.register(
     "ingteb-main-key",
     function(event)
