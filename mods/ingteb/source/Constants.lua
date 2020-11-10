@@ -1,8 +1,12 @@
-local result = 
-{
-    ModName = "ingteb"
+local modName = "ingteb"
+local result = {
+    Key = {
+        Main = modName .. "-main-key",
+        Back = modName .. "-back-key"
+    },
+    ModName = modName,
+    GlobalPrefix = modName .. "_" .. "GlobalPrefix",
+    GraphicsPath = "__" .. modName .. "__/graphics/"
 }
 
-result.GlobalPrefix = result.ModName .. "_" .. "GlobalPrefix"
-result.GraphicsPath = "__"..result.ModName.."__/graphics/"
 return result

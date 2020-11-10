@@ -4,13 +4,13 @@ data:extend(
   {
     {
       type = "custom-input",
-      name = "ingteb-main-key",
+      name = Constants.Key.Main,
       key_sequence = "CONTROL + I",
       action = "lua"
     },
     {
       type = "custom-input",
-      name = Constants.ModName .. "-back-key",
+      name = Constants.Key.Back,
       key_sequence = "BACKSPACE",
       consuming = "none"
     }
