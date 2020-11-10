@@ -20,51 +20,86 @@ local function on_gui_closed(player)
 end
 
 local function FormatSpriteName(target)
-    return target.type .. "." .. target.name
+    local type = target.type
+    if type == "resource" then
+        type = "entity"
+    end
+    return type .. "." .. target.name
 end
 
 local function FormatRichText(target)
-    return "[" .. target.type .. "=" .. target.name .. "]"
+    local type = target.type
+    if type == "resource" then
+        type = "entity"
+    end
+    return "[" .. type .. "=" .. target.name .. "]"
 end
 
-local function FormatTag(target)
-    return {Sprite = FormatSpriteName(target), RichText = FormatRichText(target)}
-end
-
-function GetLocalisation(itemName)
-    local result = game.item_prototypes[itemName] or game.fluid_prototypes[itemName]
+local function GetPrototype(target)
+    local name = target.Target.name
+    local type = target.Target.type
+    if type == "utility" then
+        return
+    end
+    if type == "item" then
+        local result = game.item_prototypes[name]
+        if result then
+            return result
+        end
+        local x = q / w
+    end
+    if type == "fluid" then
+        local result = game.fluid_prototypes[name]
+        if result then
+            return result
+        end
+        local x = q / w
+    end
+    if type == "resource" or type == "entity" then
+        local result = game.entity_prototypes[name]
+        if type == "entity" or result.type == type then
+            return result
+        end
+        local x = q / w
+    end
+    local x = q / w
+    local result = game.item_prototypes[name] or game.fluid_prototypes[name] or game.entity_prototypes[name]
     if result then
         return result
     end
     local x = 1
 end
 
+local function GetSpriteButton(target)
+    if target.Target.type == "resourceaaa" then
+        local x = 2
+    end
+
+    local item = GetPrototype(target)
+
+    return {
+        type = "sprite-button",
+        tooltip = item and item.localised_name,
+        sprite = FormatSpriteName(target.Target),
+        number = target.Target.amount
+    }
+end
+
 local function SpreadHandMiningRecipe(prototype)
     return {
         In = Array:new {
             {
-                Tag = FormatTag {type = "entity", name = prototype.name},
-                Target = {type = prototype.type, name = prototype.name},
-                LocalisedName = prototype.localised_name
+                Target = {type = prototype.type, name = prototype.name}
             }
         },
         Properties = Array:new {
             {
-                Tag = FormatTag {type = "utility", name = "clock"},
-                Number = prototype.mineable_properties.mining_time
+                Target = {type = "utility", name = "clock", amount = prototype.mineable_properties.mining_time}
             }
         },
         Out = Array:new(prototype.mineable_properties.products):Select(
             function(itemData)
-                if itemData.probability ~= 1 then
-                    serpent.block(itemData)
-                end
-                return {
-                    Tag = FormatTag(itemData),
-                    Number = itemData.amount,
-                    Target = itemData,
-                    LocalisedName = GetLocalisation(itemData.name).localised_name
-                }
+                return {Target = itemData}
             end
         )
     }
@@ -74,31 +109,17 @@ local function SpreadRecipe(receipe)
     return {
         In = Array:new(receipe.ingredients):Select(
             function(itemData)
-                return {
-                    Tag = FormatTag(itemData),
-                    Number = itemData.amount,
-                    Target = itemData,
-                    LocalisedName = GetLocalisation(itemData.name).localised_name
-                }
+                return {Target = itemData}
             end
         ),
         Properties = Array:new {
             {
-                Tag = FormatTag {type = "utility", name = "clock"},
-                Number = receipe.energy
+                Target = {type = "utility", name = "clock", amount = receipe.energy}
             }
         },
         Out = Array:new(receipe.products):Select(
             function(itemData)
-                if itemData.probability ~= 1 then
-                    serpent.block(itemData)
-                end
-                return {
-                    Tag = FormatTag(itemData),
-                    Number = itemData.amount,
-                    Target = itemData,
-                    LocalisedName = GetLocalisation(itemData.name).localised_name
-                }
+                return {Target = itemData}
             end
         )
     }
@@ -108,26 +129,15 @@ local function SpreadHandMining(target, player)
     local prototype = game.entity_prototypes[target.name]
 
     if prototype.mineable_properties.minable then
+        local modifier = player.character_mining_speed_modifier
+        if modifier == 0 then
+            modifier = nil
+        end
         return {
-            Actors = Array:new {
-                {
-                    Name = "handmining",
-                    Type = "frame",
-                    Tag = {RichText = player.name .. "[img=technology/steel-axe]"},
-                    Target = {type = "player", name = player.name},
-                    Number = player.character_mining_speed_modifier
-                }
-            },
+            Actors = Array:new {{Target = {type = "entity", name = "character", amount = modifier}}},
             Recipes = Array:new {SpreadHandMiningRecipe(prototype)}
         }
     end
-end
-
-local function SpreadLocalizes(target, player)
-    local item = game.item_prototypes[target.name] or game.entity_prototypes[target.name]
-    return {
-        Name = item.localised_name
-    }
 end
 
 local function SpreadResource(target, player)
@@ -139,9 +149,8 @@ local function SpreadResource(target, player)
 
     local item = game.item_prototypes[target.name]
     return {
-        Tag = {RichText = "[img=technology/steel-axe][entity=" .. target.name .. "]"},
-        In = groups,
-        LocalisedName = item.localised_name
+        Target = target,
+        In = groups
     }
 end
 
@@ -152,15 +161,8 @@ local function SpreadActors(key)
         end
     ):ToArray():Select(
         function(entity)
-            local target = {name = entity.name, type = "entity"}
-            local result = {
-                Target = target,
-                Tag = FormatTag(target),
-                Type = "sprite-button",
-                Number = entity.crafting_speed,
-                LocalisedName = entity.localised_name
-            }
-            return result
+            local target = {name = entity.name, type = "entity", amount = entity.crafting_speed}
+            return {Target = target}
         end
     )
 end
@@ -218,7 +220,7 @@ local function SpreadItemOut(target, player)
 end
 
 local function SpreadItem(target, player)
-    return {Tag = FormatTag(target), In = SpreadItemIn(target, player), Out = SpreadItemOut(target, player)}
+    return {Target = target, In = SpreadItemIn(target, player), Out = SpreadItemOut(target, player)}
 end
 
 local function SpreadEntity(target, player)
@@ -238,39 +240,16 @@ local function Spread(target, player)
     local result
     if target.type == "resource" or target.type == "tree" or target.type == "simple-entity" then
         result = SpreadResource(target, player)
-    elseif target.type == "item" then
+    elseif target.type == "item" or  target.type == "fluid" then
         result = SpreadItem(target, player)
     else
         result = SpreadEntity(target, player)
     end
-    if result and target then
-        result.Localize = SpreadLocalizes(target)
-        return result
-    end
-end
-
-local function CreatePropertySprite(frame, target)
-    local result =
-        frame.add {
-        type = target.Type or "sprite-button",
-        name = target.Name,
-        tooltip = target.LocalisedName,
-        sprite = target.Tag.Sprite,
-        number = target.Number
-    }
-    currentLinks[result.index] = target.Target
     return result
 end
 
-local function CreateIngredientSprite(frame, target)
-    local result =
-        frame.add {
-        type = target.Type or "sprite-button",
-        name = target.Name,
-        tooltip = target.LocalisedName,
-        sprite = target.Tag.Sprite,
-        number = target.Number
-    }
+local function CreateSpriteAndRegister(frame, target)
+    local result = frame.add(GetSpriteButton(target))
     currentLinks[result.index] = target.Target
     return result
 end
@@ -299,7 +278,7 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
     end
     target.In:Select(
         function(item)
-            return CreateIngredientSprite(inPanel, item)
+            return CreateSpriteAndRegister(inPanel, item)
         end
     )
 
@@ -317,7 +296,7 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
 
     target.Properties:Select(
         function(property)
-            return CreatePropertySprite(properties, property)
+            return CreateSpriteAndRegister(properties, property)
         end
     )
 
@@ -335,7 +314,7 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
 
     target.Out:Select(
         function(item)
-            return CreateIngredientSprite(outPanel, item)
+            return CreateSpriteAndRegister(outPanel, item)
         end
     )
     for _ = target.Out:Count() + 1, outCount do
@@ -359,15 +338,7 @@ local function CreateCraftingGroupPane(frame, target, inCount, outCount)
 
     target.Actors:Select(
         function(actor)
-            local result =
-                header.add {
-                type = actor.Type,
-                name = actor.Name,
-                caption = actor.Tag.RichText,
-                sprite = actor.Tag.Sprite,
-                number = actor.Number,
-                tooltip = actor.LocalisedName
-            }
+            local result = header.add(GetSpriteButton(actor))
             currentLinks[result.index] = actor.Target
             return result
         end
@@ -445,16 +416,18 @@ local function CreateGui(target, player)
 
     local inOutframe = scrollframe.add {type = "frame", direction = "horizontal", name = "frame"}
 
+    local targetRichText = FormatRichText(target.Target)
+
     CreateCraftingGroupsPane(
         inOutframe,
         target.In,
-        target.Tag.RichText .. "[img=utility/go_to_arrow][img=utility/missing_icon]"
+        targetRichText .. "[img=utility/go_to_arrow][img=utility/missing_icon]"
     )
 
     CreateCraftingGroupsPane(
         inOutframe,
         target.Out,
-        "[img=utility/missing_icon][img=utility/go_to_arrow]" .. target.Tag.RichText
+        "[img=utility/missing_icon][img=utility/go_to_arrow]" .. targetRichText
     )
 
     player.opened = frame
@@ -464,10 +437,14 @@ local function CreateGui(target, player)
 end
 
 local function OpenGui(player, targets)
+
     currentLinks = {}
 
     local index = 1
     local target = targets[index]
+    if target.type == "fluid" then
+        local b = 1
+    end
 
     local data = Spread(target, player)
     if data then
