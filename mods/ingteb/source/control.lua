@@ -84,16 +84,8 @@ local function SpreadRecipe(receipe)
         ),
         Properties = Array:new {
             {
-                Tag = FormatTag {type = "utility", name = "go_to_arrow"},
-                Type = "sprite"
-            },
-            {
                 Tag = FormatTag {type = "utility", name = "clock"},
                 Number = receipe.energy
-            },
-            {
-                Tag = FormatTag {type = "utility", name = "go_to_arrow"},
-                Type = "sprite"
             }
         },
         Out = Array:new(receipe.products):Select(
@@ -317,11 +309,22 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
         type = "flow",
         direction = "horizontal"
     }
+
+    properties.add {
+        type = "sprite",
+        sprite = "utility/go_to_arrow"
+    }
+
     target.Properties:Select(
         function(property)
             return CreatePropertySprite(properties, property)
         end
     )
+
+    properties.add {
+        type = "sprite",
+        sprite = "utility/go_to_arrow"
+    }
 
     local outPanel =
         subFrame.add {
