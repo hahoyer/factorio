@@ -5,14 +5,17 @@ data:extend(
     {
       type = "custom-input",
       name = Constants.Key.Main,
-      key_sequence = "CONTROL + I",
-      action = "lua"
+      key_sequence = "H"
     },
     {
       type = "custom-input",
       name = Constants.Key.Back,
-      key_sequence = "BACKSPACE",
-      consuming = "none"
+      key_sequence = "mouse-button-4"
+    },
+    {
+      type = "custom-input",
+      name = Constants.Key.Fore,
+      key_sequence = "mouse-button-5"
     }
   }
 )

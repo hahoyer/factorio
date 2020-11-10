@@ -7,10 +7,19 @@ local Dictionary = Table.Dictionary
 local s = 1 --/w
 local s = 1 --/w
 
-local current = {
-    StateHandler = nil,
-    Links = {}
-}
+StateHandler = nil
+
+function EnsureGlobal()
+    if global.Current then
+        return
+    end
+
+    global.Current = {
+        Links = {},
+        History = {},
+        HistoryIndex = 1
+    }
+end
 
 local function FormatSpriteName(target)
     local type = target.type
@@ -74,7 +83,7 @@ local function CreateSpriteAndRegister(frame, target)
     }
     --result.mouse_button_filter = {"left", "right", "button-4", "button-5"}
 
-    current.Links[result.index] = target
+    global.Current.Links[result.index] = target
     return result
 end
 
@@ -104,7 +113,7 @@ local function SpreadHandMining(target)
     local prototype = game.entity_prototypes[target.name]
 
     if prototype.mineable_properties.minable then
-        local modifier = current.Player.character_mining_speed_modifier
+        local modifier = global.Current.Player.character_mining_speed_modifier
         if modifier == 0 then
             modifier = nil
         end
@@ -223,11 +232,6 @@ local function GetData(target)
 end
 
 local function CreateRecipeLine(frame, target, inCount, outCount)
-    frame.add {
-        type = "line",
-        direction = "horizontal"
-    }
-
     local subFrame =
         frame.add {
         type = "flow",
@@ -291,15 +295,13 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
 end
 
 local function CreateCraftingGroupPane(frame, target, inCount, outCount)
-    local subFrame =
-        frame.add {
-        type = "frame",
-        direction = "vertical"
+    frame.add {
+        type = "line",
+        direction = "horizontal"
     }
 
     local header =
-        subFrame.add {
-        name = "header",
+        frame.add {
         type = "flow",
         direction = "horizontal"
     }
@@ -310,11 +312,21 @@ local function CreateCraftingGroupPane(frame, target, inCount, outCount)
         end
     )
 
+    frame.add {
+        type = "line",
+        direction = "horizontal"
+    }
+
     target.Recipes:Select(
         function(recipe)
-            CreateRecipeLine(subFrame, recipe, inCount, outCount)
+            CreateRecipeLine(frame, recipe, inCount, outCount)
         end
     )
+
+    frame.add {
+        type = "line",
+        direction = "horizontal"
+    }
 end
 
 local function CreateCraftingGroupsPane(frame, target, caption)
@@ -362,13 +374,12 @@ end
 local function ShowPanel(target)
     event.register(defines.events.on_gui_click, nil)
 
-    local frame = current.Player.gui.screen.add {type = "frame", caption = "ingteb", direction = "vertical"}
-
     local text = GetLocalizeName(target.Target)
-    if text then
-        local localize = frame.add {type = "flow", direction = "horizontal"}
-        localize.add {type = "label", caption = text}
+    if not text then
+        text = "ingteb"
     end
+
+    local frame = global.Current.Player.gui.screen.add {type = "frame", caption = text, direction = "vertical"}
 
     local scrollframe =
         frame.add {
@@ -410,32 +421,36 @@ local function ShowPanel(target)
         }
     end
 
-    current.Player.opened = frame
-    current.Frame = frame
-    frame.force_auto_center()
+    global.Current.Player.opened = frame
+    global.Current.Frame = frame
+    if global.Current.Location then
+        frame.location = global.Current.Location
+    else
+        frame.force_auto_center()
+    end
     --game.tick_paused = true
 end
 
 local function FindTarget()
     local result = {}
 
-    local cursor = current.Player.cursor_stack
+    local cursor = global.Current.Player.cursor_stack
     if cursor and cursor.valid and cursor.valid_for_read then
         return {type = cursor.type, name = cursor.name}
     end
-    local cursor = current.Player.cursor_ghost
+    local cursor = global.Current.Player.cursor_ghost
     if cursor then
         return {type = cursor.type, name = cursor.name}
     end
-    local cursor = current.Player.selected
+    local cursor = global.Current.Player.selected
     if cursor then
         return {type = cursor.type, name = cursor.name}
     end
 
-    local cursor = current.Player.opened
+    local cursor = global.Current.Player.opened
     if cursor then
-        if current.Links and current.Links[cursor.index] then
-            local target = current.Links[cursor.index]
+        if global.Current.Links and global.Current.Links[cursor.index] then
+            local target = global.Current.Links[cursor.index]
             return target
         end
         table.insert(result, {type = cursor.type, name = cursor.name})
@@ -455,15 +470,52 @@ local function FindTarget()
     end
 end
 
-local function CloseGui()
-    if current.Frame then
-        current.Frame.destroy()
-        game.tick_paused = false
-        current.Frame = nil
-        current.Links = {}
-        current.Player.opened = nil
+local History = {
+    RemoveAll = function()
+        global.Current.History = {}
+        global.Current.HistoryIndex = 0
+    end,
+    HairCut = function(target)
+        if target then
+            global.Current.HistoryIndex = global.Current.HistoryIndex + 1
+            while #global.Current.History >= global.Current.HistoryIndex do
+                table.remove(global.Current.History, global.Current.HistoryIndex)
+            end
+            global.Current.History[global.Current.HistoryIndex] = target
+            return target
+        end
+    end,
+    New = function(target)
+        if target then
+            global.Current.History = {target}
+            global.Current.HistoryIndex = 1
+            return target
+        end
+    end,
+    Back = function()
+        if global.Current.HistoryIndex > 1 then
+            global.Current.HistoryIndex = global.Current.HistoryIndex - 1
+            return global.Current.History[global.Current.HistoryIndex]
+        end
+    end,
+    Fore = function()
+        if global.Current.HistoryIndex < #global.Current.History then
+            global.Current.HistoryIndex = global.Current.HistoryIndex + 1
+            return global.Current.History[global.Current.HistoryIndex]
+        end
     end
-    current.StateHandler {panel = false}
+}
+
+local function CloseGui()
+    if global.Current.Frame then
+        global.Current.Location = global.Current.Frame.location
+        global.Current.Frame.destroy()
+        game.tick_paused = false
+        global.Current.Frame = nil
+        global.Current.Links = {}
+
+        global.Current.Player.opened = nil
+    end
 end
 
 local function OpenGui(target)
@@ -472,65 +524,104 @@ local function OpenGui(target)
         if data then
             CloseGui()
             ShowPanel(data)
-            current.StateHandler {panel = true}
+            StateHandler {panel = true}
+            return target
         end
     end
 end
 
-local function MainUnRegister()
-    event.register("ingteb-main-key", nil)
-end
-
-local function MainRegister()
+local function RegisterMainForOpen()
     event.register(
         Constants.Key.Main,
         function(event)
-            current.Player = game.players[event.player_index]
-            OpenGui(FindTarget())
+            EnsureGlobal()
+            global.Current.Player = game.players[event.player_index]
+            local target = OpenGui(FindTarget())
+            History.New(target)
         end
     )
 end
 
-local function MainCloseRegister()
+local function RegisterMainForClose()
     event.register(
         Constants.Key.Main,
         function(event)
             CloseGui()
+            StateHandler {panel = false}
+            History.RemoveAll()
         end
     )
 end
 
-local GuiUnRegister = function()
-    event.register(defines.events.on_gui_click, nil)
-end
-
-local GuiRegister = function()
-    event.register(
-        defines.events.on_gui_click,
-        function(event)
-            current.Player = game.players[event.player_index]
-            OpenGui(current.Links and current.Links[event.element.index])
-        end
-    )
-end
-
-local function GuiCloseRegister()
-    event.register(
-        defines.events.on_gui_closed,
-        function(event)
-            current.Player = game.players[event.player_index]
-        end
-    )
-end
-
-current.StateHandler = function(state)
-    if state.panel then
-        GuiRegister()
-        MainCloseRegister()
+local function RegisterGuiKey(register)
+    if register == false then
+        event.register(defines.events.on_gui_click, nil)
     else
-        GuiUnRegister()
-        MainRegister()
+        event.register(
+            defines.events.on_gui_click,
+            function(event)
+                global.Current.Player = game.players[event.player_index]
+                local target = OpenGui(global.Current.Links and global.Current.Links[event.element.index])
+                History.HairCut(target)
+            end
+        )
     end
 end
 
-MainRegister()
+local function RegisterBackNavigation(register)
+    if register == false then
+        event.register(Constants.Key.Back, nil)
+    else
+        event.register(
+            Constants.Key.Back,
+            function()
+                OpenGui(History.Back())
+            end
+        )
+    end
+end
+
+local function RegisterForeNavigation(register)
+    if register == false then
+        event.register(Constants.Key.Fore, nil)
+    else
+        event.register(
+            Constants.Key.Fore,
+            function()
+                OpenGui(History.Fore())
+            end
+        )
+    end
+end
+
+local function RegisterGuiClose(register)
+    if register == false then
+        event.register(defines.events.on_gui_closed, nil)
+    else
+        event.register(
+            defines.events.on_gui_closed,
+            function(event)
+                CloseGui()
+                StateHandler {panel = false}
+            end
+        )
+    end
+end
+
+StateHandler = function(state)
+    if state.panel then
+        RegisterGuiKey()
+        RegisterMainForClose()
+        RegisterGuiClose()
+        RegisterForeNavigation()
+        RegisterBackNavigation()
+    else
+        RegisterGuiKey(false)
+        RegisterMainForOpen()
+        RegisterGuiClose(false)
+        RegisterForeNavigation(false)
+        RegisterBackNavigation(false)
+    end
+end
+
+RegisterMainForOpen()
