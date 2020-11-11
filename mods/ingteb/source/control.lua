@@ -99,13 +99,14 @@ local function GetPrototype(target)
     if type == "utility" then
         return
     end
-    if type == "item" then
-        local result = game.item_prototypes[name]
-        if result then
+    if type == "resource" or type == "entity" then
+        local result = game.entity_prototypes[name]
+        if type == "entity" or result.type == type then
             return result
         end
         local x = b.point
     end
+
     if type == "fluid" then
         local result = game.fluid_prototypes[name]
         if result then
@@ -113,12 +114,10 @@ local function GetPrototype(target)
         end
         local x = b.point
     end
-    if type == "resource" or type == "entity" then
-        local result = game.entity_prototypes[name]
-        if type == "entity" or result.type == type then
-            return result
-        end
-        local x = b.point
+
+    local result = game.item_prototypes[name]
+    if result then
+        return result
     end
     local x = b.point
 end
@@ -283,6 +282,10 @@ local function GetData(target)
         result = SpreadItem(target)
     else
         result = SpreadEntity(target)
+    end
+    if not result then
+        target.type = "item"
+        result = SpreadItem(target)
     end
     return result
 end
@@ -574,7 +577,9 @@ end
 --------------------------------------------------------------------------
 
 local function SetHandler(name, handler, register)
-    if register == nil then register = true end
+    if register == nil then
+        register = true
+    end
     local eventId = name
     local eventFunction = "register"
 
@@ -674,8 +679,8 @@ local function Load()
 end
 
 StateHandler = function(state)
- state.mainPanel = state.mainPanel == true
- state.selectPane = state.selectPane == true
+    state.mainPanel = state.mainPanel == true
+    state.selectPane = state.selectPane == true
 
     local handlers = Dictionary:new {}
 
