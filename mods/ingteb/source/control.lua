@@ -81,34 +81,30 @@ function EnsureGlobal()
     end
 end
 
-local function FormatSpriteName(target)
+local function ActualType(target)
     local type = target.type
-    if type == "resource" then
-        type = "entity"
+    if type == "resource" or type == "tree" then
+        return "entity"
     end
-    return type .. "." .. target.name
+    return type
+end
+
+local function FormatSpriteName(target)
+    return ActualType(target) .. "." .. target.name
 end
 
 local function FormatRichText(target)
-    local type = target.type
-    if type == "resource" then
-        type = "entity"
-    end
-    return "[" .. type .. "=" .. target.name .. "]"
+    return "[" .. ActualType(target) .. "=" .. target.name .. "]"
 end
 
 local function GetPrototype(target)
     local name = target.name
-    local type = target.type
+    local type = ActualType(target)
     if type == "utility" then
         return
     end
-    if type == "resource" or type == "entity" then
-        local result = game.entity_prototypes[name]
-        if type == "entity" or result.type == type then
-            return result
-        end
-        local x = b.point
+    if type == "entity" then
+        return game.entity_prototypes[name]
     end
 
     if type == "fluid" then
@@ -123,6 +119,7 @@ local function GetPrototype(target)
     if result then
         return result
     end
+
     local x = b.point
 end
 
@@ -675,7 +672,7 @@ end
 
 StateHandler = function(state)
     state.mainPanel = state.mainPanel == true
-    state.selectPane = state.selectPane == true
+    state.selectPanel = state.selectPanel == true
 
     local handlers = Dictionary:new {}
 
@@ -687,7 +684,7 @@ StateHandler = function(state)
 
     handlers["on_gui_click"] = {GuiClickForMain, state.mainPanel}
     handlers["on_gui_elem_changed"] = {GuiElementChangedForSelect, state.selectPanel}
-    handlers["on_gui_closed"] = {GuiClose, state.mainPanel or state.selectPane}
+    handlers["on_gui_closed"] = {GuiClose, state.mainPanel or state.selectPanel}
 
     SetHandlers(handlers)
     History.Save()
