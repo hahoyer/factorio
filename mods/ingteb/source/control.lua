@@ -7,6 +7,7 @@ local Dictionary = Table.Dictionary
 local s = 1 --/w
 local s = 1 --/w
 
+State = {}
 StateHandler = nil
 
 local History = {
@@ -426,15 +427,21 @@ local function CreateCraftingGroupsPane(frame, target, caption)
     )
 end
 
-local function ShowPanel(target)
-    event.register(defines.events.on_gui_click, nil)
-
-    local text = GetLocalizeName(target.Target)
-    if not text then
-        text = "ingteb"
+local function ShowFrame(name, create)
+    local frame = global.Current.Player.gui.screen.add {type = "frame", caption = name, direction = "vertical"}
+    create(frame)
+    global.Current.Player.opened = frame
+    global.Current.Frame = frame
+    if global.Current[name] then
+        frame.location = global.Current[name]
+    else
+        frame.force_auto_center()
     end
+    return frame
+end
 
-    local frame = global.Current.Player.gui.screen.add {type = "frame", caption = text, direction = "vertical"}
+local function CreateMainPanel(frame, target)
+    frame.caption = GetLocalizeName(target.Target)
 
     local scrollframe =
         frame.add {
@@ -475,15 +482,15 @@ local function ShowPanel(target)
             caption = "[img=utility/go_to_arrow][img=utility/crafting_machine_recipe_not_unlocked]"
         }
     end
+end
 
-    global.Current.Player.opened = frame
-    global.Current.Frame = frame
-    if global.Current.Location then
-        frame.location = global.Current.Location
-    else
-        frame.force_auto_center()
-    end
-    --game.tick_paused = true
+local function SelectTarget()
+    return ShowFrame(
+        "select",
+        function(frame)
+            frame.add {type = "choose-elem-button", elem_type = "signal"}
+        end
+    )
 end
 
 local function FindTarget()
@@ -527,7 +534,7 @@ end
 
 local function CloseGui()
     if global.Current.Frame then
-        global.Current.Location = global.Current.Frame.location
+        global.Current[global.Current.Frame.name] = global.Current.Frame.location
         global.Current.Frame.destroy()
         game.tick_paused = false
         global.Current.Frame = nil
@@ -537,122 +544,205 @@ local function CloseGui()
     end
 end
 
-local function OpenGui(target)
+local function ShowMainPanel(target)
+    event.register(defines.events.on_gui_click, nil)
+    return ShowFrame(
+        "main",
+        function(frame)
+            return CreateMainPanel(frame, target)
+        end
+    )
+end
+
+local function OpenMainGui(target)
     if target then
         local data = GetData(target)
         if data then
             CloseGui()
-            ShowPanel(data)
-            StateHandler {panel = true}
+            ShowFrame(
+                "main",
+                function(frame)
+                    return CreateMainPanel(frame, data)
+                end
+            )
+            StateHandler {mainPanel = true}
             return target
         end
     end
 end
 
+--------------------------------------------------------------------------
+
+local function SetHandler(name, register, handler, stateName)
+    register = register ~= false
+    local eventId = name
+    local eventFunction = "register"
+
+    local fff = name:find("^on_gui_")
+    if fff then
+        eventId = defines.events[name]
+    elseif name == "on_load" then
+        eventId = nil
+        eventFunction = name
+    end
+
+    State[name] = (stateName or "") .. " activating..."
+
+    if eventId then
+        event[eventFunction](eventId, handler)
+    else
+        event[eventFunction](handler)
+    end
+
+    State[name] = register and (stateName or register) or false
+end
+
 local function RegisterMainForOpen()
-    event.register(
+    SetHandler(
         Constants.Key.Main,
+        true,
         function(event)
             EnsureGlobal()
             global.Current.Player = game.players[event.player_index]
-            local target = OpenGui(FindTarget())
+            local target = FindTarget()
+            if not target then
+                SelectTarget()
+                StateHandler {selectPanel = true}
+                return
+            end
+
+            target = OpenMainGui(target)
             History.New(target)
-        end
+        end,
+        "open mode"
     )
 end
 
 local function RegisterMainForClose()
-    event.register(
+    SetHandler(
         Constants.Key.Main,
-        function(event)
+        true,
+        function()
             CloseGui()
-            StateHandler {panel = false}
+            StateHandler {mainPanel = false, selectPanel = false}
             History.RemoveAll()
+        end,
+        "close mode"
+    )
+end
+
+local function RegisterGuiClickForMain(register)
+    SetHandler(
+        "on_gui_click",
+        register,
+        function(event)
+            global.Current.Player = game.players[event.player_index]
+            local target = OpenMainGui(global.Current.Links and global.Current.Links[event.element.index])
+            History.HairCut(target)
         end
     )
 end
 
-local function RegisterGuiKey(register)
-    if register == false then
-        event.register(defines.events.on_gui_click)
-    else
-        event.register(
-            defines.events.on_gui_click,
-            function(event)
-                global.Current.Player = game.players[event.player_index]
-                local target = OpenGui(global.Current.Links and global.Current.Links[event.element.index])
-                History.HairCut(target)
-            end
-        )
-    end
+local function RegisterGuiClickForSelect(register)
+    SetHandler(
+        "on_gui_click",
+        register,
+        function(event)
+            global.Current.Player = game.players[event.player_index]
+        end
+    )
+end
+
+local function RegisterGuiConfirmedForSelect(register)
+    SetHandler(
+        "on_gui_confirmed",
+        register,
+        function(event)
+            global.Current.Player = game.players[event.player_index]
+        end
+    )
+end
+
+local function RegisterGuiOpenedForSelect(register)
+    SetHandler(
+        "on_gui_opened",
+        register,
+        function(event)
+            global.Current.Player = game.players[event.player_index]
+        end
+    )
+end
+
+local function RegisterGuiElementChangedForSelect(register)
+    SetHandler(
+        "on_gui_elem_changed",
+        register,
+        function(event)
+            global.Current.Player = game.players[event.player_index]
+            OpenMainGui(event.element.elem_value)
+        end
+    )
 end
 
 local function RegisterBackNavigation(register)
-    if register == false then
-        event.register(Constants.Key.Back)
-    else
-        event.register(
-            Constants.Key.Back,
-            function()
-                OpenGui(History.Back())
-            end
-        )
-    end
+    SetHandler(
+        Constants.Key.Back,
+        register,
+        function()
+            OpenMainGui(History.Back())
+        end
+    )
 end
 
 local function RegisterForeNavigation(register)
-    if register == false then
-        event.register(Constants.Key.Fore)
-    else
-        event.register(
-            Constants.Key.Fore,
-            function()
-                OpenGui(History.Fore())
-            end
-        )
-    end
+    SetHandler(
+        Constants.Key.Fore,
+        register,
+        function()
+            OpenMainGui(History.Fore())
+        end
+    )
 end
 
 local function RegisterLoad(register)
-    if register == false then
-        event.on_load()
-    else
-        event.on_load(
-            function(event)
-                History.Load()
-            end
-        )
-    end
+    SetHandler(
+        "on_load",
+        register,
+        function()
+            History.Load()
+        end
+    )
 end
 
 local function RegisterGuiClose(register)
-    if register == false then
-        event.register(defines.events.on_gui_closed)
-    else
-        event.register(
-            defines.events.on_gui_closed,
-            function(event)
-                CloseGui()
-                StateHandler {panel = false}
-            end
-        )
-    end
+    SetHandler(
+        "on_gui_closed",
+        register,
+        function()
+            CloseGui()
+            StateHandler {mainPanel = false}
+        end
+    )
 end
 
 StateHandler = function(state)
-    if state.panel then
-        RegisterGuiKey()
+    RegisterForeNavigation(state.mainPanel)
+    RegisterBackNavigation(state.mainPanel)
+    RegisterGuiClickForMain(state.mainPanel)
+
+    RegisterGuiClickForSelect(state.selectPanel)
+    RegisterGuiConfirmedForSelect(state.selectPanel)
+    RegisterGuiOpenedForSelect(state.selectPanel)
+    RegisterGuiElementChangedForSelect(state.selectPanel)
+
+    if state.mainPanel or state.selectPanel then
+        RegisterGuiClose(true)
         RegisterMainForClose()
-        RegisterGuiClose()
-        RegisterForeNavigation()
-        RegisterBackNavigation()
     else
-        RegisterGuiKey(false)
-        RegisterMainForOpen()
         RegisterGuiClose(false)
-        RegisterForeNavigation(false)
-        RegisterBackNavigation(false)
+        RegisterMainForOpen()
     end
+
     History.Save()
 end
 
