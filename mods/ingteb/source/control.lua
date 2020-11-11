@@ -16,40 +16,40 @@ local History = {
 }
 
 function History.RemoveAll()
-    Data = {}
-    Index = 0
+    History.Data = {}
+    History.Index = 0
 end
 
 function History.HairCut(target)
     if target then
-        Index = Index + 1
-        while #Data >= Index do
-            table.remove(Data, Index)
+        History.Index = History.Index + 1
+        while #History.Data >= History.Index do
+            table.remove(History.Data, History.Index)
         end
-        Data[Index] = target
+        History.Data[History.Index] = target
         return target
     end
 end
 
 function History.New(target)
     if target then
-        Data = {target}
-        Index = 1
+        History.Data = {target}
+        History.Index = 1
         return target
     end
 end
 
 function History.Back()
-    if Index > 1 then
-        Index = Index - 1
-        return Data[Index]
+    if History.Index > 1 then
+        History.Index = History.Index - 1
+        return History.Data[History.Index]
     end
 end
 
 function History.Fore()
-    if Index < #Data then
-        Index = Index + 1
-        return Data[Index]
+    if History.Index < #History.Data then
+        History.Index = History.Index + 1
+        return History.Data[History.Index]
     end
 end
 
@@ -573,20 +573,23 @@ end
 
 --------------------------------------------------------------------------
 
-local function SetHandler(name, register, handler, stateName)
-    register = register ~= false
+local function SetHandler(name, handler, register)
+    if register == nil then register = true end
     local eventId = name
     local eventFunction = "register"
 
-    local fff = name:find("^on_gui_")
-    if fff then
+    if name:find("^on_gui_") then
         eventId = defines.events[name]
     elseif name == "on_load" then
         eventId = nil
         eventFunction = name
     end
 
-    State[name] = (stateName or "") .. " activating..."
+    State[name] = "activating..." .. tostring(register)
+
+    if register == false then
+        handler = nil
+    end
 
     if eventId then
         event[eventFunction](eventId, handler)
@@ -594,157 +597,101 @@ local function SetHandler(name, register, handler, stateName)
         event[eventFunction](handler)
     end
 
-    State[name] = register and (stateName or register) or false
+    State[name] = register
 end
 
-local function RegisterMainForOpen()
-    SetHandler(
-        Constants.Key.Main,
-        true,
-        function(event)
-            EnsureGlobal()
-            global.Current.Player = game.players[event.player_index]
-            local target = FindTarget()
-            if not target then
-                SelectTarget()
-                StateHandler {selectPanel = true}
-                return
-            end
-
-            target = OpenMainGui(target)
-            History.New(target)
-        end,
-        "open mode"
-    )
-end
-
-local function RegisterMainForClose()
-    SetHandler(
-        Constants.Key.Main,
-        true,
-        function()
-            CloseGui()
-            StateHandler {mainPanel = false, selectPanel = false}
-            History.RemoveAll()
-        end,
-        "close mode"
-    )
-end
-
-local function RegisterGuiClickForMain(register)
-    SetHandler(
-        "on_gui_click",
-        register,
-        function(event)
-            global.Current.Player = game.players[event.player_index]
-            local target = OpenMainGui(global.Current.Links and global.Current.Links[event.element.index])
-            History.HairCut(target)
+local function SetHandlers(list)
+    list:Select(
+        function(command, key)
+            SetHandler(key, command[1], command[2])
         end
     )
 end
 
-local function RegisterGuiClickForSelect(register)
-    SetHandler(
-        "on_gui_click",
-        register,
-        function(event)
-            global.Current.Player = game.players[event.player_index]
-        end
-    )
+--------------------------------------------------------------------------
+
+function MainForOpen(event)
+    EnsureGlobal()
+    global.Current.Player = game.players[event.player_index]
+    local target = FindTarget()
+    if not target then
+        SelectTarget()
+        StateHandler {selectPanel = true}
+        return
+    end
+
+    target = OpenMainGui(target)
+    History.New(target)
 end
 
-local function RegisterGuiConfirmedForSelect(register)
-    SetHandler(
-        "on_gui_confirmed",
-        register,
-        function(event)
-            global.Current.Player = game.players[event.player_index]
-        end
-    )
+function ForeNavigation()
+    OpenMainGui(History.Fore())
 end
 
-local function RegisterGuiOpenedForSelect(register)
-    SetHandler(
-        "on_gui_opened",
-        register,
-        function(event)
-            global.Current.Player = game.players[event.player_index]
-        end
-    )
+function BackNavigation()
+    OpenMainGui(History.Back())
 end
 
-local function RegisterGuiElementChangedForSelect(register)
-    SetHandler(
-        "on_gui_elem_changed",
-        register,
-        function(event)
-            global.Current.Player = game.players[event.player_index]
-            OpenMainGui(event.element.elem_value)
-        end
-    )
+local function GuiClickForMain(event)
+    global.Current.Player = game.players[event.player_index]
+    local target = OpenMainGui(global.Current.Links and global.Current.Links[event.element.index])
+    History.HairCut(target)
 end
 
-local function RegisterBackNavigation(register)
-    SetHandler(
-        Constants.Key.Back,
-        register,
-        function()
-            OpenMainGui(History.Back())
-        end
-    )
+local function GuiElementChangedForSelect(event)
+    global.Current.Player = game.players[event.player_index]
+    StateHandler {selectPanel = false}
+    OpenMainGui(event.element.elem_value)
 end
 
-local function RegisterForeNavigation(register)
-    SetHandler(
-        Constants.Key.Fore,
-        register,
-        function()
-            OpenMainGui(History.Fore())
-        end
-    )
+local function GuiClose()
+    CloseGui()
+    StateHandler {mainPanel = false}
 end
 
-local function RegisterLoad(register)
-    SetHandler(
-        "on_load",
-        register,
-        function()
-            History.Load()
-        end
-    )
+local function MainForClose()
+    CloseGui()
+    StateHandler {mainPanel = false, selectPanel = false}
+    History.RemoveAll()
 end
 
-local function RegisterGuiClose(register)
-    SetHandler(
-        "on_gui_closed",
-        register,
-        function()
-            CloseGui()
-            StateHandler {mainPanel = false}
-        end
-    )
+local function MainForOpen(event)
+    EnsureGlobal()
+    global.Current.Player = game.players[event.player_index]
+    local target = FindTarget()
+    if not target then
+        SelectTarget()
+        StateHandler {selectPanel = true}
+        return
+    end
+
+    target = OpenMainGui(target)
+    History.New(target)
+end
+
+local function Load()
+    History.Load()
 end
 
 StateHandler = function(state)
-    RegisterForeNavigation(state.mainPanel)
-    RegisterBackNavigation(state.mainPanel)
-    RegisterGuiClickForMain(state.mainPanel)
+ state.mainPanel = state.mainPanel == true
+ state.selectPane = state.selectPane == true
 
-    RegisterGuiClickForSelect(state.selectPanel)
-    RegisterGuiConfirmedForSelect(state.selectPanel)
-    RegisterGuiOpenedForSelect(state.selectPanel)
-    RegisterGuiElementChangedForSelect(state.selectPanel)
+    local handlers = Dictionary:new {}
 
-    if state.mainPanel or state.selectPanel then
-        RegisterGuiClose(true)
-        RegisterMainForClose()
-    else
-        RegisterGuiClose(false)
-        RegisterMainForOpen()
-    end
+    handlers[Constants.Key.Fore] = {ForeNavigation, state.mainPanel}
+    handlers[Constants.Key.Back] = {BackNavigation, state.mainPanel}
 
+    handlers[Constants.Key.Main] =
+        ((state.mainPanel or state.selectPane) and {MainForClose, "close mode"}) or {MainForOpen, "open mode"}
+
+    handlers["on_gui_click"] = {GuiClickForMain, state.mainPanel}
+    handlers["on_gui_elem_changed"] = {GuiElementChangedForSelect, state.selectPanel}
+    handlers["on_gui_closed"] = {GuiClose, state.mainPanel or state.selectPane}
+
+    SetHandlers(handlers)
     History.Save()
 end
 
-RegisterMainForOpen()
-RegisterLoad()
+SetHandler(Constants.Key.Main, MainForOpen, "open mode")
+SetHandler("on_load", Load)
