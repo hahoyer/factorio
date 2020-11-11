@@ -66,15 +66,19 @@ function History.Load()
 end
 
 function EnsureGlobal()
-    if global.Current then
-        return
+    if not global.Current then
+        global.Current = {}
     end
-
-    global.Current = {
-        Links = {},
-        History = {},
-        HistoryIndex = 1
-    }
+    if not global.Current.Links then
+        global.Current.Links = {}
+    end
+    if not global.Current.History then
+        global.Current.History = {}
+        global.Current.HistoryIndex = 1
+    end
+    if not global.Current.Location then
+        global.Current.Location = {}
+    end
 end
 
 local function FormatSpriteName(target)
@@ -431,12 +435,12 @@ local function CreateCraftingGroupsPane(frame, target, caption)
 end
 
 local function ShowFrame(name, create)
-    local frame = global.Current.Player.gui.screen.add {type = "frame", caption = name, direction = "vertical"}
+    local frame = global.Current.Player.gui.screen.add {type = "frame", name = name, direction = "vertical"}
     create(frame)
     global.Current.Player.opened = frame
     global.Current.Frame = frame
-    if global.Current[name] then
-        frame.location = global.Current[name]
+    if global.Current.Location[name] then
+        frame.location = global.Current.Location[name]
     else
         frame.force_auto_center()
     end
@@ -487,15 +491,6 @@ local function CreateMainPanel(frame, target)
     end
 end
 
-local function SelectTarget()
-    return ShowFrame(
-        "select",
-        function(frame)
-            frame.add {type = "choose-elem-button", elem_type = "signal"}
-        end
-    )
-end
-
 local function FindTarget()
     local result = {}
 
@@ -537,7 +532,7 @@ end
 
 local function CloseGui()
     if global.Current.Frame then
-        global.Current[global.Current.Frame.name] = global.Current.Frame.location
+        global.Current.Location[global.Current.Frame.name] = global.Current.Frame.location
         global.Current.Frame.destroy()
         game.tick_paused = false
         global.Current.Frame = nil
@@ -547,12 +542,12 @@ local function CloseGui()
     end
 end
 
-local function ShowMainPanel(target)
-    event.register(defines.events.on_gui_click, nil)
+local function SelectTarget()
     return ShowFrame(
-        "main",
+        "Selector",
         function(frame)
-            return CreateMainPanel(frame, target)
+            frame.caption = "select"
+            frame.add {type = "choose-elem-button", elem_type = "signal"}
         end
     )
 end
@@ -563,7 +558,7 @@ local function OpenMainGui(target)
         if data then
             CloseGui()
             ShowFrame(
-                "main",
+                "MainPanel",
                 function(frame)
                     return CreateMainPanel(frame, data)
                 end

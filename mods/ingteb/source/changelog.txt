@@ -3,6 +3,8 @@ Version: 0.2.2
 Date: 2020-11-11
   Bugfixes:
     - military things
+    - positioning is not working
+    - ? esc on selector panel not working
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.1
 Date: 2020-11-11
