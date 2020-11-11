@@ -9,6 +9,61 @@ local s = 1 --/w
 
 StateHandler = nil
 
+local History = {
+    Data = {},
+    Index = 0
+}
+
+function History.RemoveAll()
+    Data = {}
+    Index = 0
+end
+
+function History.HairCut(target)
+    if target then
+        Index = Index + 1
+        while #Data >= Index do
+            table.remove(Data, Index)
+        end
+        Data[Index] = target
+        return target
+    end
+end
+
+function History.New(target)
+    if target then
+        Data = {target}
+        Index = 1
+        return target
+    end
+end
+
+function History.Back()
+    if Index > 1 then
+        Index = Index - 1
+        return Data[Index]
+    end
+end
+
+function History.Fore()
+    if Index < #Data then
+        Index = Index + 1
+        return Data[Index]
+    end
+end
+
+function History.Save()
+    global.Current.History = History.Data
+    global.Current.HistoryIndex = History.Index
+end
+
+function History.Load()
+    if global.Current then
+        History.Data = global.Current.History
+        History.Index = global.Current.HistoryIndex
+    end
+end
+
 function EnsureGlobal()
     if global.Current then
         return
@@ -470,42 +525,6 @@ local function FindTarget()
     end
 end
 
-local History = {
-    RemoveAll = function()
-        global.Current.History = {}
-        global.Current.HistoryIndex = 0
-    end,
-    HairCut = function(target)
-        if target then
-            global.Current.HistoryIndex = global.Current.HistoryIndex + 1
-            while #global.Current.History >= global.Current.HistoryIndex do
-                table.remove(global.Current.History, global.Current.HistoryIndex)
-            end
-            global.Current.History[global.Current.HistoryIndex] = target
-            return target
-        end
-    end,
-    New = function(target)
-        if target then
-            global.Current.History = {target}
-            global.Current.HistoryIndex = 1
-            return target
-        end
-    end,
-    Back = function()
-        if global.Current.HistoryIndex > 1 then
-            global.Current.HistoryIndex = global.Current.HistoryIndex - 1
-            return global.Current.History[global.Current.HistoryIndex]
-        end
-    end,
-    Fore = function()
-        if global.Current.HistoryIndex < #global.Current.History then
-            global.Current.HistoryIndex = global.Current.HistoryIndex + 1
-            return global.Current.History[global.Current.HistoryIndex]
-        end
-    end
-}
-
 local function CloseGui()
     if global.Current.Frame then
         global.Current.Location = global.Current.Frame.location
@@ -555,7 +574,7 @@ end
 
 local function RegisterGuiKey(register)
     if register == false then
-        event.register(defines.events.on_gui_click, nil)
+        event.register(defines.events.on_gui_click)
     else
         event.register(
             defines.events.on_gui_click,
@@ -570,7 +589,7 @@ end
 
 local function RegisterBackNavigation(register)
     if register == false then
-        event.register(Constants.Key.Back, nil)
+        event.register(Constants.Key.Back)
     else
         event.register(
             Constants.Key.Back,
@@ -583,7 +602,7 @@ end
 
 local function RegisterForeNavigation(register)
     if register == false then
-        event.register(Constants.Key.Fore, nil)
+        event.register(Constants.Key.Fore)
     else
         event.register(
             Constants.Key.Fore,
@@ -594,9 +613,21 @@ local function RegisterForeNavigation(register)
     end
 end
 
+local function RegisterLoad(register)
+    if register == false then
+        event.on_load()
+    else
+        event.on_load(
+            function(event)
+                History.Load()
+            end
+        )
+    end
+end
+
 local function RegisterGuiClose(register)
     if register == false then
-        event.register(defines.events.on_gui_closed, nil)
+        event.register(defines.events.on_gui_closed)
     else
         event.register(
             defines.events.on_gui_closed,
@@ -622,6 +653,8 @@ StateHandler = function(state)
         RegisterForeNavigation(false)
         RegisterBackNavigation(false)
     end
+    History.Save()
 end
 
 RegisterMainForOpen()
+RegisterLoad()
