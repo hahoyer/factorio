@@ -19,3 +19,14 @@ data:extend(
     }
   }
 )
+
+data.raw["gui-style"].default[Constants.GuiStyle.CenteredFlow] = {
+  type = "horizontal_flow_style",
+  horizontally_stretchable = "on",
+  right_padding = "0",
+  left_padding = "0",
+  top_padding = "0",
+  bottom_padding = "0",
+  horizontal_align = "center",
+  color = {r = 0.9, b = 0, g = 0, a = 0}
+}

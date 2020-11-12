@@ -49,20 +49,6 @@ function result.GetLocalizeName(target)
     return item and item.localised_name
 end
 
-function result.CreateSpriteAndRegister(frame, target)
-    local item = result.GetPrototype(target)
-    local result =
-        frame.add {
-        type = "sprite-button",
-        tooltip = result.GetLocalizeName(target),
-        sprite = result.FormatSpriteName(target),
-        number = target.amount
-    }
-
-    global.Current.Links[result.index] = target
-    return result
-end
-
 function result.ShowFrame(name, create)
     local frame = global.Current.Player.gui.screen.add {type = "frame", name = name, direction = "vertical"}
     create(frame)

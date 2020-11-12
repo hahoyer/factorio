@@ -5,6 +5,9 @@ local result = {
         Back = modName .. "-back-key",
         Fore = modName .. "-fore-key"
     },
+    GuiStyle = {
+        CenteredFlow = modName .. "-centered-flow"
+    },
     ModName = modName,
     GlobalPrefix = modName .. "_" .. "GlobalPrefix",
     GraphicsPath = "__" .. modName .. "__/graphics/"

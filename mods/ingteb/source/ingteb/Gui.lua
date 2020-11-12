@@ -1,5 +1,22 @@
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
+local Table = require("core.Table")
+local Array = Table.Array
+local Dictionary = Table.Dictionary
+
+local function CreateSpriteAndRegister(frame, target)
+    local item = Helper.GetPrototype(target)
+    local result =
+        frame.add {
+        type = "sprite-button",
+        tooltip = Helper.GetLocalizeName(target),
+        sprite = Helper.FormatSpriteName(target),
+        number = target.amount
+    }
+
+    global.Current.Links[result.index] = target
+    return result
+end
 
 local function CreateRecipeLine(frame, target, inCount, outCount)
     local subFrame =
@@ -20,7 +37,7 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
     end
     target.In:Select(
         function(item)
-            return Helper.CreateSpriteAndRegister(inPanel, item)
+            return CreateSpriteAndRegister(inPanel, item)
         end
     )
 
@@ -38,7 +55,7 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
 
     target.Properties:Select(
         function(property)
-            return Helper.CreateSpriteAndRegister(properties, property)
+            return CreateSpriteAndRegister(properties, property)
         end
     )
 
@@ -56,7 +73,7 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
 
     target.Out:Select(
         function(item)
-            return Helper.CreateSpriteAndRegister(outPanel, item)
+            return CreateSpriteAndRegister(outPanel, item)
         end
     )
     for _ = target.Out:Count() + 1, outCount do
@@ -70,15 +87,16 @@ local function CreateCraftingGroupPane(frame, target, inCount, outCount)
         direction = "horizontal"
     }
 
-    local header =
+    local actors =
         frame.add {
         type = "flow",
+        style = Constants.GuiStyle.CenteredFlow,
         direction = "horizontal"
     }
 
     target.Actors:Select(
         function(actor)
-            return Helper.CreateSpriteAndRegister(header, actor)
+            return CreateSpriteAndRegister(actors, actor)
         end
     )
 
@@ -99,7 +117,7 @@ local function CreateCraftingGroupPane(frame, target, inCount, outCount)
     }
 end
 
-local function CreateCraftingGroupsPane(frame, target, caption)
+local function CreateCraftingGroupsPane(frame, target, headerSprites)
     if not target or not target:Any() then
         return
     end
@@ -108,9 +126,21 @@ local function CreateCraftingGroupsPane(frame, target, caption)
         frame.add {
         type = "frame",
         horizontal_scroll_policy = "never",
-        caption = caption,
         direction = "vertical"
     }
+
+    local labelFlow =
+        subFrame.add {
+        type = "flow",
+        direction = "horizontal",
+        style = Constants.GuiStyle.CenteredFlow
+    }
+
+    headerSprites:Select(
+        function(sprite)
+            labelFlow.add {type = "sprite", sprite = sprite}
+        end
+    )
 
     local inCount =
         target:Select(
@@ -158,18 +188,18 @@ local function CreateMainPanel(frame, target)
     end
 
     if target.In:Any() or target.Out:Any() then
-        local targetRichText = Helper.FormatRichText(target.Target)
+        local targetRichText = Helper.FormatSpriteName(target.Target)
 
         CreateCraftingGroupsPane(
             mainFrame,
             target.In,
-            targetRichText .. "[img=utility/go_to_arrow][img=utility/missing_icon]"
+            Array:new {targetRichText, "utility/go_to_arrow", "utility/missing_icon"}
         )
 
         CreateCraftingGroupsPane(
             mainFrame,
             target.Out,
-            "[img=utility/missing_icon][img=utility/go_to_arrow]" .. targetRichText
+            Array:new {"utility/missing_icon", "utility/go_to_arrow", targetRichText}
         )
     else
         local none = mainFrame.add {type = "frame", direction = "horizontal"}
@@ -177,7 +207,7 @@ local function CreateMainPanel(frame, target)
             type = "label",
             caption = "[img=utility/crafting_machine_recipe_not_unlocked][img=utility/go_to_arrow]"
         }
-        Helper.CreateSpriteAndRegister(none, target.Target)
+        CreateSpriteAndRegister(none, target.Target)
         none.add {
             type = "label",
             caption = "[img=utility/go_to_arrow][img=utility/crafting_machine_recipe_not_unlocked]"

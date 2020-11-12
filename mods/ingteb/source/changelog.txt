@@ -9,6 +9,7 @@ Date: 2020-11-12
     - history not working
   Changes:
     - refactor of file structure
+    - layout improvements
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.1
 Date: 2020-11-11
