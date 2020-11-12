@@ -6,6 +6,9 @@ Date: 2020-11-12
     - positioning is not working
     - esc on selector panel not working
     - trees are not working
+    - history not working
+  Changes:
+    - refactor of file structure
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.1
 Date: 2020-11-11
