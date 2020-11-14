@@ -89,6 +89,11 @@ local function MainForOpen(event)
     OpenMainGui(target)
 end
 
+local function RefreshMain()
+    EnsureGlobal()
+    OpenMainGui(History:GetCurrent())
+end
+
 local function Load()
     History:Load(global.Current and global.Current.History)
 end
@@ -109,7 +114,8 @@ StateHandler = function(state)
     handlers[defines.events.on_gui_elem_changed] = {GuiElementChangedForSelect, state.selectPanel}
     handlers[defines.events.on_gui_closed] = {GuiClose, state.mainPanel or state.selectPanel}
 
-    --handlers["on_player_main_inventory_changed"] = {BackNavigation, state.mainPanel}
+    handlers[defines.events.on_player_main_inventory_changed] = {RefreshMain, state.mainPanel}
+    handlers[defines.events.on_player_cursor_stack_changed] = {RefreshMain, state.mainPanel}
 
 
     Helper.SetHandlers(handlers)

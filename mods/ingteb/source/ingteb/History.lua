@@ -35,6 +35,10 @@ function result:Back()
     end
 end
 
+function result:GetCurrent()
+    return self.Data[self.Index]
+end
+
 function result:Fore()
     if self.Index < #self.Data then
         self.Index = self.Index + 1
