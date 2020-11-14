@@ -4,37 +4,46 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 
-local function CreateSpriteAndRegister(frame, target)
+local function CreateSpriteAndRegister(frame, target, style)
     local item = Helper.GetPrototype(target)
     local result =
         frame.add {
         type = "sprite-button",
         tooltip = Helper.GetLocalizeName(target),
         sprite = Helper.FormatSpriteName(target),
-        number = target.amount
+        number = target.amount,
+        style = style
     }
 
     global.Current.Links[result.index] = target
     return result
 end
 
-local function CreateRecipeLine(frame, target, inCount, outCount)
-    local subFrame =
-        frame.add {
-        type = "flow",
-        direction = "horizontal"
-    }
+local function GetPropertyStyle(property)
+    if property.type == "utility" and property.name == "clock" then
+        return "slot_button"
+    end
+    if property.type == "technology" then
+        return "slot_button"
+    end
+    if property.type == "recipe" then
+        if property.amount and property.cache.Prototype.Value.category == "crafting" then
+            return Constants.GuiStyle.LightButton
+        end
+        return "red_slot_button"
+    end
 
-    local inPanel =
-        subFrame.add {
-        name = "in",
-        type = "flow",
-        direction = "horizontal"
-    }
+    return
+end
+
+local function CreateRecipeLine(frame, target, inCount, outCount)
+    local subFrame = frame.add {type = "flow", direction = "horizontal"}
+    local inPanel = subFrame.add {name = "in", type = "flow", direction = "horizontal"}
 
     for _ = target.In:Count() + 1, inCount do
         inPanel.add {type = "sprite-button"}
     end
+
     target.In:Select(
         function(item)
             return CreateSpriteAndRegister(inPanel, item)
@@ -43,49 +52,33 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
 
     local properties =
         subFrame.add {
-        name = "properties",
         type = "flow",
         direction = "horizontal"
     }
-
-    properties.add {
-        type = "sprite",
-        sprite = "utility/go_to_arrow"
-    }
+    properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
 
     target.Properties:Select(
         function(property)
-            return CreateSpriteAndRegister(properties, property)
+            return CreateSpriteAndRegister(properties, property, GetPropertyStyle(property))
         end
     )
 
-    properties.add {
-        type = "sprite",
-        sprite = "utility/go_to_arrow"
-    }
-
-    local outPanel =
-        subFrame.add {
-        name = "out",
-        type = "flow",
-        direction = "horizontal"
-    }
+    properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
+    local outPanel = subFrame.add {name = "out", type = "flow", direction = "horizontal"}
 
     target.Out:Select(
         function(item)
             return CreateSpriteAndRegister(outPanel, item)
         end
     )
+
     for _ = target.Out:Count() + 1, outCount do
         outPanel.add {type = "sprite-button"}
     end
 end
 
 local function CreateCraftingGroupPane(frame, target, inCount, outCount)
-    frame.add {
-        type = "line",
-        direction = "horizontal"
-    }
+    frame.add {type = "line", direction = "horizontal"}
 
     local actors =
         frame.add {
@@ -100,10 +93,7 @@ local function CreateCraftingGroupPane(frame, target, inCount, outCount)
         end
     )
 
-    frame.add {
-        type = "line",
-        direction = "horizontal"
-    }
+    frame.add {type = "line", direction = "horizontal"}
 
     target.Recipes:Select(
         function(recipe)
@@ -111,10 +101,7 @@ local function CreateCraftingGroupPane(frame, target, inCount, outCount)
         end
     )
 
-    frame.add {
-        type = "line",
-        direction = "horizontal"
-    }
+    frame.add {type = "line", direction = "horizontal"}
 end
 
 local function CreateCraftingGroupsPane(frame, target, headerSprites)

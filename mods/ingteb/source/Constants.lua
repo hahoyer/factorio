@@ -6,7 +6,9 @@ local result = {
         Fore = modName .. "-fore-key"
     },
     GuiStyle = {
-        CenteredFlow = modName .. "-centered-flow"
+        CenteredFlow = modName .. "-centered-flow",
+        ProperiesFlow = modName .. "-properties-flow",
+        LightButton = modName .. "-light-button"
     },
     ModName = modName,
     GlobalPrefix = modName .. "_" .. "GlobalPrefix",

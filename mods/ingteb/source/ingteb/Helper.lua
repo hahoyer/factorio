@@ -11,6 +11,7 @@ function result.ActualType(target)
 end
 
 function result.FormatSpriteName(target)
+    if not target.name then return end
     return result.ActualType(target) .. "." .. target.name
 end
 
@@ -19,29 +20,44 @@ function result.FormatRichText(target)
 end
 
 function result.GetPrototype(target)
-    local name = target.name
-    local type = result.ActualType(target)
-    if type == "utility" then
-        return
-    end
-    if type == "entity" then
-        return game.entity_prototypes[name]
-    end
+    local function GetValue()
+        local name = target.name
+        local type = result.ActualType(target)
+        if type == "utility" then
+            return
+        end
 
-    if type == "fluid" then
-        local result = game.fluid_prototypes[name]
+        if type == "technology" then
+            return game.technology_prototypes[name]
+        end
+
+        if type == "entity" then
+            return game.entity_prototypes[name]
+        end
+
+        if type == "fluid" then
+            local result = game.fluid_prototypes[name]
+            if result then
+                return result
+            end
+            local x = b.point
+        end
+
+        local result = game.item_prototypes[name]
         if result then
             return result
         end
+
         local x = b.point
     end
 
-    local result = game.item_prototypes[name]
-    if result then
-        return result
+    if not target.cache then
+        target.cache = {}
     end
-
-    local x = b.point
+    if not target.cache.Prototype then
+        target.cache.Prototype = {Value = GetValue()}
+    end
+    return target.cache.Prototype.Value
 end
 
 function result.GetLocalizeName(target)

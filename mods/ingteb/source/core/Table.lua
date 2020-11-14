@@ -252,6 +252,27 @@ function Array:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
   return self[1]
 end
 
+function Dictionary:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
+  local result
+  for _, value in pairs(self) do
+    if allowMultiple ~= false then
+      return value
+    end
+    if result then
+      error(onMultiple and onMultiple(#self) or "Array contains more than one element (" .. #self .. ").")
+    end
+    result = {value = value}
+  end
+
+  if result then
+    return result.value
+  end
+  
+  if allowEmpty == false or onEmpty then
+    error(onEmpty and onEmpty() or "Array contains no element.")
+  end
+end
+
 function Array:Bottom(allowEmpty, allowMultiple, onEmpty, onMultiple)
   if #self == 0 then
     if allowEmpty == false or onEmpty then

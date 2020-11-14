@@ -15,13 +15,38 @@ local function SpreadHandMiningRecipe(prototype)
     }
 end
 
-local function SpreadRecipe(receipe)
+local function GetAmountForRecipe(recipe)
+    local result = global.Current.Player.get_craftable_count(recipe.name)
+    if result > 0 then
+        return result
+    end
+end
+
+local function SpreadRecipe(recipe)
+    local technology =
+        Dictionary:new(game.technology_prototypes):Where(
+        function(technology)
+            return Array:new(technology.effects):Any(
+                function(effect)
+                    return effect.type == "unlock-recipe" and effect.recipe == recipe.name
+                end
+            )
+        end
+    ):Top(true, true)
+
     return {
-        In = Array:new(receipe.ingredients),
+        In = Array:new(recipe.ingredients),
         Properties = Array:new {
-            {type = "utility", name = "clock", amount = receipe.energy}
+            {type = "technology", name = technology and technology.name, cache = {Prototype = {Value = technology}}},
+            {
+                type = "recipe",
+                name = recipe.name,
+                amount = GetAmountForRecipe(recipe),
+                cache = {Prototype = {Value = recipe}}
+            },
+            {type = "utility", name = "clock", amount = recipe.energy},
         },
-        Out = Array:new(receipe.products)
+        Out = Array:new(recipe.products)
     }
 end
 
@@ -135,9 +160,7 @@ local function SpreadEntity(target)
     return SpreadItem({type = "item", name = item.name})
 end
 
-local result = {}
-
-function result.Get(target)
+local function ProvideHelp(target)
     local result
     if target.type == "resource" or target.type == "tree" or target.type == "simple-entity" then
         result = SpreadResource(target)
@@ -151,6 +174,27 @@ function result.Get(target)
         result = SpreadItem(target)
     end
     return result
+end
+
+local function ProvideResearch(technologyName)
+end
+
+local function ProvideCrafting(recipeName)
+end
+
+local result = {}
+
+function result.Get(target)
+    if not target.target then
+        return ProvideHelp(target)
+    end
+    local subTarget = target.target
+    if target.name and not target.amount then
+        return ProvideResearch(target.name)
+    end
+    if target.amount and target.amout > 0 then
+        return ProvideCrafting(subTarget.name)
+    end
 end
 
 function result.FindTarget()
