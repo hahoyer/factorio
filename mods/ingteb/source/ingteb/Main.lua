@@ -35,10 +35,16 @@ local function OpenMainGui(target, setHistory)
             Helper.HideFrame()
             Gui.Main(data)
             StateHandler {mainPanel = true}
-            if setHistory ~= false then History:HairCut(target) end
+            if setHistory ~= false then
+                History:HairCut(target)
+            end
             return target
         end
     end
+end
+
+local function RefreshMain()
+    OpenMainGui(History:GetCurrent(), false)
 end
 
 function ForeNavigation()
@@ -50,13 +56,11 @@ function BackNavigation()
 end
 
 local function GuiClickForMain(event)
-    global.Current.Player = game.players[event.player_index]
-    local target = global.Current.Links and global.Current.Links[event.element.index]
-    if target.name == "automation" then
-        local a = b
+    if event.button == defines.mouse_button_type.left and not event.alt and not event.control and not event.shift then
+        global.Current.Player = game.players[event.player_index]
+        local target = global.Current.Links and global.Current.Links[event.element.index]
+        OpenMainGui(target)
     end
-
-    OpenMainGui(target)
 end
 
 local function GuiElementChangedForSelect(event)
@@ -73,7 +77,6 @@ end
 local function MainForClose()
     Helper.HideFrame()
     StateHandler {mainPanel = false, selectPanel = false}
-    History:RemoveAll()
 end
 
 local function MainForOpen(event)
@@ -89,11 +92,6 @@ local function MainForOpen(event)
     OpenMainGui(target)
 end
 
-local function RefreshMain()
-    EnsureGlobal()
-    OpenMainGui(History:GetCurrent())
-end
-
 local function Load()
     History:Load(global.Current and global.Current.History)
 end
@@ -105,10 +103,14 @@ StateHandler = function(state)
     local handlers = Dictionary:new {}
 
     handlers[Constants.Key.Fore] = {ForeNavigation, state.mainPanel}
-    handlers[Constants.Key.Back] = {BackNavigation, state.mainPanel}
+
+    handlers[Constants.Key.Back] =
+        (state.mainPanel and {BackNavigation, state.mainPanel}) or --
+        {RefreshMain, "reopen current"}
 
     handlers[Constants.Key.Main] =
-        ((state.mainPanel or state.selectPane) and {MainForClose, "close mode"}) or {MainForOpen, "open mode"}
+        ((state.mainPanel or state.selectPane) and {MainForClose, "close mode"}) or --
+        {MainForOpen, "open mode"}
 
     handlers[defines.events.on_gui_click] = {GuiClickForMain, state.mainPanel}
     handlers[defines.events.on_gui_elem_changed] = {GuiElementChangedForSelect, state.selectPanel}
@@ -116,11 +118,9 @@ StateHandler = function(state)
 
     handlers[defines.events.on_player_main_inventory_changed] = {RefreshMain, state.mainPanel}
     handlers[defines.events.on_player_cursor_stack_changed] = {RefreshMain, state.mainPanel}
-
+    handlers[defines.events.on_research_finished] = {RefreshMain, state.mainPanel}
 
     Helper.SetHandlers(handlers)
-
-
 
     global.Current.History = History:Save()
 end

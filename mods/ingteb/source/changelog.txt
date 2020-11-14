@@ -12,6 +12,7 @@ Date: 2020-11-14
     - refactor of file structure
     - layout improvements
     - event handling improved
+    - updating crafting options
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.1
 Date: 2020-11-11

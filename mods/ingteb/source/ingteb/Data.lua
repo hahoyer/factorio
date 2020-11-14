@@ -16,6 +16,10 @@ local function SpreadHandMiningRecipe(prototype)
 end
 
 local function GetAmountForRecipe(recipe)
+    if not recipe.enabled then
+        return
+    end
+    
     local result = global.Current.Player.get_craftable_count(recipe.name)
     if result > 0 then
         return result
@@ -24,7 +28,7 @@ end
 
 local function SpreadRecipe(recipe)
     local technology =
-        Dictionary:new(game.technology_prototypes):Where(
+        Dictionary:new(global.Current.Player.force.technologies):Where(
         function(technology)
             return Array:new(technology.effects):Any(
                 function(effect)
@@ -101,7 +105,7 @@ local function SpreadItemGroup(target, key)
 end
 
 local function SpreadItemIn(target)
-    return Dictionary:new(game.recipe_prototypes):Where(
+    return Dictionary:new(global.Current.Player.force.recipes):Where(
         function(recipe)
             if recipe.hidden then
                 return false
@@ -124,7 +128,7 @@ local function SpreadItemIn(target)
 end
 
 local function SpreadItemOut(target)
-    return Dictionary:new(game.recipe_prototypes):Where(
+    return Dictionary:new(global.Current.Player.force.recipes):Where(
         function(item)
             return Array:new(item.products):Any(
                 function(this)

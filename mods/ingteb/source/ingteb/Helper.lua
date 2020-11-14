@@ -39,7 +39,7 @@ function result.GetPrototype(target)
         end
 
         if type == "technology" then
-            return game.technology_prototypes[name]
+            return global.Current.Player.force.technologies[name]
         end
 
         if type == "entity" then
@@ -55,6 +55,11 @@ function result.GetPrototype(target)
         end
 
         local result = game.item_prototypes[name]
+        if result then
+            return result
+        end
+
+        local result = game.entity_prototypes[name]
         if result then
             return result
         end
