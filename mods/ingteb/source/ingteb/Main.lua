@@ -51,7 +51,12 @@ end
 
 local function GuiClickForMain(event)
     global.Current.Player = game.players[event.player_index]
-    OpenMainGui(global.Current.Links and global.Current.Links[event.element.index])
+    local target = global.Current.Links and global.Current.Links[event.element.index]
+    if target.name == "automation" then
+        local a = b
+    end
+
+    OpenMainGui(target)
 end
 
 local function GuiElementChangedForSelect(event)

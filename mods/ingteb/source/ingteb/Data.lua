@@ -44,7 +44,7 @@ local function SpreadRecipe(recipe)
                 amount = GetAmountForRecipe(recipe),
                 cache = {Prototype = {Value = recipe}}
             },
-            {type = "utility", name = "clock", amount = recipe.energy},
+            {type = "utility", name = "clock", amount = recipe.energy}
         },
         Out = Array:new(recipe.products)
     }
@@ -162,6 +162,9 @@ end
 
 local function ProvideHelp(target)
     local result
+    if target.type == "technology" or target.type == "recipe" then
+        return
+    end
     if target.type == "resource" or target.type == "tree" or target.type == "simple-entity" then
         result = SpreadResource(target)
     elseif target.type == "item" or target.type == "fluid" then
