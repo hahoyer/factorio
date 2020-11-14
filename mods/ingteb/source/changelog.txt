@@ -1,12 +1,13 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.2
-Date: 2020-11-12
+Date: 2020-11-14
   Bugfixes:
     - military things
     - positioning is not working
     - esc on selector panel not working
     - trees are not working
     - history not working
+    - inhibit help for technologies or recipes (temporary)
   Changes:
     - refactor of file structure
     - layout improvements

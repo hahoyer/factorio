@@ -1,6 +1,15 @@
 local event = require("__flib__.event")
+local Table = require("core.Table")
+local Array = Table.Array
+local Dictionary = Table.Dictionary
 
 local result = {}
+local EventDefinesByIndex =
+    Dictionary:new(defines.events):ToDictionary(
+    function(value, key)
+        return {Key = value, Value = key}
+    end
+):ToArray()
 
 function result.ActualType(target)
     local type = target.type
@@ -11,7 +20,9 @@ function result.ActualType(target)
 end
 
 function result.FormatSpriteName(target)
-    if not target.name then return end
+    if not target.name then
+        return
+    end
     return result.ActualType(target) .. "." .. target.name
 end
 
@@ -90,19 +101,12 @@ function result.HideFrame()
     end
 end
 
-function result.SetHandler(name, handler, register)
+function result.SetHandler(eventId, handler, register)
     if register == nil then
         register = true
     end
-    local eventId = name
-    local eventFunction = "register"
 
-    if name:find("^on_gui_") then
-        eventId = defines.events[name]
-    elseif name == "on_load" then
-        eventId = nil
-        eventFunction = name
-    end
+    local name = type(eventId) == "number" and EventDefinesByIndex[eventId] or eventId
 
     State[name] = "activating..." .. tostring(register)
 
@@ -110,12 +114,13 @@ function result.SetHandler(name, handler, register)
         handler = nil
     end
 
-    if eventId then
-        event[eventFunction](eventId, handler)
+    local eventRegistrar = event[eventId]
+    if eventRegistrar then
+        eventRegistrar(handler)
     else
-        event[eventFunction](handler)
+        event.register(eventId, handler)
     end
-
+   
     State[name] = register
 end
 

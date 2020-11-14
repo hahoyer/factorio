@@ -105,11 +105,17 @@ StateHandler = function(state)
     handlers[Constants.Key.Main] =
         ((state.mainPanel or state.selectPane) and {MainForClose, "close mode"}) or {MainForOpen, "open mode"}
 
-    handlers["on_gui_click"] = {GuiClickForMain, state.mainPanel}
-    handlers["on_gui_elem_changed"] = {GuiElementChangedForSelect, state.selectPanel}
-    handlers["on_gui_closed"] = {GuiClose, state.mainPanel or state.selectPanel}
+    handlers[defines.events.on_gui_click] = {GuiClickForMain, state.mainPanel}
+    handlers[defines.events.on_gui_elem_changed] = {GuiElementChangedForSelect, state.selectPanel}
+    handlers[defines.events.on_gui_closed] = {GuiClose, state.mainPanel or state.selectPanel}
+
+    --handlers["on_player_main_inventory_changed"] = {BackNavigation, state.mainPanel}
+
 
     Helper.SetHandlers(handlers)
+
+
+
     global.Current.History = History:Save()
 end
 
