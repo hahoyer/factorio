@@ -21,16 +21,38 @@ end
 
 local function GetPropertyStyle(property)
     if property.type == "utility" and property.name == "clock" then
-        return "slot_button"
+        return
     end
     if property.type == "technology" then
-        return "slot_button"
+        local data = Helper.GetPrototype(property)
+        if not data then
+            return
+        end
+
+        if data.researched then
+            return
+        end
+
+        if
+            Dictionary:new(data.prerequisites):Where(
+                function(pre)
+                    return not pre.researched
+                end
+            ):Any()
+         then
+            return "red_slot_button"
+        end
+
+        return Constants.GuiStyle.LightButton
     end
     if property.type == "recipe" then
-        if property.amount and property.cache.Prototype.Value.category == "crafting" then
+        local data = Helper.GetPrototype(property)
+        if not data.enabled then
+            return "red_slot_button"
+        end
+        if data.category == "crafting" and property.amount then
             return Constants.GuiStyle.LightButton
         end
-        return "red_slot_button"
     end
 
     return
