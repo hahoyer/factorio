@@ -2,9 +2,11 @@
 Version: 0.2.3
 Date: 2020-11-15
   Bugfixes:
+    - amount value for probabilistic products
   Changes:
     - info about mining improved
     - Button styles
+    - ordered recipes
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.2
 Date: 2020-11-14

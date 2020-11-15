@@ -22,14 +22,20 @@ local function SpreadHandMiningRecipe(prototype)
     }
 end
 
-local function GetAmountForRecipe(recipe)
-    if not recipe.enabled then
+local function GetAmountForRecipe(target)
+    if not target.enabled then
         return
     end
 
-    local result = global.Current.Player.get_craftable_count(recipe.name)
+    local result = global.Current.Player.get_craftable_count(target.name)
     if result > 0 then
         return result
+    end
+end
+
+local function GetAmountForTecnology(target)
+    if target and target.level and target.prototype.max_level > 1 then 
+        return target.level
     end
 end
 
@@ -59,6 +65,7 @@ local function SpreadRecipe(recipe)
                 type = "technology",
                 name = technology and technology.name,
                 hasPrerequisites = hasPrerequisites,
+                amount = GetAmountForTecnology(technology),
                 cache = {Prototype = {Value = technology}}
             },
             {
