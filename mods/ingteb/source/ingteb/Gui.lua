@@ -25,7 +25,7 @@ local function CreateSpriteAndRegister(frame, target, style)
         sprite = Helper.FormatSpriteName(target),
         number = GetNumberValueForSprite(target),
         show_percent_for_small_numbers = target.probability ~= nil,
-        style = style
+        style = style or "slot_button"
     }
 
     global.Current.Links[result.index] = target
@@ -76,7 +76,7 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
     local inPanel = subFrame.add {name = "in", type = "flow", direction = "horizontal"}
 
     for _ = target.In:Count() + 1, inCount do
-        inPanel.add {type = "sprite-button"}
+        inPanel.add {type = "sprite", style = Constants.GuiStyle.UnButton}
     end
 
     target.In:Select(
@@ -107,9 +107,6 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
         end
     )
 
-    for _ = target.Out:Count() + 1, outCount do
-        outPanel.add {type = "sprite-button"}
-    end
 end
 
 local function CreateCraftingGroupPane(frame, target, inCount, outCount)

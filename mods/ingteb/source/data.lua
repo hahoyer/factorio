@@ -65,11 +65,11 @@ data.raw["gui-style"].default[Constants.GuiStyle.LightButton] = {
   size = 40,
   padding = 0,
   default_graphical_set = {
-    base = sprite17(0, 1),
+    base = sprite17(0, 1)
     --shadow = offset_by_2_rounded_corners_glow(default_dirt_color)
   },
   hovered_graphical_set = {
-    base = sprite17(2, 1),
+    base = sprite17(2, 1)
     --shadow = offset_by_2_rounded_corners_glow(default_dirt_color),
     --glow = offset_by_2_rounded_corners_glow(default_glow_color)
   },
@@ -91,4 +91,9 @@ data.raw["gui-style"].default[Constants.GuiStyle.LightButton] = {
     shadow = offset_by_2_rounded_corners_glow(default_dirt_color)
   },
   pie_progress_color = {0.98, 0.66, 0.22, 0.5}
+}
+
+data.raw["gui-style"].default[Constants.GuiStyle.UnButton] = {
+  type = "image_style",
+  width=40
 }
