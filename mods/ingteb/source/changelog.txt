@@ -4,6 +4,7 @@ Date: 2020-11-15
   Bugfixes:
   Changes:
     - info about mining improved
+    - Button styles
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.2
 Date: 2020-11-14

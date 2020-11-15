@@ -5,8 +5,8 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 
 local function GetNumberValueForSprite(target)
-    if target.amount_min and target.amount_max and target.probability == 1 and not target.amount then
-        return target.amount_max - target.amount_min
+    if target.amount_min and target.amount_max and target.probability and not target.amount then
+        return (target.amount_max + target.amount_min) / 2 * target.probability
     end
     if not target.amount_min and not target.amount_max and target.probability and target.amount then
         return target.amount * target.probability
@@ -21,7 +21,7 @@ local function CreateSpriteAndRegister(frame, target, style)
     local result =
         frame.add {
         type = "sprite-button",
-        tooltip = Helper.GetLocalizeName(target),
+        tooltip = target.details or Helper.GetLocalizeName(target),
         sprite = Helper.FormatSpriteName(target),
         number = GetNumberValueForSprite(target),
         show_percent_for_small_numbers = target.probability ~= nil,
@@ -46,13 +46,7 @@ local function GetPropertyStyle(property)
             return
         end
 
-        if
-            Dictionary:new(data.prerequisites):Where(
-                function(pre)
-                    return not pre.researched
-                end
-            ):Any()
-         then
+        if property.hasPrerequisites then
             return "red_slot_button"
         end
 
@@ -107,6 +101,9 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
         end
     )
 
+    for _ = target.Out:Count() + 1, outCount do
+        outPanel.add {type = "sprite", style = Constants.GuiStyle.UnButton}
+    end
 end
 
 local function CreateCraftingGroupPane(frame, target, inCount, outCount)

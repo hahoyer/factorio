@@ -12,7 +12,11 @@ local function SpreadHandMiningRecipe(prototype)
     return {
         In = Array:new(inList),
         Properties = Array:new {
-            {type = "utility", name = "clock", amount = prototype.mineable_properties.mining_time}
+            {
+                type = "utility",
+                name = "clock",
+                amount = prototype.mineable_properties.mining_time
+            }
         },
         Out = Array:new(prototype.mineable_properties.products)
     }
@@ -41,17 +45,33 @@ local function SpreadRecipe(recipe)
         end
     ):Top(true, true)
 
+    local hasPrerequisites =
+        technology and
+        Dictionary:new(technology.prerequisites):Where(
+            function(pre)
+                return not pre.researched
+            end
+        ):Any()
     return {
         In = Array:new(recipe.ingredients),
         Properties = Array:new {
-            {type = "technology", name = technology and technology.name, cache = {Prototype = {Value = technology}}},
+            {
+                type = "technology",
+                name = technology and technology.name,
+                hasPrerequisites = hasPrerequisites,
+                cache = {Prototype = {Value = technology}}
+            },
             {
                 type = "recipe",
                 name = recipe.name,
                 amount = GetAmountForRecipe(recipe),
                 cache = {Prototype = {Value = recipe}}
             },
-            {type = "utility", name = "clock", amount = recipe.energy}
+            {
+                type = "utility",
+                name = "clock",
+                amount = recipe.energy
+            }
         },
         Out = Array:new(recipe.products)
     }
@@ -88,7 +108,7 @@ local function SpreadMiningActors(prototype)
     if hasFluid then
         return result
     end
-    return result:Concat( Array:new{{type = "tool", name = "steel-axe", amount = modifier}})
+    return result:Concat(Array:new {{type = "tool", name = "steel-axe", amount = modifier}})
 end
 
 local function SpreadHandMining(target)
@@ -127,14 +147,52 @@ end
 
 local function SpreadItemGroup(target, key)
     local actors = SpreadActors(key)
-    return {
-        Actors = actors,
-        Recipes = target:Select(
-            function(recipe)
-                return SpreadRecipe(recipe)
+    local recipes =
+        target:Select(
+        function(recipe)
+            return SpreadRecipe(recipe)
+        end
+    )
+    recipes:Sort(
+        function(a, b)
+            if a == b then
+                return false
             end
-        )
-    }
+
+            local aRecipe = a.Properties[2].cache.Prototype.Value
+            local bRecipe = b.Properties[2].cache.Prototype.Value
+
+            if aRecipe.enabled ~= bRecipe.enabled then
+                return aRecipe.enabled
+            end
+
+            local aTechnology = a.Properties[1].cache.Prototype.Value
+            local bTechnology = b.Properties[1].cache.Prototype.Value
+
+            if (not aTechnology) ~= (not bTechnology) then
+                return not aTechnology
+            end
+
+            if aTechnology and aTechnology.researched ~= bTechnology.researched then
+                return aTechnology.researched
+            end
+
+            if (not a.Properties[1].hasPrerequisites) ~= (not b.Properties[1].hasPrerequisites) then
+                return not a.Properties[1].hasPrerequisites
+            end
+
+            if aRecipe.group ~= bRecipe.group then
+                return aRecipe.group.order < bRecipe.group.order
+            end
+            if aRecipe.subgroup ~= bRecipe.subgroup then
+                return aRecipe.subgroup.order < bRecipe.subgroup.order
+            end
+
+            return aRecipe.order < bRecipe.order
+        end
+    )
+
+    return {Actors = actors, Recipes = recipes}
 end
 
 local function SpreadItemIn(target)
