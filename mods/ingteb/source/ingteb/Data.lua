@@ -4,10 +4,13 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 
 local function SpreadHandMiningRecipe(prototype)
+    local inList = {{type = prototype.type, name = prototype.name}}
+    if prototype.mineable_properties.required_fluid then
+        table.insert(inList, {type = "fluid", name = prototype.mineable_properties.required_fluid})
+    end
+
     return {
-        In = Array:new {
-            {type = prototype.type, name = prototype.name}
-        },
+        In = Array:new(inList),
         Properties = Array:new {
             {type = "utility", name = "clock", amount = prototype.mineable_properties.mining_time}
         },
@@ -19,7 +22,7 @@ local function GetAmountForRecipe(recipe)
     if not recipe.enabled then
         return
     end
-    
+
     local result = global.Current.Player.get_craftable_count(recipe.name)
     if result > 0 then
         return result
@@ -54,16 +57,46 @@ local function SpreadRecipe(recipe)
     }
 end
 
+local function SpreadMiningActors(prototype)
+    local modifier = global.Current.Player.character_mining_speed_modifier
+    if modifier == 0 then
+        modifier = nil
+    end
+
+    local key = prototype.resource_category
+    local hasFluid = prototype.mineable_properties.fluid_amount and prototype.mineable_properties.fluid_amount > 0
+
+    local result =
+        Dictionary:new(game.entity_prototypes):Where(
+        function(entity)
+            if hasFluid and #entity.fluidbox_prototypes == 0 then
+                return false
+            end
+            return entity.resource_categories and entity.resource_categories[key]
+        end
+    ):ToArray():Select(
+        function(entity)
+            local target = {
+                name = entity.name,
+                type = "entity",
+                amount = entity.mining_speed,
+                cache = {Prototype = {Value = entity}}
+            }
+            return target
+        end
+    )
+    if hasFluid then
+        return result
+    end
+    return result:Concat( Array:new{{type = "tool", name = "steel-axe", amount = modifier}})
+end
+
 local function SpreadHandMining(target)
     local prototype = game.entity_prototypes[target.name]
 
     if prototype.mineable_properties.minable then
-        local modifier = global.Current.Player.character_mining_speed_modifier
-        if modifier == 0 then
-            modifier = nil
-        end
         return {
-            Actors = Array:new {{type = "entity", name = "character", amount = modifier}},
+            Actors = SpreadMiningActors(prototype),
             Recipes = Array:new {SpreadHandMiningRecipe(prototype)}
         }
     end
@@ -169,7 +202,7 @@ local function ProvideHelp(target)
     if target.type == "technology" or target.type == "recipe" then
         return
     end
-    if target.type == "resource" or target.type == "tree" or target.type == "simple-entity" then
+    if target.type == "resource" or target.type == "fish" or target.type == "tree" or target.type == "simple-entity" then
         result = SpreadResource(target)
     elseif target.type == "item" or target.type == "fluid" then
         result = SpreadItem(target)
@@ -192,6 +225,9 @@ end
 local result = {}
 
 function result.Get(target)
+    if target.type == "item-entity" and target.name == "item-on-ground" then
+        return
+    end
     if not target.target then
         return ProvideHelp(target)
     end

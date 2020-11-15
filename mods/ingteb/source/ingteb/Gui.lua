@@ -4,14 +4,27 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 
+local function GetNumberValueForSprite(target)
+    if target.amount_min and target.amount_max and target.probability == 1 and not target.amount then
+        return target.amount_max - target.amount_min
+    end
+    if not target.amount_min and not target.amount_max and target.probability and target.amount then
+        return target.amount * target.probability
+    end
+    if target.amount_min or target.amount_max or target.probability then
+        local a = b
+    end
+    return target.amount
+end
+
 local function CreateSpriteAndRegister(frame, target, style)
-    local item = Helper.GetPrototype(target)
     local result =
         frame.add {
         type = "sprite-button",
         tooltip = Helper.GetLocalizeName(target),
         sprite = Helper.FormatSpriteName(target),
-        number = target.amount,
+        number = GetNumberValueForSprite(target),
+        show_percent_for_small_numbers = target.probability ~= nil,
         style = style
     }
 
@@ -197,18 +210,18 @@ local function CreateMainPanel(frame, target)
     end
 
     if target.In:Any() or target.Out:Any() then
-        local targetRichText = Helper.FormatSpriteName(target.Target)
+        local targetSprite = Helper.FormatSpriteName(target.Target)
 
         CreateCraftingGroupsPane(
             mainFrame,
             target.In,
-            Array:new {targetRichText, "utility/go_to_arrow", "utility/missing_icon"}
+            Array:new {targetSprite, "utility/go_to_arrow", "utility/missing_icon"}
         )
 
         CreateCraftingGroupsPane(
             mainFrame,
             target.Out,
-            Array:new {"utility/missing_icon", "utility/go_to_arrow", targetRichText}
+            Array:new {"utility/missing_icon", "utility/go_to_arrow", targetSprite}
         )
     else
         local none = mainFrame.add {type = "frame", direction = "horizontal"}

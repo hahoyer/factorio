@@ -13,8 +13,11 @@ local EventDefinesByIndex =
 
 function result.ActualType(target)
     local type = target.type
-    if type == "resource" or type == "tree" then
+    if type == "resource" or type == "fish" or type == "tree" or type == "simple-entity" then
         return "entity"
+    end
+    if type == "tool" then 
+        return "technology"
     end
     return type
 end
