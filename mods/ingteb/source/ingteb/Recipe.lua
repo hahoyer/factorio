@@ -42,7 +42,7 @@ function Recipe(name, prototype, database)
     }
 
     self.property.Order = {get = function(self) return self.IsResearched and 1 or 0 end}
-    self.property.SubOrder = {get = function(self) return self.Technology.IsReady and 1 or 0 end}
+    self.property.SubOrder = {get = function(self) return not self.Technology or self.Technology.IsReady and 1 or 0 end}
 
     function self:Setup()
         local category = self.Prototype.category .. " crafting"

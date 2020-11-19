@@ -36,24 +36,26 @@ function Database:GetItemSet(target)
     or target.type == "fluid" and self.Fluids[target.name] --
     or assert()
 
-    assert(
-        not Dictionary:new(target) --
-        :Where(
-            function(_, key)
-                return not Array:new{
-                    "type",
-                    "name",
-                    "amount",
-                    "probability",
-                    "fluidbox_index",
-                    "catalyst_amount",
-                    "amount_min",
-                    "amount_max",
-                }:Contains(key)
-            end
-        ) --
-        :Any()
-    )
+    if false then
+        assert(
+            not Dictionary:new(target) --
+            :Where(
+                function(_, key)
+                    return not Array:new{
+                        "type",
+                        "name",
+                        "amount",
+                        "probability",
+                        "fluidbox_index",
+                        "catalyst_amount",
+                        "amount_min",
+                        "amount_max",
+                    }:Contains(key)
+                end
+            ) --
+            :Any()
+        )
+    end
 
     return ItemSet(item, amounts, self)
 end
@@ -151,7 +153,6 @@ function Database:FindTarget()
             local t = global.Current.Player.opened_gui_type
             if t == defines.gui_type.custom then return end
             if t == defines.gui_type.entity then return self.Entities[cursor.name] end
-
 
             if global.Current.Links and global.Current.Links[cursor.index] then
                 local target = global.Current.Links[cursor.index]
