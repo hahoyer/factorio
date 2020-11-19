@@ -181,4 +181,25 @@ function Database:Get(target)
     -- assert()
 end
 
+function Database.IsBefore(this, other)
+    if this == other then return false end
+
+    if this.class_name ~= other.class_name then return this.class_name == "MiningRecipe" end
+    if this.class_name ~= "MiningRecipe" then
+
+        if (not this.Technology) ~= (not other.Technology) then return not this.Technology end
+        if this.IsResearched ~= other.IsResearched then return this.IsResearched end
+        if this.Technology then
+            if this.Technology.IsReady ~= other.Technology.IsReady then return this.Technology.IsReady end
+        end
+    end
+    if this.Prototype.group ~= other.Prototype.group then
+        return this.Prototype.group.order < other.Prototype.group.order
+    end
+    if this.Prototype.subgroup ~= other.Prototype.subgroup then
+        return this.Prototype.subgroup.order < other.Prototype.subgroup.order
+    end
+
+    return this.Prototype.order < other.Prototype.order
+end
 return Database

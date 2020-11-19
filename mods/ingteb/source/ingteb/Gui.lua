@@ -133,7 +133,7 @@ local function CreateCraftingGroupsPane(frame, target, headerSprites)
 
     targetArray:Select(
         function(pair)
-            pair.value:Sort(function(a, b) return a:IsBefore(b) end)
+            pair.value:Sort(function(a, b) return a.Database.IsBefore(a,b) end)
             CreateCraftingGroupPane(subFrame, pair.value, pair.key, inCount, outCount)
         end
     )

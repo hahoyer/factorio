@@ -42,7 +42,7 @@ function Recipe(name, prototype, database)
     }
 
     self.property.Order = {get = function(self) return self.IsResearched and 1 or 0 end}
-    self.property.SubOrder = {get = function(self) return not self.Technology or self.Technology.IsReady and 1 or 0 end}
+    self.property.SubOrder = {get = function(self) return (not self.Technology or self.Technology.IsReady) and 1 or 0 end}
 
     function self:Setup()
         local category = self.Prototype.category .. " crafting"
@@ -71,24 +71,6 @@ function Recipe(name, prototype, database)
         self.HandCrafter = self.WorkingEntities:Where(function(worker) return worker.Name == "character" end):Top()
     end
 
-    function self:IsBefore(other)
-        if self == other then return false end
-
-        if (not self.Technology) ~= (not other.Technology) then return not self.Technology end
-        if self.IsResearched ~= other.IsResearched then return self.IsResearched end
-        if self.Technology then
-            if self.Technology.IsReady ~= other.Technology.IsReady then return self.Technology.IsReady end
-        end
-
-        if self.Prototype.group ~= other.Prototype.group then
-            return self.Prototype.group.order < other.Prototype.group.order
-        end
-        if self.Prototype.subgroup ~= other.Prototype.subgroup then
-            return self.Prototype.subgroup.order < other.Prototype.subgroup.order
-        end
-
-        return self.Prototype.order < other.Prototype.order
-    end
 
     return self
 end

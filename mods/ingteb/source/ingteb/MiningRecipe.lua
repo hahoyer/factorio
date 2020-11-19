@@ -13,6 +13,9 @@ function MiningRecipe(resource, database)
 
     self.Time = self.Prototype.mineable_properties.mining_time
 
+    self.property.Order = {get = function(self) return  1  end}
+    self.property.SubOrder = {get = function(self) return  1 end}
+
     function self:Setup()
         local configuration = self.Prototype.mineable_properties
         if not configuration or not configuration.minable then return end
