@@ -4,88 +4,45 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 
 local result = {}
-local EventDefinesByIndex =
-    Dictionary:new(defines.events):ToDictionary(
-    function(value, key)
-        return {Key = value, Value = key}
-    end
+local EventDefinesByIndex = Dictionary:new(defines.events):ToDictionary(
+    function(value, key) return {Key = value, Value = key} end
 ):ToArray()
 
-function result.ActualType(target)
-    local type = target.type
-    if type == "resource" or type == "fish" or type == "tree" or type == "simple-entity" then
-        return "entity"
-    end
-    if type == "tool" then 
-        return "technology"
-    end
-    return type
+function result.GetActualType(type)
+    if type == "item" or type == "fluid" or type == "technology" or type
+        == "entity" or type == "recipe" then return type end
+    if type == "tool" then return "technology" end
+    return "entity"
 end
 
 function result.FormatSpriteName(target)
-    if not target.name then
-        return
+    if target.name then
+        return result.GetActualType(target.type) .. "." .. target.name
     end
-    return result.ActualType(target) .. "." .. target.name
 end
 
 function result.FormatRichText(target)
-    return "[" .. result.ActualType(target) .. "=" .. target.name .. "]"
+    return "[" .. result.GetActualType(target) .. "=" .. target.name .. "]"
 end
 
-function result.GetPrototype(target)
-    local function GetValue()
-        local name = target.name
-        local type = result.ActualType(target)
-        if type == "utility" then
-            return
-        end
+function result.HasForce(type) return type == "technology" or type == "recipe" end
 
-        if type == "technology" then
-            return global.Current.Player.force.technologies[name]
-        end
-
-        if type == "entity" then
-            return game.entity_prototypes[name]
-        end
-
-        if type == "fluid" then
-            local result = game.fluid_prototypes[name]
-            if result then
-                return result
-            end
-            local x = b.point
-        end
-
-        local result = game.item_prototypes[name]
-        if result then
-            return result
-        end
-
-        local result = game.entity_prototypes[name]
-        if result then
-            return result
-        end
-
-        local x = b.point
+function result.GetForce(type, name)
+    if type == "technology" then
+        return global.Current.Player.force.technologies[name]
     end
 
-    if not target.cache then
-        target.cache = {}
-    end
-    if not target.cache.Prototype then
-        target.cache.Prototype = {Value = GetValue()}
-    end
-    return target.cache.Prototype.Value
-end
+    if type == "recipe" then return global.Current.Player.force.recipes[name] end
 
-function result.GetLocalizeName(target)
-    local item = result.GetPrototype(target)
-    return item and item.localised_name
+    assert()
 end
 
 function result.ShowFrame(name, create)
-    local frame = global.Current.Player.gui.screen.add {type = "frame", name = name, direction = "vertical"}
+    local frame = global.Current.Player.gui.screen.add {
+        type = "frame",
+        name = name,
+        direction = "vertical",
+    }
     create(frame)
     global.Current.Player.opened = frame
     global.Current.Frame = frame
@@ -99,7 +56,8 @@ end
 
 function result.HideFrame()
     if global.Current.Frame then
-        global.Current.Location[global.Current.Frame.name] = global.Current.Frame.location
+        global.Current.Location[global.Current.Frame.name] =
+            global.Current.Frame.location
         global.Current.Frame.destroy()
         game.tick_paused = false
         global.Current.Frame = nil
@@ -110,17 +68,14 @@ function result.HideFrame()
 end
 
 function result.SetHandler(eventId, handler, register)
-    if register == nil then
-        register = true
-    end
+    if register == nil then register = true end
 
-    local name = type(eventId) == "number" and EventDefinesByIndex[eventId] or eventId
+    local name = type(eventId) == "number" and EventDefinesByIndex[eventId]
+                     or eventId
 
     State[name] = "activating..." .. tostring(register)
 
-    if register == false then
-        handler = nil
-    end
+    if register == false then handler = nil end
 
     local eventRegistrar = event[eventId]
     if eventRegistrar then
@@ -128,7 +83,7 @@ function result.SetHandler(eventId, handler, register)
     else
         event.register(eventId, handler)
     end
-   
+
     State[name] = register
 end
 
