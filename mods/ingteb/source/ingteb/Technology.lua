@@ -13,21 +13,57 @@ function Technology(name, prototype, database)
 
     self.property.IsReady = {
         get = function(self)
-            return self.Prerequisites:All(function(technology) return technology.IsResearched end)
+            return self.Prerequisites:All(
+                function(technology) return technology.IsResearched end
+            )
+        end,
+    }
+
+    self.HelperText = nil
+    self.property.HelperText = {
+        get = function(self) --
+            if not self.IsResearched and self.IsReady then
+                return {
+                    "ingteb_utility.Lines2",
+                    self.LocalisedName,
+                    {
+                        "ingteb_utility.research",
+                        {"control-keys.alt"},
+                        {"control-keys.control"},
+                        {"control-keys.shift"},
+                        {"control-keys.mouse-button-1-alt-1"},
+                        {"control-keys.mouse-button-2-alt-1"},
+                    },
+                }
+            else
+                return self.LocalisedName
+            end
         end,
     }
 
     self:addCachedProperty(
         "NumberOnSprite", function()
-            if self.Prototype.level and self.Prototype.max_level > 1 then return self.Prototype.level end
+            if self.Prototype.level and self.Prototype.max_level > 1 then
+                return self.Prototype.level
+            end
         end
     )
 
-    self.property.IsResearched = {
-        get = function(self) return global.Current.Player.force.technologies[self.Name].researched end,
+    self.property.SpriteStyle = {
+        get = function(self)
+            if self.IsResearched then return end
+            if self.IsReady then return Constants.GuiStyle.LightButton end
+            return "red_slot_button"
+        end,
     }
 
+    self.property.IsResearched = {
+        get = function(self)
+            return global.Current.Player.force.technologies[self.Name].researched
+        end,
+    }
 
+    self.IsDynamic = true
     self.Enables = Array:new()
 
     function self:Setup()

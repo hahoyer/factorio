@@ -13,26 +13,27 @@ function MiningRecipe(resource, database)
 
     self.Time = self.Prototype.mineable_properties.mining_time
 
-    self.property.Order = {get = function(self) return  1  end}
-    self.property.SubOrder = {get = function(self) return  1 end}
-
     function self:Setup()
         local configuration = self.Prototype.mineable_properties
         if not configuration or not configuration.minable then return end
         local category = (self.Prototype.resource_category or " hand") --
-        .. (configuration.required_fluid and " fluid" or "") --
+                             .. (configuration.required_fluid and " fluid" or "") --
         .. " mining"
 
-        self:AppendForKey(category, resource.In)
+        self.Category = self.Database.Categories[category]
+
+        local isHidden = false
+
+        resource.In:AppendForKey( category, self)
         self.In = Array:new{resource}
 
         if configuration.required_fluid then
-            local fluid = self.Database:GetItemSet {
+            local fluid = self.Database:GetItemSet{
                 type = "fluid",
                 name = configuration.required_fluid,
                 amount = configuration.fluid_amount,
             }
-            self:AppendForKey(category, fluid.Item.In)
+            fluid.Item.In:AppendForKey(category, self)
             self.In:Append(fluid)
         end
 
@@ -40,14 +41,32 @@ function MiningRecipe(resource, database)
         :Select(
             function(product)
                 local result = database:GetItemSet(product)
-                self:AppendForKey(category, result.Item.Out)
+                if result then  result.Item.Out:AppendForKey(category, self) else isHidden = true end
                 return result
             end
         )
 
-        self.WorkingEntities = database.WorkingEntities[category]
+        self.IsHidden = isHidden
 
-        self.WorkingEntities:Select(function(entity) entity.CraftingRecipes:Append(self) end)
+        if isHidden then return end
+
+        self.Category.Recipes:Append(self)
+    end
+
+    self.property.Order = {get = function(self) return 1 end}
+    self.property.SubOrder = {get = function(self) return 1 end}
+
+    function self:IsBefore(other)
+        if self == other then return false end
+        if self.class_name ~= other.class_name then return true end
+        if self.Prototype.group ~= other.Prototype.group then
+            return self.Prototype.group.order < other.Prototype.group.order
+        end
+        if self.Prototype.subgroup ~= other.Prototype.subgroup then
+            return self.Prototype.subgroup.order < other.Prototype.subgroup.order
+        end
+
+        return self.Prototype.order < other.Prototype.order
     end
 
     return self

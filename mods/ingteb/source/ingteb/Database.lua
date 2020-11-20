@@ -12,6 +12,7 @@ require("ingteb.Recipe")
 require("ingteb.MiningRecipe")
 require("ingteb.Technology")
 require("ingteb.ItemSet")
+require("ingteb.Category")
 
 local Database = PropertyProvider:new{cache = {}}
 
@@ -22,7 +23,9 @@ function Database:addCachedProperty(name, getter)
     self.property[name] = {get = function(self) return self.cache[name].Value end}
 end
 
-function Database:CreateMiningRecipe(resource) self.Recipes[resource.Name] = MiningRecipe(resource, self) end
+function Database:CreateMiningRecipe(resource)
+    self.Recipes[resource.Name] = MiningRecipe(resource, self)
+end
 
 function Database:GetItemSet(target)
     local amounts = {
@@ -34,30 +37,16 @@ function Database:GetItemSet(target)
     local item --
     = target.type == "item" and self.Items[target.name] --
     or target.type == "fluid" and self.Fluids[target.name] --
-    or assert()
+    if item then return ItemSet(item, amounts, self) end
+end
 
-    if false then
-        assert(
-            not Dictionary:new(target) --
-            :Where(
-                function(_, key)
-                    return not Array:new{
-                        "type",
-                        "name",
-                        "amount",
-                        "probability",
-                        "fluidbox_index",
-                        "catalyst_amount",
-                        "amount_min",
-                        "amount_max",
-                    }:Contains(key)
-                end
-            ) --
-            :Any()
-        )
-    end
-
-    return ItemSet(item, amounts, self)
+function Measure(target)
+    local profiler = game.create_profiler()
+    profiler.reset()
+    target()
+    profiler.stop()
+    log(profiler)
+    return ""
 end
 
 function Database:Scan()
@@ -68,53 +57,56 @@ function Database:Scan()
     self.Fluids = {}
     self.Recipes = {}
     self.Technologies = {}
-    self.WorkingEntities = {}
+    self.Categories = Dictionary:new{}
     self.Bonuses = {}
 
     Dictionary:new(game.entity_prototypes) --
+    :Where(function(value) return not (value.flags and value.flags.hidden) end) --
     :Select(function(value, key) self.Entities[key] = Entity(key, value, self) end)
 
     Dictionary:new(game.item_prototypes) --
+    :Where(function(value) return not (value.flags and value.flags.hidden) end) --
     :Select(function(value, key) self.Items[key] = Item(key, value, self) end)
+
     Dictionary:new(game.fluid_prototypes) --
+    :Where(function(value) return not (value.hidden) end) --
     :Select(function(value, key) self.Fluids[key] = Fluid(key, value, self) end)
 
     Dictionary:new(game.resource_category_prototypes) --
     :Select(
         function(value, key)
-            self.WorkingEntities[key .. " mining"] = Array:new()
-            self.WorkingEntities[key .. " fluid mining"] = Array:new()
+            self.Categories[key .. " mining"] = Category("mining", value, self)
+            self.Categories[key .. " fluid mining"] = Category("fluid mining", value, self)
         end
     )
 
     Dictionary:new(game.recipe_category_prototypes) --
-    :Select(function(value, key) self.WorkingEntities[key .. " crafting"] = Array:new() end)
+    :Select(
+        function(value, key)
+            self.Categories[key .. " crafting"] = Category("crafting", value, self)
+        end
+    )
 
-    self.WorkingEntities[" hand mining"] = Array:new{self.Entities["character"]}
+    self.Categories[" hand mining"] = Category(
+        "hand mining", game.technology_prototypes["steel-axe"], self
+    )
 
-    self.WorkingEntities["basic-solid mining"]:Append(self.Entities["character"])
+    self.Categories[" hand mining"].Workers:Append(self.Entities["character"])
+    self.Categories["basic-solid mining"].Workers:Append(self.Entities["character"])
 
     Dictionary:new(game.recipe_prototypes) --
     :Select(function(value, key) self.Recipes[key] = Recipe(key, value, self) end)
 
     Dictionary:new(game.technology_prototypes) --
+    :Where(function(value) return not value.hidden end) --
     :Select(function(value, key) self.Technologies[key] = Technology(key, value, self) end)
-
-    Dictionary:new(self.Entities) --
-    :Select(function(entity) entity:Setup() end)
-
-    Dictionary:new(self.Items) --
-    :Select(function(entity) entity:Setup() end)
-
-    Dictionary:new(self.Fluids) --
-    :Select(function(entity) entity:Setup() end)
-
-    Dictionary:new(self.Recipes) --
-    :Select(function(entity) entity:Setup() end)
-
-    Dictionary:new(self.Technologies) --
-    :Select(function(entity) entity:Setup() end)
-
+    
+    Dictionary:new(self.Entities):Select(function(entity) entity:Setup() end)
+    Dictionary:new(self.Recipes):Select(function(entity) entity:Setup() end)
+    Dictionary:new(self.Technologies):Select(function(entity) entity:Setup() end)
+    Dictionary:new(self.Categories):Select(function(entity) entity:Setup() end)
+    Dictionary:new(self.Fluids):Select(function(entity) entity:Setup() end)
+    Dictionary:new(self.Items):Select(function(entity) entity:Setup() end)
 end
 
 function Database:AddBonus(target, technology)
@@ -132,11 +124,12 @@ function Database:OnLoad() self:Scan() end
 function Database:FindTarget()
     local function get()
         local cursor = global.Current.Player.cursor_stack
-        if cursor and cursor.valid and cursor.valid_for_read then return self.Items[cursor.name] end
-        local cursor = global.Current.Player.cursor_ghost
-        if cursor then --
-            return {type = cursor.type, name = cursor.name}
+        if cursor and cursor.valid and cursor.valid_for_read then
+            return self.Items[cursor.name]
         end
+        local cursor = global.Current.Player.cursor_ghost
+        if cursor then return self.Items[cursor.name] end
+
         local cursor = global.Current.Player.selected
         if cursor then
             local result = self.Entities[cursor.name]
@@ -154,22 +147,11 @@ function Database:FindTarget()
             if t == defines.gui_type.custom then return end
             if t == defines.gui_type.entity then return self.Entities[cursor.name] end
 
-            if global.Current.Links and global.Current.Links[cursor.index] then
-                local target = global.Current.Links[cursor.index]
-                return target
-            end
-            if cursor.burner then return {fuel_categories = cursor.burner.fuel_categories} end
-            if cursor.type == "mining-drill" and cursor.mining_target then
-                return {type = cursor.mining_target.type, name = cursor.mining_target.name}
-            end
-
-            if cursor.type == "furnace" and cursor.previous_recipe then
-                return {type = "recipe", name = cursor.previous_recipe.name}
-            end
-            if cursor.type == "assembling-machine" and cursor.get_recipe() then
-                return {type = "recipe", name = cursor.get_recipe().name}
-            end
+            assert()
         end
+        -- local cursor = global.Current.Player.entity_copy_source
+        -- assert(not cursor)
+
     end
 
     local result = get()
@@ -181,25 +163,4 @@ function Database:Get(target)
     -- assert()
 end
 
-function Database.IsBefore(this, other)
-    if this == other then return false end
-
-    if this.class_name ~= other.class_name then return this.class_name == "MiningRecipe" end
-    if this.class_name ~= "MiningRecipe" then
-
-        if (not this.Technology) ~= (not other.Technology) then return not this.Technology end
-        if this.IsResearched ~= other.IsResearched then return this.IsResearched end
-        if this.Technology then
-            if this.Technology.IsReady ~= other.Technology.IsReady then return this.Technology.IsReady end
-        end
-    end
-    if this.Prototype.group ~= other.Prototype.group then
-        return this.Prototype.group.order < other.Prototype.group.order
-    end
-    if this.Prototype.subgroup ~= other.Prototype.subgroup then
-        return this.Prototype.subgroup.order < other.Prototype.subgroup.order
-    end
-
-    return this.Prototype.order < other.Prototype.order
-end
 return Database

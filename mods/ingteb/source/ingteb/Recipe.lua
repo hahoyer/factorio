@@ -12,14 +12,40 @@ function Recipe(name, prototype, database)
 
     self.Time = self.Prototype.energy
 
+    self.HelperText = nil
+    self.property.HelperText = {
+        get = function(self) --
+            if self.IsResearched and self.NumberOnSprite then
+                return {
+                    "ingteb_utility.Lines2",
+                    self.LocalisedName,
+                    {
+                        "ingteb_utility.craft",
+                        {"control-keys.alt"},
+                        {"control-keys.control"},
+                        {"control-keys.shift"},
+                        {"control-keys.mouse-button-1-alt-1"},
+                        {"control-keys.mouse-button-2-alt-1"},
+                    },
+                }
+            else
+                return self.LocalisedName
+            end
+        end,
+    }
+
     self.property.Technology = {
         get = function(self)
             if self.Technologies:Count() <= 1 then return self.Technologies:Top() end
 
-            local researched = self.Technologies:Where(function(technology) return technology.IsResearched end)
+            local researched = self.Technologies:Where(
+                function(technology) return technology.IsResearched end
+            )
             if researched:Count() > 0 then return researched:Top() end
 
-            local ready = self.Technologies:Where(function(technology) return technology.IsReady end)
+            local ready = self.Technologies:Where(
+                function(technology) return technology.IsReady end
+            )
             if ready:Count() > 0 then return researched:Top() end
 
             return self.Technologies:Top()
@@ -30,47 +56,103 @@ function Recipe(name, prototype, database)
         get = function(self)
             return --
             not self.Technologies:Any() --
-            or self.Technologies:Any(function(technology) return technology.IsResearched end)
+                or self.Technologies:Any(
+                    function(technology) return technology.IsResearched end
+                )
         end,
     }
 
     self.property.NumberOnSprite = {
         get = function(self)
             if not self.HandCrafter then return end
-            return global.Current.Player.get_craftable_count(self.Name)
+            local result = global.Current.Player.get_craftable_count(self.Name)
+            if result > 0 then return result end
         end,
     }
 
+    function self:IsBefore(other)
+        if self == other then return false end
+
+        if self.class_name ~= other.class_name then return false end
+
+        if self.IsResearched ~= other.IsResearched then return self.IsResearched end
+        if self.IsResearched then
+            if (not self.NumberOnSprite) ~= (not other.NumberOnSprite) then
+                return self.NumberOnSprite
+            end
+        elseif self.Technology.IsReady ~= other.Technology.IsReady then
+            return self.Technology.IsReady
+        end
+        if self.Prototype.group ~= other.Prototype.group then
+            return self.Prototype.group.order < other.Prototype.group.order
+        end
+        if self.Prototype.subgroup ~= other.Prototype.subgroup then
+            return self.Prototype.subgroup.order < other.Prototype.subgroup.order
+        end
+
+        return self.Prototype.order < other.Prototype.order
+    end
+
     self.property.Order = {get = function(self) return self.IsResearched and 1 or 0 end}
-    self.property.SubOrder = {get = function(self) return (not self.Technology or self.Technology.IsReady) and 1 or 0 end}
+    self.property.SubOrder = {
+        get = function(self)
+            return (not self.Technology or self.Technology.IsReady) and 1 or 0
+        end,
+    }
+
+    self.IsDynamic = true
+
+    self.property.SpriteStyle = {
+        get = function(self)
+            if not self.IsResearched then return "red_slot_button" end
+            if self.NumberOnSprite then return Constants.GuiStyle.LightButton end
+        end,
+    }
 
     function self:Setup()
         local category = self.Prototype.category .. " crafting"
+        self.Category = self.Database.Categories[category]
+
+        local isHidden = false
+
         self.In = Array:new(self.Prototype.ingredients) --
         :Select(
             function(ingredient)
                 local result = database:GetItemSet(ingredient)
-                self:AppendForKey(category, result.Item.In)
+                if result then
+                    result.Item.In:AppendForKey(category, self)
+                else
+                    isHidden = true
+                end
                 return result
             end
-        )
+        ) --
+        :Where(function(value) return not (value.flags and value.flags.hidden) end) --
 
         self.Out = Array:new(self.Prototype.products) --
         :Select(
             function(product)
                 local result = database:GetItemSet(product)
-                self:AppendForKey(category, result.Item.Out)
+                if result then
+                    result.Item.Out:AppendForKey(category, self)
+                else
+                    isHidden = true
+                end
                 return result
             end
-        )
+        ) --
+        :Where(function(value) return value end) --
 
-        self.WorkingEntities = database.WorkingEntities[category]
-        self.WorkingEntities:Select(function(entity) entity.CraftingRecipes:Append(self) end)
+        self.IsHidden = isHidden
 
-        if self.Name == ("transport-belt") then assert(true) end
-        self.HandCrafter = self.WorkingEntities:Where(function(worker) return worker.Name == "character" end):Top()
+        if isHidden then return end
+
+        self.Category.Recipes:Append(self)
+
+        self.HandCrafter = self.Category.Workers:Where(
+            function(worker) return worker.Name == "character" end
+        ):Top()
     end
-
 
     return self
 end

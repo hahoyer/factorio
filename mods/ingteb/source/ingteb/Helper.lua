@@ -62,6 +62,7 @@ function result.HideFrame()
         game.tick_paused = false
         global.Current.Frame = nil
         global.Current.Links = {}
+        global.Current.Gui = Dictionary:new{}
 
         global.Current.Player.opened = nil
     end

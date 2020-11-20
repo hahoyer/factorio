@@ -6,3 +6,13 @@ It is a tribute to the help system of Evospace. I hope factorio players will lik
 Unfortunately, the places where you can look up information about an item are not as comprehensive as in the above mentioned game, because factorio does not provide the appropriate mouse events everywhere. 
 This release is only the first stage. I have more ideas for extensions. I am also open for suggestions. I am especially happy about further places where I can connect the help system.
 
+todo:
+- selection from multy-item-entities
+- Sort-performance
+- Load-performance resp. progress information
+- migration-awareness
+- copy recipe 
+- provide information on recipe-combinations
+- restrict number of lines; provide expand-button
+- providing descriptions
+- tooltip-help and actual keys should be joined

@@ -25,16 +25,20 @@ function Entity(name, prototype, database)
             local prototype = self.Prototype
             if not prototype.mineable_properties --
             or not prototype.mineable_properties.minable --
-            or not prototype.mineable_properties.products --
+                or not prototype.mineable_properties.products --
             then return end
             return not prototype.items_to_place_this
         end
     )
 
-    function self:Collect(entities, domain, dictionary)
-        if not entities then return end
-        for key, _ in pairs(entities) do self:AppendForKey(key .. " " .. domain, dictionary) end
-    end
+    self:addCachedProperty(
+        "RecipeList", function()
+            return self.Categories --
+            :Select(function(category) return category.Recipes end) --
+            :Where(function(recipes) return recipes:Any() end) --
+
+        end
+    )
 
     function self:Setup()
         if self.Name:find("mini") then --
@@ -46,11 +50,29 @@ function Entity(name, prototype, database)
 
         if self.IsResource then self.Database:CreateMiningRecipe(self) end
 
-        self:Collect(self.Prototype.resource_categories, "mining", self.Database.WorkingEntities)
-        if #self.Prototype.fluidbox_prototypes > 0 then
-            self:Collect(self.Prototype.resource_categories, "fluid mining", self.Database.WorkingEntities)
-        end
-        self:Collect(self.Prototype.crafting_categories, "crafting", self.Database.WorkingEntities)
+        self.Categories = self.Database.Categories -- 
+        :Where(
+            function(category)
+                local domain = category.DomainName
+                local list
+                if domain == "mining" or domain == "fluid mining" then
+                    list = self.Prototype.resource_categories
+                elseif domain == "crafting" then
+                    list = self.Prototype.crafting_categories
+                elseif domain == "hand mining" then
+                    return
+                else
+                    assert()
+                end
+                return list and list[category.Name]
+            end
+        ) --
+        :Select(
+            function(category)
+                category.Workers:Append(self)
+                return category
+            end
+        )
 
     end
 

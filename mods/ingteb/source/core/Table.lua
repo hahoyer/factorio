@@ -269,4 +269,13 @@ function Result.new(self, target)
     error("Cannot decide if it is an array or a dictionary")
 end
 
+function Dictionary:AppendForKey(key, target)
+    if key then
+        local list = self[key]
+        if not list then  self[key] = Array:new() end
+        self[key]:Append(target)
+    end
+end
+
+
 return Result
