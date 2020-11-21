@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.5
+Date: 2020-11-21
+  Bugfixes:
+  Changes:
+    - Activation-icon on top left corner
+    - Don't sort by "IsCraftable"
+    - providing descriptions
+---------------------------------------------------------------------------------------------------
 Version: 0.2.4
 Date: 2020-11-20
   Bugfixes:

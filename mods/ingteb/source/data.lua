@@ -17,6 +17,13 @@ data:extend(
             size = 64,
             scale = 0.5,
         },
+        {
+            type = "sprite",
+            name = "ingteb",
+            filename = "__"..Constants.ModName.."__/thumbnail.png",
+            size = 64,
+            scale = 0.5,
+        },
     }
 )
 

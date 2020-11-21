@@ -7,7 +7,9 @@ local Dictionary = Table.Dictionary
 local function CreateSpriteAndRegister(frame, target, style)
     local result
 
-    if target and target.class_name == "Recipe" then local h = target.HelperText end
+    if target and target.class_name == "Recipe" then 
+        local h = target.HelperText 
+    end
 
     if target then
         result = frame.add {
@@ -23,7 +25,7 @@ local function CreateSpriteAndRegister(frame, target, style)
     end
 
     global.Current.Links[result.index] = target
-    if target and target.IsDynamic then global.Current.Gui:AppendForKey(target, result) end
+    if target and (target.IsDynamic or target.HasLocalisedDescriptionPending) then global.Current.Gui:AppendForKey(target, result) end
     return result
 end
 

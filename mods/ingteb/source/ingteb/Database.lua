@@ -159,6 +159,7 @@ function Database:FindTarget()
 end
 
 function Database:Get(target)
+    self:Scan()
     if target.type == "item" then return self.Items[target.name] end
     -- assert()
 end

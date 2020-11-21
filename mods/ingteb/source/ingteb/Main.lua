@@ -13,11 +13,25 @@ State = {}
 StateHandler = nil
 
 local function EnsureGlobal()
-    Database:OnLoad()
     if not global.Current then global.Current = {} end
     if not global.Current.Links then global.Current.Links = {} end
     if not global.Current.Location then global.Current.Location = {} end
     if not global.Current.Gui then global.Current.Gui = Dictionary:new{} end
+    if not global.Current.PendingTranslation then
+        global.Current.PendingTranslation = Dictionary:new{}
+    end
+end
+
+local function EnsureMainButton()
+    EnsureGlobal()
+    if global.Current.Player.gui.top.ingteb == nil then
+        local mainButton = global.Current.Player.gui.top.add {
+            type = "sprite-button",
+            name = "ingteb",
+            sprite = "ingteb",
+        }
+        global.Current.MainButtonIndex = mainButton.index
+    end
 end
 
 local function OpenMainGui(target, setHistory)
@@ -57,6 +71,35 @@ local function RefreshMainResearchChanged()
     :Select(UpdateGui) --
 end
 
+local function RefreshDescription(this)
+    global.Current.Gui --
+    :Where(function(_, target) return target == this end) --
+    :Select(UpdateGui) --
+end
+
+local function OnStringTranslated(event)
+    local target = event.localised_string
+    local pendingList = global.Current.PendingTranslation[target[1]]
+    Array:new(pendingList) --
+    :Select(
+        function(pending, index)
+            if Helper.DeepEqual(pending.Key, target) then
+                table.remove(pendingList, index)
+                if #pendingList == 0 then
+                    global.Current.PendingTranslation[target[1]] = nil
+                end
+
+                if event.translated then
+                    local thing = pending.Value
+                    thing.HasLocalisedDescriptionPending = false
+                    RefreshDescription(thing)
+                end
+                return
+            end
+        end
+    ) --
+end
+
 local function RefreshMain() OpenMainGui(History:GetCurrent(), false) end
 
 function ForeNavigation() OpenMainGui(History:Fore(), false) end
@@ -88,6 +131,44 @@ function GetResearchOrder(event, target)
     then return {Technology = target.Prototype} end
 end
 
+local function OpenMainGuiForNewItem()
+    local target = Database:FindTarget()
+    if not target then
+        Gui.SelectTarget()
+        StateHandler {selectPanel = true}
+        return
+    end
+
+    OpenMainGui(target)
+end
+
+local function MainForClose()
+    Helper.HideFrame()
+    StateHandler {mainPanel = false, selectPanel = false}
+end
+
+local function MainForOpen()
+    EnsureGlobal()
+    Database:OnLoad()
+    OpenMainGuiForNewItem()
+end
+
+local function Main()
+    if global.Current.Frame then
+        MainForClose()
+    else
+        MainForOpen()
+    end
+end
+
+local function GuiClick(event)
+    global.Current.Player = game.players[event.player_index]
+    if global.Current.MainButtonIndex == event.element.index then return Main() end
+
+    --        assert()
+
+end
+
 local function GuiClickForMain(event)
     global.Current.Player = game.players[event.player_index]
     local target = global.Current.Links and global.Current.Links[event.element.index]
@@ -110,8 +191,7 @@ local function GuiClickForMain(event)
         return
     end
 
-    --        assert()
-
+    GuiClick(event)
 end
 
 local function GuiElementChangedForSelect(event)
@@ -125,22 +205,9 @@ local function GuiClose()
     StateHandler {mainPanel = false}
 end
 
-local function MainForClose()
-    Helper.HideFrame()
-    StateHandler {mainPanel = false, selectPanel = false}
-end
-
-local function MainForOpen(event)
-    EnsureGlobal()
+local function OnMainKey(event)
     global.Current.Player = game.players[event.player_index]
-    local target = Database:FindTarget()
-    if not target then
-        Gui.SelectTarget()
-        StateHandler {selectPanel = true}
-        return
-    end
-
-    OpenMainGui(target)
+    Main()
 end
 
 local function OnLoad()
@@ -150,9 +217,15 @@ end
 
 local function OnInit() Database:OnLoad() end
 
+local function OnTick()
+    EnsureMainButton()
+    StateHandler {mainButton = true}
+end
+
 StateHandler = function(state)
     state.mainPanel = state.mainPanel == true
     state.selectPanel = state.selectPanel == true
+    state.mainButton = state.mainButton == true
 
     local handlers = Dictionary:new{}
 
@@ -161,11 +234,10 @@ StateHandler = function(state)
     handlers[Constants.Key.Back] = (state.mainPanel and {BackNavigation, state.mainPanel}) or --
     {RefreshMain, "reopen current"}
 
-    handlers[Constants.Key.Main] = ((state.mainPanel or state.selectPanel)
-                                       and {MainForClose, "close mode"}) or --
-    {MainForOpen, "open mode"}
+    handlers[defines.events.on_gui_click] = --
+    (state.mainPanel and {GuiClickForMain, state.mainPanel}) or --
+    {GuiClick, "outside"}
 
-    handlers[defines.events.on_gui_click] = {GuiClickForMain, state.mainPanel}
     handlers[defines.events.on_gui_elem_changed] = {GuiElementChangedForSelect, state.selectPanel}
     handlers[defines.events.on_gui_closed] = {GuiClose, state.mainPanel or state.selectPanel}
 
@@ -173,6 +245,7 @@ StateHandler = function(state)
         {RefreshMainInventoryChanged, state.mainPanel}
     handlers[defines.events.on_player_cursor_stack_changed] = {RefreshStackChanged, state.mainPanel}
     handlers[defines.events.on_research_finished] = {RefreshMainResearchChanged, state.mainPanel}
+    handlers[defines.events.on_tick] = {}
 
     Helper.SetHandlers(handlers)
 
@@ -182,3 +255,6 @@ end
 Helper.SetHandler(Constants.Key.Main, MainForOpen, "open mode")
 Helper.SetHandler("on_load", OnLoad)
 Helper.SetHandler("on_init", OnInit)
+Helper.SetHandler(defines.events.on_tick, OnTick)
+Helper.SetHandler(Constants.Key.Main, OnMainKey)
+Helper.SetHandler(defines.events.on_string_translated, OnStringTranslated)

@@ -19,24 +19,17 @@ function Technology(name, prototype, database)
         end,
     }
 
-    self.HelperText = nil
-    self.property.HelperText = {
+    self.property.FunctionHelp = {
         get = function(self) --
             if not self.IsResearched and self.IsReady then
                 return {
-                    "ingteb_utility.Lines2",
-                    self.LocalisedName,
-                    {
-                        "ingteb_utility.research",
-                        {"control-keys.alt"},
-                        {"control-keys.control"},
-                        {"control-keys.shift"},
-                        {"control-keys.mouse-button-1-alt-1"},
-                        {"control-keys.mouse-button-2-alt-1"},
-                    },
+                    "ingteb_utility.research",
+                    {"control-keys.alt"},
+                    {"control-keys.control"},
+                    {"control-keys.shift"},
+                    {"control-keys.mouse-button-1-alt-1"},
+                    {"control-keys.mouse-button-2-alt-1"},
                 }
-            else
-                return self.LocalisedName
             end
         end,
     }
