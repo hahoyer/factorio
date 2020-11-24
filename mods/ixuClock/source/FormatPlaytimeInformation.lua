@@ -1,6 +1,6 @@
 require("util")
 
-play_time_seconds = -1
+local play_time_seconds = -1
 
 function FormatPlaytimeInformation(player)
     local ticks  = game.tick
