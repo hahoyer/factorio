@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="b8e3efce-bde6-4277-9ed0-60fa781e7e67" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/../ixuPatchMapPreset/source/info.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/source/info.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../ixuBottleneck/source/info.json" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/project-properties.txt" />
+        <option value="$PROJECT_DIR$/BuildRelease.bat" />
+        <option value="$PROJECT_DIR$/source/data.lua" />
+        <option value="$PROJECT_DIR$/source/control.lua" />
+        <option value="$PROJECT_DIR$/Build.cmd" />
+        <option value="$PROJECT_DIR$/source/FormatPlaytimeInformation.lua" />
+        <option value="$PROJECT_DIR$/source/changelog.txt" />
+        <option value="$PROJECT_DIR$/source/info.json" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectId" id="1NVbNERKlCPhx2jipaeEBFODNoP" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="Rider.DefaultBreakpoints.AreToggled" value="true" />
+    <property name="Rider.ProjectViewActivator.IsNotFirstRun" value="true" />
+    <property name="TWShift.4" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="settings.editor.selected.configurable" value="configurable.group.editor" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="b8e3efce-bde6-4277-9ed0-60fa781e7e67" name="Default Changelist" comment="" />
+      <created>1562169170848</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1562169170848</updated>
+      <workItem from="1562169174788" duration="599000" />
+      <workItem from="1562171209787" duration="7862000" />
+      <workItem from="1563006784731" duration="1299000" />
+      <workItem from="1565561072721" duration="9940000" />
+      <workItem from="1566158866003" duration="1605000" />
+      <workItem from="1566427740134" duration="2543000" />
+      <workItem from="1567248799560" duration="1138000" />
+      <workItem from="1567408886867" duration="598000" />
+      <workItem from="1568838444907" duration="161000" />
+      <workItem from="1576414615730" duration="2394000" />
+      <workItem from="1578532744678" duration="598000" />
+      <workItem from="1578800857922" duration="599000" />
+      <workItem from="1579658978325" duration="710000" />
+      <workItem from="1579659758280" duration="29000" />
+      <workItem from="1579659914301" duration="597000" />
+      <workItem from="1579947990498" duration="1526000" />
+      <workItem from="1580313126010" duration="609000" />
+      <workItem from="1580382109839" duration="595000" />
+      <workItem from="1581294851853" duration="594000" />
+      <workItem from="1581370804978" duration="785000" />
+      <workItem from="1581582198483" duration="590000" />
+      <workItem from="1582486489547" duration="599000" />
+      <workItem from="1584747366598" duration="1194000" />
+      <workItem from="1584889082955" duration="922000" />
+      <workItem from="1584902521284" duration="598000" />
+      <workItem from="1584903289916" duration="597000" />
+      <workItem from="1585447885408" duration="584000" />
+      <workItem from="1586191173443" duration="1198000" />
+      <workItem from="1587512061216" duration="224000" />
+      <workItem from="1599077522315" duration="113000" />
+    </task>
+    <task id="LOCAL-00001" summary="  Features:&#10;    - darkness value removed, it is not really required">
+      <created>1565568226043</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1565568226043</updated>
+    </task>
+    <task id="LOCAL-00002" summary="  Features:&#10;    - darkness value removed, it is not really required">
+      <created>1565569321729</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1565569321729</updated>
+    </task>
+    <task id="LOCAL-00003" summary="  Features:&#10;    - darkness value removed, it is not really required">
+      <created>1565808934415</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1565808934415</updated>
+    </task>
+    <task id="LOCAL-00004" summary="  Features:&#10;    - darkness value removed, it is not really required">
+      <created>1565809966627</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1565809966627</updated>
+    </task>
+    <task id="LOCAL-00005" summary="  Features:&#10;    - calculating days">
+      <created>1567031452666</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1567031452666</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
+  <component name="UnityUnitTestConfiguration" currentTestLauncher="NUnit" />
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+    <MESSAGE value="  Features:&#10;    - darkness value removed, it is not really required" />
+    <MESSAGE value="  Features:&#10;    - calculating days" />
+    <option name="LAST_COMMIT_MESSAGE" value="  Features:&#10;    - calculating days" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="829" y="400" key="Rider.ProjectTemplateDialog.Size" timestamp="1584889293665">
+      <screen x="0" y="0" width="3072" height="1728" />
+    </state>
+    <state x="829" y="400" key="Rider.ProjectTemplateDialog.Size/0.0.3072.1728/3840.560.2560.1600/-2560.560.2560.1600@0.0.3072.1728" timestamp="1584889293665" />
+    <state x="1362" y="588" key="Vcs.Push.Dialog" timestamp="1584889272892" />
+    <state x="1362" y="588" key="Vcs.Push.Dialog/2560.1600/2560.1600/3840.2160" timestamp="1584889272893" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" suspend="NONE" type="DotNet Exception Breakpoints">
+          <properties exception="System.Threading.ThreadAbortException" displayValue="System.Threading.ThreadAbortException" />
+          <option name="timeStamp" value="1" />
+        </breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>

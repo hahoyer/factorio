@@ -68,7 +68,7 @@ local icons = {
   cross3D = "__ixuBottleneck__/graphics/cross.png",
   minus3D = "__ixuBottleneck__/graphics/minus.png",
   pause3D = "__ixuBottleneck__/graphics/pause.png",
-  stop3D = "__ixuBottleneck__/graphics/stop.png"
+  stop3D = "__ixuBottleneck__/graphics/stop.png",
 }
 
 for _, color_value in pairs(colors) do
