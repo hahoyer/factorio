@@ -20,6 +20,7 @@ function Array:Sort(order) table.sort(self, order) end
 
 function Dictionary:new(target)
     if not target then target = {} end
+    self.object_name = "Dictionary"
     if getmetatable(target) == "private" then target = Dictionary.Clone(target) end
     setmetatable(target, self)
     self.__index = self
@@ -28,6 +29,7 @@ end
 
 function Array:new(target)
     if not target then target = {} end
+    self.object_name = "Array"
     if getmetatable(target) == "private" then target = Array.Clone(target) end
     setmetatable(target, self)
     self.__index = self

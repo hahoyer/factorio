@@ -3,99 +3,161 @@ local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local ValueCache = require("core.ValueCache")
-require("ingteb.Common")
+local Common = require("ingteb.Common")
+local UI = require("core.UI")
 
-function Technology(name, prototype, database)
-    local self = Common(name, prototype, database)
-    self.class_name = "Technology"
+local Technology = Common:class("Technology")
+
+function Technology:new(name, prototype, database)
+
+    local self = Common:new(prototype or game.technology_prototypes[name], database)
+    self.object_name = Technology.object_name
+
+    assert(self.Prototype.object_name == "LuaTechnologyPrototype")
+
+    self.TypeOrder = 3
     self.SpriteType = "technology"
-
-    self.property.IsReady = {
-        get = function(self)
-            return self.Prerequisites:All(
-                function(technology) return technology.IsResearched end
-            )
-        end,
-    }
-
-    self.property.FunctionHelp = {
-        get = function(self) --
-            if not self.IsResearched and self.IsReady then
-                return {
-                    "ingteb_utility.research",
-                    {"control-keys.alt"},
-                    {"control-keys.control"},
-                    {"control-keys.shift"},
-                    {"control-keys.mouse-button-1-alt-1"},
-                    {"control-keys.mouse-button-2-alt-1"},
-                }
-            end
-        end,
-    }
-
-    self:addCachedProperty(
-        "NumberOnSprite", function()
-            if self.Prototype.level and self.Prototype.max_level > 1 then
-                return self.Prototype.level
-            end
-        end
-    )
-
-    self.property.SpriteStyle = {
-        get = function(self)
-            if self.IsResearched then return end
-            if self.IsReady then return Constants.GuiStyle.LightButton end
-            return "red_slot_button"
-        end,
-    }
-
-    self.property.IsResearched = {
-        get = function(self)
-            return global.Current.Player.force.technologies[self.Name].researched
-        end,
-    }
-
+    self.Technologies = Array:new()
+    self.ClickHandler = self
     self.IsDynamic = true
-    self.Enables = Array:new()
+    self.Time = self.Prototype.research_unit_energy
 
-    function self:Setup()
-        self.Prerequisites = Dictionary:new(self.Prototype.prerequisites) --
-        :ToArray() --
-        :Select(
-            function(technology)
-                local result = self.Database.Technologies[technology.name]
-                result.Enables:Append(self)
-                return result
-            end
-        )
+    self:properties{
+        Input = {
+            get = function() --
+                return Array:new(self.Prototype.research_unit_ingredients) --
+                :Select(
+                    function(tag)
+                        tag.amount = tag.amount * self.Prototype.research_unit_count
+                        local result = database:GetStackOfGoods(tag)
+                        result.Item.UsedBy:AppendForKey(" researching", self)
+                        return result
+                    end
+                ) --
+                :Concat(self.Prerequisites)
+            end,
+        },
 
-        self.In = Array:new(self.Prototype.research_unit_ingredients) --
-        :Select(
-            function(tag)
-                local result = database:GetItemSet(tag)
-                result.Item.TechnologyIngredients:Append(self)
-                return result
-            end
-        )
+        Output = {
+            get = function() --
+                return Array:new{self.Enables, self.EnabledRecipes, self.Effects}:ConcatMany()
+            end,
+        },
 
-        self.Out = Array:new(self.Prototype.effects) --
-        :Select(
-            function(effect)
-                if effect.type == "unlock-recipe" then
-                    local result = database.Recipes[effect.recipe]
-                    result.Technologies:Append(self)
-                    return result
-                else
-                    database:AddBonus(effect, self)
-                    return
+        NumberOnSprite = {
+            get = function() --
+                if self.Prototype.level and self.Prototype.max_level > 1 then
+                    return self.Prototype.level
                 end
-            end
-        ) --
-        :Where(function(item) return item end)
+            end,
+        },
 
+        FunctionHelp = {
+            get = function() --
+                if not self.IsResearched and self.IsReady then
+                    return {
+                        "ingteb_utility.research",
+                        {"control-keys.alt"},
+                        {"control-keys.control"},
+                        {"control-keys.shift"},
+                        {"control-keys.mouse-button-1-alt-1"},
+                        {"control-keys.mouse-button-2-alt-1"},
+                    }
+                end
+            end,
+        },
+
+        SpriteStyle = {
+            get = function()
+                if self.IsResearched then return end
+                return self.IsReady
+            end,
+        },
+        IsResearched = {
+            get = function()
+                return global.Current.Player.force.technologies[self.Name].researched == true
+            end,
+        },
+        IsReady = {
+            cache = true,
+            get = function()
+                return self.Prerequisites:All(
+                    function(technology) return technology.IsResearched end
+                )
+            end,
+        },
+
+        Prerequisites = {
+            get = function()
+                return Dictionary:new(self.Prototype.prerequisites) --
+                :ToArray() --
+                :Select(
+                    function(technology)
+                        return self.Database:GetTechnology(nil, technology)
+                    end
+                )
+            end,
+        },
+
+        Enables = {
+            cache = true,
+            get = function()
+                return self.Database.EnabledTechnologiesForTechnology[self.Name] --
+                :Select(
+                    function(technology)
+                        return self.Database:GetTechnology(nil, technology)
+                    end
+                )
+            end,
+        },
+
+        EnabledRecipes = {
+            cache = true,
+            get = function()
+                return Dictionary:new(self.Prototype.effects) --
+                :Where(function(effect) return effect.type == "unlock-recipe" end) --
+                :Select(
+                    function(effect)
+                        return self.Database:GetRecipe(effect.recipe)
+                    end
+                )
+            end,
+        },
+
+        Effects = {
+            cache = true,
+            get = function()
+                return Dictionary:new(self.Prototype.effects) --
+                :Where(function(effect) return effect.type ~= "unlock-recipe" end) --
+                :Select(function(effect) return self.Database:GetBonus(effect) end)
+            end,
+        },
+    }
+
+    function self:Refresh()
+        self.Enables:Select(function(technology) technology.cache.IsReady.IsValid = false end)
+        self.EnabledRecipes:Select(function(recipe) recipe:Refresh() end)
     end
 
+    function self:IsBefore(other)
+        if self == other then return false end
+        if self.TypeOrder ~= other.TypeOrder then return self.TypeOrder < other.TypeOrder end
+        if self.IsResearched ~= other.IsResearched then return self.IsResearched end
+        if self.IsReady ~= other.IsReady then return self.IsReady end
+        return self.Prototype.order < other.Prototype.order
+    end
+
+    function self:SortAll() end
+
+    function self:GetResearchOrder(event)
+        if UI.IsMouseCode(event, "-C- l") --
+        and self.IsReady --
+        then return {Technology = self.Prototype} end
+    end
+    
+
     return self
+
 end
 
+return Technology

@@ -16,10 +16,19 @@ todo:
 - restrict number of lines; provide expand-button
 - tooltip-help and actual keys should be joined
 - provide summary for recipe like in tooltip from crafting menu
-- provide workers-panel for lab to see research potions
-- provide information about modules
-- provide information about technologies, like in built-in technology view or find a way to use this
+- help on about modules
+- help on fuel consumption
+- help on recipes
+- help on technologies
 - multiplayer
+- involve achievements
+- "machine-column" for character
+- machine-column for labs
 
 known issue: 
-- it takes about a minute when using the first time
+- it takes seconds when presenting first help page
+- it takes seconds when presenting large help pages the first time
+- it takes second when presenting large help pages (especially machine-columns)
+- Water -> steam is missing
+
+

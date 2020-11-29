@@ -4,9 +4,6 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 
 local result = {}
-local EventDefinesByIndex = Dictionary:new(defines.events):ToDictionary(
-    function(value, key) return {Key = value, Value = key} end
-):ToArray()
 
 function result.GetActualType(type)
     if type == "item" or type == "fluid" or type == "technology" or type == "entity" or type
@@ -33,58 +30,22 @@ function result.GetForce(type, name)
     assert()
 end
 
-function result.ShowFrame(name, create)
-    local frame = global.Current.Player.gui.screen.add {
-        type = "frame",
-        name = name,
-        direction = "vertical",
-    }
-    create(frame)
-    global.Current.Player.opened = frame
-    global.Current.Frame = frame
+function result.ShowFrame(player, name, create)
+    local frame = player.gui.screen
+    local main = frame[name]
+    if main then
+        main.clear()
+    else
+        main = frame.add {type = "frame", name = name, direction = "vertical"}
+    end
+    create(main)
+    player.opened = main
     if global.Current.Location[name] then
-        frame.location = global.Current.Location[name]
+        main.location = global.Current.Location[name]
     else
-        frame.force_auto_center()
+        main.force_auto_center()
     end
-    return frame
-end
-
-function result.HideFrame()
-    if global.Current.Frame then
-        global.Current.Location[global.Current.Frame.name] = global.Current.Frame.location
-        global.Current.Frame.destroy()
-        game.tick_paused = false
-        global.Current.Frame = nil
-        global.Current.Links = {}
-        global.Current.Gui = Dictionary:new{}
-
-        global.Current.Player.opened = nil
-    end
-end
-
-function result.SetHandler(eventId, handler, register)
-    if not handler then register = false end
-    if register == nil then register = true end
-
-    local name = type(eventId) == "number" and EventDefinesByIndex[eventId] or eventId
-
-    State[name] = "activating..." .. tostring(register)
-
-    if register == false then handler = nil end
-
-    local eventRegistrar = event[eventId]
-    if eventRegistrar then
-        eventRegistrar(handler)
-    else
-        event.register(eventId, handler)
-    end
-
-    State[name] = register
-end
-
-function result.SetHandlers(list)
-    list:Select(function(command, key) result.SetHandler(key, command[1], command[2]) end)
+    return main
 end
 
 function result.DeepEqual(a, b)
@@ -104,6 +65,63 @@ function result.DeepEqual(a, b)
 
     return true
 
+end
+
+function result.SpriteStyleFromCode(code)
+    return code == true and "ingteb-light-button" --
+    or code == false and "red_slot_button" --
+    or "slot_button"
+end
+
+local function UpdateGui(list, target)
+    local helperText = target.HelperText
+    local number = target.NumberOnSprite
+    local style = result.SpriteStyleFromCode(target.SpriteStyle)
+
+    list:Select(
+        function(guiElement)
+            guiElement.tooltip = helperText
+            guiElement.number = number
+            guiElement.style = style
+        end
+    )
+end
+
+function result.RefreshMainInventoryChanged()
+    global.Current.Gui --
+    :Where(function(_, target) return target.object_name == "Recipe" end) --
+    :Select(UpdateGui) --
+end
+
+function result.RefreshStackChanged() end
+
+function result.RefreshMainResearchChanged()
+    global.Current.Gui --
+    :Where(function(_, target) return target.object_name == "Technology" end) --
+    :Select(UpdateGui) --
+end
+
+local function RefreshDescription(this)
+    global.Current.Gui --
+    :Where(function(_, target) return target == this end) --
+    :Select(UpdateGui) --
+end
+
+function result.InitiateTranslation()
+    local pending = global.Current.PendingTranslation:Top()
+    if pending then assert(global.Current.Player.request_translation {pending.Key}) end
+end
+
+function result.CompleteTranslation(event)
+    local complete = global.Current.PendingTranslation[event.localised_string]
+    global.Current.PendingTranslation[event.localised_string] = nil
+
+    if event.translated then
+        local thing = complete.Value
+        thing.HasLocalisedDescriptionPending = false
+        RefreshDescription(thing)
+    end
+    result.InitiateTranslation()
 end
 
 return result

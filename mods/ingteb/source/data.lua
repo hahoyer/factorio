@@ -20,22 +20,32 @@ data:extend(
         {
             type = "sprite",
             name = "ingteb",
-            filename = "__"..Constants.ModName.."__/thumbnail.png",
+            filename = "__" .. Constants.ModName .. "__/thumbnail.png",
             size = 64,
             scale = 0.5,
         },
     }
 )
 
-data.raw["gui-style"].default[Constants.GuiStyle.CenteredFlow] =
+data.raw["gui-style"].default["ingteb-flow-centered"] =
     {
         type = "horizontal_flow_style",
         horizontally_stretchable = "on",
-        right_padding = "0",
-        left_padding = "0",
-        top_padding = "0",
-        bottom_padding = "0",
         horizontal_align = "center",
+    }
+
+data.raw["gui-style"].default["ingteb-scroll-6x1"] =
+    {
+        type = "scroll_pane_style", --
+        parent = "scroll_pane",
+        width = 43 * 6,
+    }
+
+data.raw["gui-style"].default["ingteb-flow-right"] =
+    { --
+        type = "horizontal_flow_style", --
+        horizontally_stretchable = "on",
+        horizontal_align = "right",
     }
 
 local default_glow_color = {225, 177, 106, 255}
@@ -56,7 +66,7 @@ local function offset_by_2_rounded_corners_glow(tint_value)
 end
 
 local function sprite17(x, y) return {border = 4, position = {x * 17, y * 17}, size = 16} end
-data.raw["gui-style"].default[Constants.GuiStyle.LightButton] =
+data.raw["gui-style"].default["ingteb-light-button"] =
     {
         type = "button_style",
         parent = "button",
@@ -92,4 +102,4 @@ data.raw["gui-style"].default[Constants.GuiStyle.LightButton] =
         pie_progress_color = {0.98, 0.66, 0.22, 0.5},
     }
 
-data.raw["gui-style"].default[Constants.GuiStyle.UnButton] = {type = "image_style", width = 40}
+data.raw["gui-style"].default["ingteb-un-button"] = {type = "image_style", width = 40}

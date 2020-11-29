@@ -42,6 +42,7 @@ end
 
 function ValueCache(getter)
     local result = PropertyProvider:new{valueCache = ValueCacheRaw:new(getter)}
+    result.class_name = "ValueCache"
 
     result.property.IsValid = {
         get = function(self) return self.valueCache:get_IsValid() end,
@@ -49,6 +50,7 @@ function ValueCache(getter)
     }
 
     result.property.Value = {get = function(self) return self.valueCache:get_Value() end}
+
     return result
 end
 

@@ -3,70 +3,98 @@ local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
+local Database = require("ingteb.Database")
+local UI = require("core.UI")
 
-local function CreateSpriteAndRegister(frame, target, style)
+local function CreateSpriteAndRegister(frame, target)
     local result
 
-    if target and target.class_name == "Recipe" then 
-        local h = target.HelperText 
-    end
+    local tooltip = target and target.HelperText
+    local sprite = target and target.SpriteName
+    local number = target and target.NumberOnSprite
+    local show_percent_for_small_numbers = target and target.UsePercentage
+    local style = Helper.SpriteStyleFromCode(target and target.SpriteStyle)
 
     if target then
         result = frame.add {
             type = "sprite-button",
-            tooltip = target.HelperText,
-            sprite = target.SpriteName,
-            number = target.NumberOnSprite,
-            show_percent_for_small_numbers = target.probability ~= nil,
-            style = style or "slot_button",
+            tooltip = tooltip,
+            sprite = sprite,
+            number = number,
+            show_percent_for_small_numbers = show_percent_for_small_numbers,
+            style = style,
         }
     else
-        result = frame.add {type = "sprite-button", style = style or "slot_button"}
+        result = frame.add {type = "sprite-button", style = style}
     end
 
-    global.Current.Links[result.index] = target
-    if target and (target.IsDynamic or target.HasLocalisedDescriptionPending) then global.Current.Gui:AppendForKey(target, result) end
+    global.Current.Links[result.index] = target and target.ClickHandler
+    if target and (target.IsDynamic or target.HasLocalisedDescriptionPending) then
+        if target and target.object_name == "BonusSet" then --
+            local s = 2 --
+        end
+        global.Current.Gui:AppendForKey(target, result)
+    end
     return result
+end
+
+local maximalCount = 6
+
+local function CreateRecipeLinePart(frame, target, count, isInput)
+    local scrollFrame = frame
+    if target:Count() > count then
+        scrollFrame = frame.add {
+            type = "scroll-pane",
+            direction = "horizontal",
+            vertical_scroll_policy = "never",
+            style = "ingteb-scroll-6x1",
+        }
+    end
+
+    local subPanel = scrollFrame.add {
+        type = "flow",
+        direction = "horizontal",
+        style = isInput and "ingteb-flow-right" or nil,
+    }
+
+    target:Select(function(item) return CreateSpriteAndRegister(subPanel, item) end)
+
+    if isInput then return end
+
+    for _ = target:Count() + 1, count do --
+        subPanel.add {type = "sprite", style = "ingteb-un-button"}
+    end
+
 end
 
 local function CreateRecipeLine(frame, target, inCount, outCount)
     local subFrame = frame.add {type = "flow", direction = "horizontal"}
-    local inPanel = subFrame.add {name = "in", type = "flow", direction = "horizontal"}
 
-    for _ = target.In:Count() + 1, inCount do --
-        inPanel.add {type = "sprite", style = Constants.GuiStyle.UnButton}
-    end
-
-    target.In:Select(function(item) return CreateSpriteAndRegister(inPanel, item) end)
+    CreateRecipeLinePart(subFrame, target.Input, math.min(inCount, maximalCount), true)
 
     local properties = subFrame.add {type = "flow", direction = "horizontal"}
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
-
-    CreateSpriteAndRegister(properties, target.Technology, target.Technology and target.Technology.SpriteStyle)
-    CreateSpriteAndRegister(properties, target, target.SpriteStyle)
+    CreateSpriteAndRegister(properties, target.Technology)
+    CreateSpriteAndRegister(properties, target)
     CreateSpriteAndRegister(properties, {SpriteName = "utility/clock", NumberOnSprite = target.Time})
-
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
-    local outPanel = subFrame.add {name = "out", type = "flow", direction = "horizontal"}
 
-    target.Out:Select(function(item) return CreateSpriteAndRegister(outPanel, item) end)
-
-    for _ = target.Out:Count() + 1, outCount do --
-        outPanel.add {type = "sprite", style = Constants.GuiStyle.UnButton}
-    end
+    CreateRecipeLinePart(subFrame, target.Output, math.min(outCount, maximalCount), false)
 end
 
-local function CreateCraftingGroupPanel(frame, target, key, inCount, outCount)
+local function CreateCraftingGroupPanel(frame, target, category, inCount, outCount)
+    assert(type(category) == "string")
+
     frame.add {type = "line", direction = "horizontal"}
 
-    local workersPane = frame.add {
+    local workersPanel = frame.add {
         type = "flow",
-        style = Constants.GuiStyle.CenteredFlow,
+        style = "ingteb-flow-centered",
         direction = "horizontal",
     }
 
-    local workers = target[1].Database.Categories[key].Workers
-    workers:Select(function(worker) return CreateSpriteAndRegister(workersPane, worker) end)
+    local workers = target[1].Database:GetCategory(category).Workers
+    workers:Select(function(worker) return CreateSpriteAndRegister(workersPanel, worker) end)
 
     frame.add {type = "line", direction = "horizontal"}
 
@@ -77,21 +105,7 @@ end
 
 local function CreateCraftingGroupsPanel(frame, target, headerSprites)
     if not target or not target:Any() then return end
-
-    local targetArray = target:ToArray(function(value, key) return {Value = value, Key = key} end)
-    targetArray:Sort(
-        function(a, b)
-            if a == b then return false end
-            local aOrder = a.Value:Select(function(recipe) return recipe.Order end):Sum()
-            local bOrder = b.Value:Select(function(recipe) return recipe.Order end):Sum()
-            if aOrder ~= bOrder then return aOrder > bOrder end
-
-            local aSubOrder = a.Value:Select(function(recipe) return recipe.SubOrder end):Sum()
-            local bSubOrder = b.Value:Select(function(recipe) return recipe.SubOrder end):Sum()
-            return aSubOrder > bSubOrder
-
-        end
-    )
+    assert(type(next(target)) == "string")
 
     local subFrame = frame.add {
         type = "frame",
@@ -102,36 +116,34 @@ local function CreateCraftingGroupsPanel(frame, target, headerSprites)
     local labelFlow = subFrame.add {
         type = "flow",
         direction = "horizontal",
-        style = Constants.GuiStyle.CenteredFlow,
+        style = "ingteb-flow-centered",
     }
 
     headerSprites:Select(function(sprite) labelFlow.add {type = "sprite", sprite = sprite} end)
 
+
     local inCount = target:Select(
         function(group)
-            return group:Select(function(recipe) return recipe.In:Count() end):Max()
+            return group:Select(function(recipe) return recipe.Input:Count() end):Max()
         end
     ):Max()
 
     local outCount = target:Select(
         function(group)
-            return group:Select(function(recipe) return recipe.Out:Count() end):Max()
+            return group:Select(function(recipe) return recipe.Output:Count() end):Max()
         end
     ):Max()
 
-    targetArray:Select(
-        function(pair)
-            pair.Value:Sort(function(a, b) return a:IsBefore(b) end)
-            CreateCraftingGroupPanel(subFrame, pair.Value, pair.Key, inCount, outCount)
+    target:Select(
+        function(recipes, category)
+            assert(type(category) == "string")
+            CreateCraftingGroupPanel(subFrame, recipes, category, inCount, outCount)
         end
     )
 end
 
 local function CreateMainPanel(frame, target)
     frame.caption = target.LocalisedName
-
-    local item = target.Item
-    local entity = target.Entity
 
     local scrollframe = frame.add {
         type = "scroll-pane",
@@ -140,10 +152,15 @@ local function CreateMainPanel(frame, target)
         name = "frame",
     }
 
+    target:SortAll()
+    assert(not target.RecipeList or not next(target.RecipeList) or type(next(target.RecipeList)) == "string")
+    assert(not target.UsedBy or not next(target.UsedBy) or type(next(target.UsedBy)) == "string")
+    assert(not target.CreatedBy or not next(target.CreatedBy) or type(next(target.CreatedBy)) == "string")
+
     local mainFrame = scrollframe
-    local columnCount = (target.RecipeList:Any() and 1 or 0) + --
-    (target.In:Any() and 1 or 0) + --
-    (target.Out:Any() and 1 or 0)
+    local columnCount = (target.RecipeList and target.RecipeList:Any() and 1 or 0) + --
+    (target.UsedBy and target.UsedBy:Any() and 1 or 0) + --
+    (target.CreatedBy and target.CreatedBy:Any() and 1 or 0)
 
     if columnCount > 1 then
         mainFrame = scrollframe.add {type = "frame", direction = "horizontal", name = "frame"}
@@ -169,30 +186,163 @@ local function CreateMainPanel(frame, target)
     CreateCraftingGroupsPanel(mainFrame, target.RecipeList, Array:new{target.SpriteName, "factorio"})
 
     CreateCraftingGroupsPanel(
-        mainFrame, target.In,
+        mainFrame, target.UsedBy,
             Array:new{target.SpriteName, "utility/go_to_arrow", "utility/missing_icon"}
     )
 
     CreateCraftingGroupsPanel(
-        mainFrame, target.Out,
+        mainFrame, target.CreatedBy,
             Array:new{"utility/missing_icon", "utility/go_to_arrow", target.SpriteName}
     )
 
 end
 
-local result = {}
+local Gui = {Active = {}}
 
-function result.SelectTarget()
-    return Helper.ShowFrame(
-        "Selector", function(frame)
+function Gui:FindTarget(player)
+    assert(player)
+    assert(self.Active.ingteb)
+    assert(not self.Active.Selector)
+    assert(not self.Active.Presentator)
+
+    local function get()
+        local cursor = player.cursor_stack
+        if cursor and cursor.valid and cursor.valid_for_read then
+            return Database:GetItem(cursor.name)
+        end
+        local cursor = player.cursor_ghost
+        if cursor then return Database:GetItem(cursor.name) end
+
+        local cursor = player.selected
+        if cursor then
+            local result = Database:GetEntity(cursor.name)
+            if result.IsResource then
+                return result
+            else
+                return result.Item
+            end
+        end
+
+        local cursor = player.opened
+        if cursor then
+
+            local t = player.opened_gui_type
+            if t == defines.gui_type.custom then return end
+            if t == defines.gui_type.entity then return self.Entities[cursor.name] end
+
+            assert()
+        end
+        -- local cursor = global.Current.Player.entity_copy_source
+        -- assert(not cursor)
+
+    end
+
+    local result = get()
+    return result
+end
+
+function Gui:ScanSelector(player)
+    self.Active.ingteb = global.Current.Player.gui.top.ingteb
+    self.Active.Selector = player.gui.screen.Selector
+    self.Active.Presentator = player.gui.screen.Presentator
+end
+
+function Gui:CloseSelector(player)
+    player.gui.screen.Selector.destroy()
+    self.Active.Selector = nil
+end
+
+function Gui:ClosePresentator(player)
+    player.gui.screen.Presentator.destroy()
+    self.Active.Presentator = nil
+end
+
+function Gui:SelectTarget(player)
+    Helper.ShowFrame(
+        player, "Selector", function(frame)
             frame.caption = "select"
             frame.add {type = "choose-elem-button", elem_type = "signal"}
         end
     )
+    self:ScanSelector(player)
 end
 
-function result.Main(data)
-    return Helper.ShowFrame("Main", function(frame) return CreateMainPanel(frame, data) end)
+function Gui:PresentTarget(player, target)
+    assert(target.Prototype)
+    Helper.ShowFrame(
+        player, "Presentator", function(frame) return CreateMainPanel(frame, target) end
+    )
+    self:ScanSelector(player)
+    return target
 end
 
-return result
+function Gui:OnMainButtonPressed(player)
+    assert(self.Active.ingteb)
+    assert(not self.Active.Selector or not self.Active.Presentator)
+
+    if self.Active.Selector then
+        self:CloseSelector(player)
+    elseif self.Active.Presentator then
+        self:ClosePresentator(player)
+    else
+        local target = self:FindTarget(player)
+        if target then
+            return self:PresentTarget(player, target)
+        else
+            self:SelectTarget(player)
+        end
+    end
+end
+
+function Gui:EnsureMainButton()
+    local player = global.Current.Player -- todo: multiplayer
+    if player.gui.top.ingteb == nil then
+        assert(not self.Active.ingteb)
+
+        global.Current.Player.gui.top.add {
+            type = "sprite-button",
+            name = "ingteb",
+            sprite = "ingteb",
+        }
+    end
+    self:ScanSelector(player)
+end
+
+function Gui:OnGuiClick(player, event)
+    local element = event.element
+    if element == Gui.Active.ingteb then
+        return self:OnMainButtonPressed(player)
+    elseif element == Gui.Active.Selector then
+        return
+    elseif element == Gui.Active.Presentator then
+        return
+    end
+
+    if self.Active.Presentator then
+        return self:OnGuiClickForPresentator(player, event)
+    elseif self.Active.Selector and element.type == "choose-elem-button" then
+    else
+        assert(todo)
+    end
+end
+
+function Gui:OnGuiClickForPresentator(player, event)
+    local target = global.Current.Links[event.element.index]
+    if target and target.Prototype then
+        if UI.IsMouseCode(event, "--- l") then return self:PresentTarget(player, target) end
+
+        local order = target:GetHandCraftingOrder( event)
+        if order then
+            player.begin_crafting(order)
+            return
+        end
+
+        local order = target:GetResearchOrder(event)
+        if order then
+            player.force.add_research(order.Technology)
+            return
+        end
+    end
+end
+
+return Gui

@@ -3,18 +3,23 @@ local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local ValueCache = require("core.ValueCache")
-require("ingteb.Common")
+local Common = require("ingteb.Common")
+local Goods = require("ingteb.Goods")
 
-function Fluid(name, prototype, database)
-    local self = CommonThing(name, prototype, database)
-    self.class_name = "Fluid"
+local Fluid = Common:class("Fluid")
+
+function Fluid:new(name, prototype, database)
+    local self = Goods:new(prototype or game.fluid_prototypes[name], database)
+    self.object_name = Fluid.object_name
     self.SpriteType = "fluid"
 
-    self.RecipeList = Array:new{}
-    
-    function self:Setup() end
+    assert(self.Prototype.object_name == "LuaFluidPrototype")
+
+    self:properties{
+    }
 
     return self
+
 end
 
+return Fluid

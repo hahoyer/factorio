@@ -1,11 +1,23 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.7
+Date: 2020-11-29
+  Bugfixes:
+    - fixed crash when opening help from inventory
+---------------------------------------------------------------------------------------------------
+Version: 0.2.6
+Date: 2020-11-29
+  Bugfixes:
+    - fixed crash when creating a new game
+---------------------------------------------------------------------------------------------------
 Version: 0.2.5
-Date: 2020-11-21
+Date: 2020-11-28
   Bugfixes:
   Changes:
     - Activation-icon on top left corner
     - Don't sort by "IsCraftable"
-    - providing descriptions
+    - Horizontal scrolling for recipes with lots of items involved
+    - Numbers on machines
+    - rewrite for better performance (the former oo-rewrite pays off)
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.4
 Date: 2020-11-20

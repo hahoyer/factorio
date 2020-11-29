@@ -4,71 +4,86 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local ValueCache = require("core.ValueCache")
-require("ingteb.Common")
+local Common = require("ingteb.Common")
 
-function MiningRecipe(resource, database)
-    local self = Common(resource.Name, resource.Prototype, database)
-    self.class_name = "MiningRecipe"
+local MiningRecipe = Common:class("MiningRecipe")
+
+function MiningRecipe:new(name, prototype, database)
+    local self = Common:new(prototype or game.entity_prototypes[name], database)
+    self.object_name = MiningRecipe.object_name
     self.SpriteType = "entity"
+    self.TypeOrder = 2
 
     self.Time = self.Prototype.mineable_properties.mining_time
 
-    function self:Setup()
-        local configuration = self.Prototype.mineable_properties
-        if not configuration or not configuration.minable then return end
-        local category = (self.Prototype.resource_category or " hand") --
-                             .. (configuration.required_fluid and " fluid" or "") --
-        .. " mining"
+    local configuration = self.Prototype.mineable_properties
+    assert(configuration and configuration.minable)
 
-        self.Category = self.Database.Categories[category]
+    local function GetCategory()
+        local domain ="mining"
+        if not self.Prototype.resource_category then domain =  "hand-mining" end
+        if  configuration.required_fluid then domain = "fluid-mining"end
+        local category = domain .."." .. (self.Prototype.resource_category or "steel-axe")
 
-        local isHidden = false
-
-        resource.In:AppendForKey( category, self)
-        self.In = Array:new{resource}
-
-        if configuration.required_fluid then
-            local fluid = self.Database:GetItemSet{
-                type = "fluid",
-                name = configuration.required_fluid,
-                amount = configuration.fluid_amount,
-            }
-            fluid.Item.In:AppendForKey(category, self)
-            self.In:Append(fluid)
-        end
-
-        self.Out = Array:new(configuration.products) --
-        :Select(
-            function(product)
-                local result = database:GetItemSet(product)
-                if result then  result.Item.Out:AppendForKey(category, self) else isHidden = true end
-                return result
-            end
-        )
-
-        self.IsHidden = isHidden
-
-        if isHidden then return end
-
-        self.Category.Recipes:Append(self)
+        local result = self.Database:GetCategory(category)
+        result.Recipes:Append(self)
+        return result
     end
 
-    self.property.Order = {get = function(self) return 1 end}
-    self.property.SubOrder = {get = function(self) return 1 end}
+    self.Category = GetCategory()
+    
+    self.Resource = self.Database:GetEntity(nil, prototype)
+    self.Resource.UsedBy:AppendForKey(self.Category.Key, self)
+
+    self.Input = Array:new{self.Resource}
+    if configuration.required_fluid then
+        local fluid = self.Database:GetStackOfGoods{
+            type = "fluid",
+            name = configuration.required_fluid,
+            amount = configuration.fluid_amount,
+        }
+        fluid.Goods.UsedBy:AppendForKey(self.Category.Key, self)
+        self.Input:Append(fluid)
+    end
+
+
+    self.IsHidden = false
+    self.Output = Array:new(configuration.products) --
+    :Select(
+        function(product)
+            local result = database:GetStackOfGoods(product)
+            if result then
+                result.Goods.CreatedBy:AppendForKey(self.Category.Key, self)
+            else
+                self.IsHidden = true
+            end
+            return result
+        end
+    )
+
+
+    self:properties{
+        OrderValue = {
+            cache = true,
+            get = function()
+                return self.TypeOrder --
+                .. " R R " --
+                .. self.Prototype.group.order --
+                .. " " .. self.Prototype.subgroup.order --
+                .. " " .. self.Prototype.order
+            end,
+        },
+
+    }
 
     function self:IsBefore(other)
         if self == other then return false end
-        if self.class_name ~= other.class_name then return true end
-        if self.Prototype.group ~= other.Prototype.group then
-            return self.Prototype.group.order < other.Prototype.group.order
-        end
-        if self.Prototype.subgroup ~= other.Prototype.subgroup then
-            return self.Prototype.subgroup.order < other.Prototype.subgroup.order
-        end
-
-        return self.Prototype.order < other.Prototype.order
+        return self.OrderValue < other.OrderValue
     end
+
+    function self:SortAll() end
 
     return self
 end
 
+return MiningRecipe
