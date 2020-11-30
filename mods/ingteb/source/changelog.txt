@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------
-Version: 0.2.8
+Version: 0.2.9
 Date: 2020-11-30
   Bugfixes:
     - fixed crash when loading autosave file with open help panel
@@ -7,6 +7,9 @@ Date: 2020-11-30
     - splitting Gui.lua
     - making events unconditional (except on-tick)
     - old Main.lua removed
+---------------------------------------------------------------------------------------------------
+Version: 0.2.8
+Date: 2020-11-30
   Changes:
     - Presenting burner production as a kind of recipe
     - restrict number of lines; provide tabs
