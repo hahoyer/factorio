@@ -27,66 +27,21 @@ function EventManager:EnsureGlobal()
     end
 end
 
-function EventManager:ConfigureEvents()
-    assert(Gui.Active.ingteb)
-    if Gui.Active.Selector then
-
-        self:SetHandler(
-            Constants.Key.Fore, History.Current and self.OnSelectorForeOrBackClick or self.DoNothing
-        )
-        self:SetHandler(
-            Constants.Key.Back, History.Current and self.OnSelectorForeOrBackClick or self.DoNothing
-        )
-        self:SetHandler(defines.events.on_gui_elem_changed, self.OnSelectorElementChanged)
-        self:SetHandler(defines.events.on_gui_closed, self.OnSelectorClose)
-        self:SetHandler(defines.events.on_tick)
-
-    elseif Gui.Active.Presentator then
-
-        self:SetHandler(
-            Constants.Key.Fore,
-                History.IsForePossible and self.OnPresentatorForeClick or self.DoNothing
-        )
-        self:SetHandler(
-            Constants.Key.Back,
-                History.IsBackPossible and self.OnPresentatorBackClick or self.DoNothing
-        )
-        self:SetHandler(defines.events.on_gui_elem_changed)
-        self:SetHandler(defines.events.on_gui_closed, self.OnPresentatorClose)
-        self:SetHandler(defines.events.on_tick)
-
-    else
-
-        self:SetHandler(
-            Constants.Key.Fore, History.Current and self.OnSelectorForeOrBackClick or self.DoNothing
-        )
-        self:SetHandler(
-            Constants.Key.Back, History.Current and self.OnSelectorForeOrBackClick or self.DoNothing
-        )
-        self:SetHandler(defines.events.on_gui_closed, self.DoNothing)
-
-    end
-    self:SetHandler(defines.events.on_gui_click, self.OnGuiClick)
-end
-
 function EventManager:OnSelectorForeOrBackClick(event)
     self.Player = event.player_index
     Gui:PresentTarget(self.Player, History.Current)
-    self:ConfigureEvents()
 end
 
 function EventManager:OnPresentatorForeClick(event)
     self.Player = event.player_index
     History:Fore()
     Gui:PresentTarget(self.Player, History.Current)
-    self:ConfigureEvents()
 end
 
 function EventManager:OnPresentatorBackClick(event)
     self.Player = event.player_index
     History:Back()
     Gui:PresentTarget(self.Player, History.Current)
-    self:ConfigureEvents()
 end
 
 function EventManager:OnSelectorElementChanged(event)
@@ -95,46 +50,40 @@ function EventManager:OnSelectorElementChanged(event)
     Gui:CloseSelector(self.Player)
     Gui:PresentTarget(self.Player, target)
     History:ResetTo(target)
-    self:ConfigureEvents()
 end
 
 function EventManager:OnSelectorClose(event)
     self.Player = event.player_index
     Gui:CloseSelector(self.Player)
-    self:ConfigureEvents()
 end
 
 function EventManager:OnPresentatorClose(event)
     self.Player = event.player_index
     Gui:ClosePresentator(self.Player)
-    self:ConfigureEvents()
 end
 
 function EventManager:DoNothing(event)
     self.Player = event.player_index
-    self:ConfigureEvents()
 end
 
 function EventManager:OnGuiClick(event)
     self.Player = event.player_index
     local target = Gui:OnGuiClick(self.Player, event)
     if target then History:AdvanceWith(target) end
-    self:ConfigureEvents()
 end
 
 function EventManager:OnTickInitial()
     self:EnsureGlobal()
     Gui:EnsureMainButton()
-    self:ConfigureEvents()
+    self:SetHandler(defines.events.on_tick)
 end
 
-function EventManager:OnInit() Database:OnLoad() end
+function EventManager:OnInit() Database:Ensure() end
 
 function EventManager:OnMainKey(event)
     self.Player = event.player_index
     local target = Gui:OnMainButtonPressed(self.Player)
     if target then History:AdvanceWith(target) end
-    self:ConfigureEvents()
 end
 
 function EventManager:OnLoad()
@@ -142,9 +91,48 @@ function EventManager:OnLoad()
     --    History = History:new(global.Current and global.Current.History) 
 end
 
-function EventManager:OnPlayerJoined(event) 
-    self.Player = event.player_index 
+function EventManager:OnPlayerJoined(event)
+    self.Player = event.player_index
     self:EnsureGlobal()
+end
+
+function EventManager:OnMainInventoryChanged() Helper.RefreshMainInventoryChanged(Database) end
+
+function EventManager:OnMainInventoryChanged() Helper.RefreshStackChanged(Database) end
+
+function EventManager:OnResearchFinished(event)
+    Database:RefreshTechnology(event.research)
+    Helper.RefreshResearchChanged(Database)
+end
+
+function EventManager:OnForeClicked(event)
+    if Gui.Active.Presentator then
+        return History.IsForePossible and self:OnPresentatorForeClick(event)
+    else
+        return History.Current and self:OnSelectorForeOrBackClick(event)
+    end
+end
+
+function EventManager:OnBackClicked(event)
+    if Gui.Active.Presentator then
+        return History.IsBackPossible and self:OnPresentatorBackClick(event)
+    else
+        return History.Current and self:OnSelectorForeOrBackClick(event)
+    end
+end
+
+function EventManager:OnElementChanged(event)
+    if Gui.Active.Selector then
+        self:OnSelectorElementChanged(event)
+    end
+end
+
+function EventManager:OnClose(event)
+    if Gui.Active.Selector then
+        self:OnSelectorClose(event)
+    elseif Gui.Active.Presentator then
+        self:OnPresentatorClose(event)
+    end
 end
 
 function EventManager:new(instance)
@@ -168,13 +156,24 @@ function EventManager:new(instance)
         },
     }
 
-    instance:SetHandler("on_load", self.OnLoad)
-    instance:SetHandler("on_init", self.OnInit)
-    instance:SetHandler(defines.events.on_player_joined_game, self.OnPlayerJoined)
-    instance:SetHandler(defines.events.on_tick, self.OnTickInitial, "initial")
-    instance:SetHandler(Constants.Key.Main, self.OnMainKey)
-    instance:SetHandler(defines.events.on_string_translated, Helper.CompleteTranslation)
-    return instance
+    self = instance
+    self:SetHandler("on_load", self.OnLoad)
+    self:SetHandler("on_init", self.OnInit)
+    self:SetHandler(defines.events.on_player_joined_game, self.OnPlayerJoined)
+    self:SetHandler(defines.events.on_tick, self.OnTickInitial, "initial")
+    self:SetHandler(Constants.Key.Main, self.OnMainKey)
+
+    self:SetHandler(defines.events.on_player_main_inventory_changed, self.OnMainInventoryChanged)
+    self:SetHandler(defines.events.on_player_cursor_stack_changed, self.OnStackChanged)
+    self:SetHandler(defines.events.on_research_finished, self.OnResearchFinished)
+    self:SetHandler(defines.events.on_string_translated, Helper.CompleteTranslation)
+    self:SetHandler(defines.events.on_gui_click, self.OnGuiClick)
+    self:SetHandler(defines.events.on_gui_closed, self.OnClose)
+    self:SetHandler(defines.events.on_gui_elem_changed, self.OnElementChanged)
+    self:SetHandler(Constants.Key.Fore, self.OnForeClicked)
+    self:SetHandler(Constants.Key.Back, self.OnBackClicked)
+
+    return self
 end
 
 return EventManager

@@ -29,14 +29,15 @@ function Category:new(name, prototype, database)
     local self = Common:new(prototype or GetPrototype(domain, category), database)
     self.object_name = Category.object_name
     self.Domain = domain
-    self.Key = self.Domain .. "." .. self.Name
+    self.SubName = self.Prototype.name
+    self.Name = self.Domain .. "." .. self.SubName
 
     self.Workers = Array:new()
 
     self:properties{
         Recipes = {
             get = function()
-                local recipes = self.Database.RecipesForCategory[self.Domain .. "." .. self.Name] --
+                local recipes = self.Database.RecipesForCategory[self.Name] --
                 if not recipes then return Array:new{} end
                 return recipes:Select(
                     function(recipeName)

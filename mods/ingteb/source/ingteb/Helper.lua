@@ -87,23 +87,26 @@ local function UpdateGui(list, target)
     )
 end
 
-function result.RefreshMainInventoryChanged()
+function result.RefreshMainInventoryChanged(dataBase)
     global.Current.Gui --
     :Where(function(_, target) return target.object_name == "Recipe" end) --
+    :Select(function(target)return dataBase:GetProxy(target.object_name, target.name)end) --
     :Select(UpdateGui) --
 end
 
-function result.RefreshStackChanged() end
+function result.RefreshStackChanged(dataBase) end
 
-function result.RefreshMainResearchChanged()
+function result.RefreshResearchChanged(dataBase)
     global.Current.Gui --
     :Where(function(_, target) return target.object_name == "Technology" end) --
+    :Select(function(target)return dataBase:GetProxy(target.object_name, target.name)end) --
     :Select(UpdateGui) --
 end
 
-local function RefreshDescription(this)
+local function RefreshDescription(this, dataBase)
     global.Current.Gui --
     :Where(function(_, target) return target == this end) --
+    :Select(function(target)return dataBase:GetProxy(target.object_name, target.name)end) --
     :Select(UpdateGui) --
 end
 
@@ -112,14 +115,14 @@ function result.InitiateTranslation()
     if pending then assert(global.Current.Player.request_translation {pending.Key}) end
 end
 
-function result.CompleteTranslation(event)
+function result.CompleteTranslation(event, dataBase)
     local complete = global.Current.PendingTranslation[event.localised_string]
     global.Current.PendingTranslation[event.localised_string] = nil
 
     if event.translated then
         local thing = complete.Value
         thing.HasLocalisedDescriptionPending = false
-        RefreshDescription(thing)
+        RefreshDescription(thing, dataBase)
     end
     result.InitiateTranslation()
 end

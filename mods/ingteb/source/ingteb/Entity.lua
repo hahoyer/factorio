@@ -29,7 +29,7 @@ function Entity:new(name, prototype, database)
     self.CreatedBy = Dictionary:new{}
 
     self:properties{
-        ClickHandler = {get = function() return self.Item end},
+        CommonKey = {get = function() return self.Item and self.Item.CommonKey end},
         Item = {
             cache = true,
             get = function()
@@ -71,7 +71,7 @@ function Entity:new(name, prototype, database)
                         else
                             assert()
                         end
-                        return list and list[category.Name]
+                        return list and list[category.SubName]
                     end
                 ) --
                 return xreturn

@@ -21,7 +21,7 @@ function FuelCategory:new(name, prototype, database)
         Fuels = {
             cache = true,
             get = function()
-                return self.Database.ItemsForFuelCategory[self.Name] --
+                return self.Database.ItemsForFuelCategory[self.Prototype.name] --
                 :Select(function(itemName) return self.Database:GetItem(itemName) end)
             end,
         },

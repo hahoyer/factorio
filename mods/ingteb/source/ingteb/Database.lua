@@ -37,7 +37,7 @@ function Database:new()
 end
 
 function Database:GetProxy(className, name, prototype)
-    self:OnLoad()
+    self:Ensure()
     local data = self.Proxies[className]
     if not data then
         data = Dictionary:new{}
@@ -183,15 +183,31 @@ function Database:AddBonus(target, technology)
     return BonusSet(result, target.modifier, self)
 end
 
-function Database:OnLoad() self = self:new() end
+function Database:Ensure() self = self:new() end
 
 function Database:Get(target)
-    assert(target.type)
-    assert(target.name)
-
-    if target.type == "item" then return self:GetItem(target.name) end
-    if target.type == "fluid" then return self:GetFluid(target.name) end
-    assert(todo)
+    local object_name, Name
+    if not target then
+        return
+    elseif type(target) == "string" then
+        _, _, object_name, Name = target:find("^(.-)%.(.*)$")
+    elseif target.type then
+        if target.type == "item" then
+            object_name = "Item"
+        elseif target.type == "fluid" then
+            object_name = "Fluid"
+        else
+            assert(todo)
+        end
+        Name = target.name
+    else
+        object_name = target.object_name
+        Name = target.Name
+        Prototype = target.Prototype
+    end
+    assert(object_name)
+    assert(Name or Prototype)
+    return self:GetProxy(object_name, Name, Prototype)
 end
 
 function Database:RefreshTechnology(target) self.Proxies.Technology[target.name]:Refresh() end

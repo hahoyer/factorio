@@ -12,7 +12,7 @@ local BoilingRecipe = Common:class("BoilingRecipe")
 
 local function GetCategoryAndRegister(self, domain, category)
 
-    local result = self.Database:GetCategory(domain.."."..category)
+    local result = self.Database:GetCategory(domain .. "." .. category)
     result.Recipes:Append(self)
     return result
 end
@@ -36,7 +36,7 @@ function MiningRecipe:new(prototype, database)
     self.Category = GetCategoryAndRegister(self, domain, category)
 
     self.Resource = self.Database:GetEntity(nil, prototype)
-    self.Resource.UsedBy:AppendForKey(self.Category.Key, self)
+    self.Resource.UsedBy:AppendForKey(self.Category.Name, self)
 
     self.Input = Array:new{self.Resource}
     if configuration.required_fluid then
@@ -45,7 +45,7 @@ function MiningRecipe:new(prototype, database)
             name = configuration.required_fluid,
             amount = configuration.fluid_amount,
         }
-        fluid.Goods.UsedBy:AppendForKey(self.Category.Key, self)
+        fluid.Goods.UsedBy:AppendForKey(self.Category.Name, self)
         self.Input:Append(fluid)
     end
 
@@ -55,7 +55,7 @@ function MiningRecipe:new(prototype, database)
         function(product)
             local result = database:GetStackOfGoods(product)
             if result then
-                result.Goods.CreatedBy:AppendForKey(self.Category.Key, self)
+                result.Goods.CreatedBy:AppendForKey(self.Category.Name, self)
             else
                 self.IsHidden = true
             end
@@ -75,14 +75,14 @@ function BoilingRecipe:new(prototype, database)
     self.SpriteType = "fluid"
     self.TypeOrder = 2.1
     self.Time = 1
-    self.Category = GetCategoryAndRegister(self,"boiling", prototype.name)
+    self.Category = GetCategoryAndRegister(self, "boiling", prototype.name)
 
-    local input = self.Database:GetStackOfGoods{type = "fluid", amount = 60, name = "water"} 
-    input.Goods.UsedBy:AppendForKey(self.Category.Key, self)
+    local input = self.Database:GetStackOfGoods{type = "fluid", amount = 60, name = "water"}
+    input.Goods.UsedBy:AppendForKey(self.Category.Name, self)
     self.Input = Array:new{input}
 
-    local output = self.Database:GetStackOfGoods{type = "fluid", amount = 60, name = "steam"} 
-    output.Goods.CreatedBy:AppendForKey(self.Category.Key, self)
+    local output = self.Database:GetStackOfGoods{type = "fluid", amount = 60, name = "steam"}
+    output.Goods.CreatedBy:AppendForKey(self.Category.Name, self)
     self.Output = Array:new{output}
 
     return self
