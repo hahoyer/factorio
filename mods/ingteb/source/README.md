@@ -23,6 +23,7 @@ todo:
 - involve achievements
 - "machine-column" for character
 - machine-column for labs
+- machine-column for furnaces
 
 known issue: 
 - it takes seconds when presenting first help page
