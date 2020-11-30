@@ -5,13 +5,14 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 local ValueCacheContainer = require("core.ValueCacheContainer")
 local Proxy = {
-    Item = require("ingteb.Item"),
-    Fluid = require("ingteb.Fluid"),
-    Entity = require("ingteb.Entity"),
-    Recipe = require("ingteb.Recipe"),
-    MiningRecipe = require("ingteb.MiningRecipe"),
-    Technology = require("ingteb.Technology"),
     Category = require("ingteb.Category"),
+    Entity = require("ingteb.Entity"),
+    FuelCategory = require("ingteb.FuelCategory"),
+    Fluid = require("ingteb.Fluid"),
+    Item = require("ingteb.Item"),
+    ImplicitRecipe = require("ingteb.ImplicitRecipe"),
+    Recipe = require("ingteb.Recipe"),
+    Technology = require("ingteb.Technology"),
 }
 local StackOfGoods = require("ingteb.StackOfGoods")
 
@@ -23,12 +24,14 @@ function Database:new()
     self.Proxies = {}
     self.RecipesForItems = {}
     self.RecipesForCategory = {}
-    self.WorkersForCategory = {}
     self.EnabledTechnologiesForTechnology = {}
+    self.EntitiesForBurnersFuel = {}
+    self.ItemsForFuelCategory = {}
 
     for _, prototype in pairs(game.recipe_prototypes) do self:ScanRecipe(prototype) end
     for _, prototype in pairs(game.entity_prototypes) do self:ScanEntity(prototype) end
     for _, prototype in pairs(game.technology_prototypes) do self:ScanTechnology(prototype) end
+    for _, prototype in pairs(game.item_prototypes) do self:ScanItem(prototype) end
 
     return self
 end
@@ -57,10 +60,14 @@ function Database:GetItem(name, prototype) return self:GetProxy("Item", name, pr
 function Database:GetEntity(name, prototype) return self:GetProxy("Entity", name, prototype) end
 function Database:GetCategory(name, prototype) return self:GetProxy("Category", name, prototype) end
 function Database:GetRecipe(name, prototype) return self:GetProxy("Recipe", name, prototype) end
-function Database:GetMiningRecipe(name, prototype)
-    return self:GetProxy("MiningRecipe", name, prototype)
-end
 function Database:GetTechnology(name, prototype) return self:GetProxy("Technology", name, prototype) end
+function Database:GetFuelCategory(name, prototype)
+    return self:GetProxy("FuelCategory", name, prototype)
+end
+
+function Database:GetImplicitRecipe(domain, prototype) --
+    return self:GetProxy("ImplicitRecipe", domain .. "." .. prototype.name, prototype)
+end
 
 function Database:AddWorkerForCategory(domain, category, prototype)
     self:GetCategory(domain .. "." .. category).Workers:Append(self:GetEntity(nil, prototype))
@@ -86,12 +93,18 @@ function Database:ScanEntity(prototype)
     for category, _ in pairs(prototype.crafting_categories or {}) do
         self:AddWorkerForCategory("crafting", category, prototype)
     end
+
     for category, _ in pairs(prototype.resource_categories or {}) do
         if prototype.mineable_properties.required_fluid then
             self:AddWorkerForCategory("fluid-mining", category, prototype)
-
         else
             self:AddWorkerForCategory("mining", category, prototype)
+        end
+    end
+
+    if prototype.burner_prototype then
+        for category, _ in pairs(prototype.burner_prototype.fuel_categories or {}) do
+            EnsureKey(self.EntitiesForBurnersFuel, category, Array:new()):Append(prototype.name)
         end
     end
 
@@ -99,19 +112,31 @@ function Database:ScanEntity(prototype)
     and prototype.mineable_properties.minable --
     and prototype.mineable_properties.products --
     and not prototype.items_to_place_this --
-    then self:GetMiningRecipe(nil, prototype) end
+    then self:GetImplicitRecipe("mining", prototype) end
+
+    if prototype.type == "boiler" then
+        self:GetImplicitRecipe("boiling", game.fluid_prototypes["steam"])
+        self:AddWorkerForCategory("boiling", "steam", prototype)
+    end
+
 end
 
 function Database:ScanTechnology(prototype)
-    for key, value in pairs(prototype.effects or {}) do
+    for _, value in pairs(prototype.effects or {}) do
         if value.type == "unlock-recipe" then
             self:GetRecipe(value.recipe).TechnologyPrototypes:Append(prototype)
         end
     end
-    for key, value in pairs(prototype.prerequisites or {}) do
+    for key, _ in pairs(prototype.prerequisites or {}) do
         EnsureKey(self.EnabledTechnologiesForTechnology, key, Array:new()):Append(prototype)
     end
 
+end
+
+function Database:ScanItem(prototype)
+    if prototype.fuel_category then
+        EnsureKey(self.ItemsForFuelCategory, prototype.fuel_category, Array:new()):Append(prototype)
+    end
 end
 
 function Database:ScanRecipe(prototype)

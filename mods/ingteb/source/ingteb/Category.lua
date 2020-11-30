@@ -14,6 +14,8 @@ local function GetPrototype(domain, category)
         return game.resource_category_prototypes[category]
     elseif domain == "hand-mining" and category == "steel-axe" then
         return game.technology_prototypes["steel-axe"]
+    elseif domain == "boiling" then
+        return game.fluid_prototypes[category]
     else
         assert(todo)
     end
@@ -28,12 +30,6 @@ function Category:new(name, prototype, database)
     self.object_name = Category.object_name
     self.Domain = domain
     self.Key = self.Domain .. "." .. self.Name
-
-    assert(
-        self.Prototype.object_name == "LuaResourceCategoryPrototype" --
-        or self.Prototype.object_name == "LuaRecipeCategoryPrototype" --
-        or self.Prototype.object_name == "LuaTechnologyPrototype" --
-    )
 
     self.Workers = Array:new()
 

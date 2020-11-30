@@ -66,6 +66,8 @@ function Entity:new(name, prototype, database)
                             return
                         elseif domain == "researching" then
                             return self.Prototype.lab_inputs
+                        elseif domain == "boiling" then
+                            return self.Prototype.lab_inputs
                         else
                             assert()
                         end

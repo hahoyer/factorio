@@ -25,6 +25,14 @@ function Item:new(name, prototype, database)
         },
     }
 
+    if self.Prototype.fuel_category then
+        self.Fuel = {
+            Category = self.Database:GetFuelCategory(self.Prototype.fuel_category),
+            Value = self.Prototype.fuel_value,
+            Acceleration = self.Prototype.fuel_acceleration_multiplier,
+        }
+    end
+
     return self
 
 end

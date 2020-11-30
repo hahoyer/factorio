@@ -30,6 +30,9 @@ function Common:new(prototype, database)
     self.LocalizedDescription = self.Prototype.localised_description
 
     self:properties{
+        Group = {get = function() return self.Prototype.group end},
+        SubGroup = {get = function() return self.Prototype.subgroup end},
+
         LocalisedName = {
             get = function()
                 return {
@@ -80,6 +83,10 @@ function Common:new(prototype, database)
         SpriteName = {
             chache = true,
             get = function() return self.SpriteType .. "/" .. self.Prototype.name end,
+        },
+
+        RichTextName = {
+            get = function() return "[img=" .. self.SpriteName .. "]" end,
         },
     }
     function self:GetHandCraftingOrder(event) end

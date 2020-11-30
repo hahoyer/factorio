@@ -15,7 +15,7 @@ function Fluid:new(name, prototype, database)
 
     assert(self.Prototype.object_name == "LuaFluidPrototype")
 
-    self:properties{
+self:properties{
     }
 
     return self

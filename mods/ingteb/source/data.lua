@@ -24,15 +24,25 @@ data:extend(
             size = 64,
             scale = 0.5,
         },
+        {
+            type = "sprite",
+            name = "hide-this-column",
+            filename = "__core__/graphics/cancel.png",
+            size = 64,
+            scale = 0.5,
+        },
     }
 )
 
+data.raw["utility-sprites"].default.factorio = {
+    filename = "__core__/graphics/factorio.icon",
+    priority = "medium",
+    size = 32,
+    flags = {"icon"},
+}
+
 data.raw["gui-style"].default["ingteb-flow-centered"] =
-    {
-        type = "horizontal_flow_style",
-        horizontally_stretchable = "on",
-        horizontal_align = "center",
-    }
+    {type = "horizontal_flow_style", horizontally_stretchable = "on", horizontal_align = "center"}
 
 data.raw["gui-style"].default["ingteb-scroll-6x1"] =
     {
@@ -103,3 +113,4 @@ data.raw["gui-style"].default["ingteb-light-button"] =
     }
 
 data.raw["gui-style"].default["ingteb-un-button"] = {type = "image_style", width = 40}
+data.raw["gui-style"].default["ingteb-tab"] = {type = "tab_style", width = 40}

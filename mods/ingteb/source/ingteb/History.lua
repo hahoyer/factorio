@@ -24,7 +24,8 @@ function History:new(target)
             return self.Index > 0 and self.Data[self.Index] or nil
         end},
     }
-    return instance
+    self:Log("History:new")
+    return self
 end
 
 function History:Log(tag)
