@@ -31,19 +31,27 @@ function Category:new(name, prototype, database)
     self.Domain = domain
     self.SubName = self.Prototype.name
     self.Name = self.Domain .. "." .. self.SubName
+    self.ImplicitRecipeList = Array:new{}
 
     self.Workers = Array:new()
 
     self:properties{
-        Recipes = {
+        RecipeList = {
+            cache = true,
             get = function()
-                local recipes = self.Database.RecipesForCategory[self.Name] --
-                if not recipes then return Array:new{} end
-                return recipes:Select(
+                local recipeList = self.Database.RecipesForCategory[self.Name] --
+                if not recipeList then return Array:new{} end
+                return recipeList --
+                :Select(
                     function(recipeName)
-                        return self.Database:GetRecipe(recipeName)
+                        local prototype = game.recipe_prototypes[recipeName]
+                        if prototype then
+                            return self.Database:GetRecipe(recipeName, prototype)
+                        end
                     end
-                )
+                ) --
+                :Where(function(recipe) return recipe end) --
+                :Concat(self.ImplicitRecipeList)
             end,
         },
     }

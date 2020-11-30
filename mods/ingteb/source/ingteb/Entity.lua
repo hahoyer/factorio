@@ -57,9 +57,9 @@ function Entity:new(name, prototype, database)
                 :Where(
                     function(category)
                         local domain = category.Domain
-                        local list
+                        local list = {}
                         if domain == "mining" or domain == "fluid-mining" then
-                            list = self.Prototype.resource_category
+                            list = self.Prototype.resource_categories
                         elseif domain == "crafting" then
                             list = self.Prototype.crafting_categories
                         elseif domain == "hand-mining" then
@@ -82,7 +82,7 @@ function Entity:new(name, prototype, database)
             cache = true,
             get = function()
                 return self.Categories --
-                :Select(function(category) return category.Recipes end) --
+                :Select(function(category) return category.RecipeList end) --
                 :Where(function(recipes) return recipes:Any() end) --
             end,
         },

@@ -11,9 +11,8 @@ local MiningRecipe = Common:class("MiningRecipe")
 local BoilingRecipe = Common:class("BoilingRecipe")
 
 local function GetCategoryAndRegister(self, domain, category)
-
-    local result = self.Database:GetCategory(domain .. "." .. category)
-    result.Recipes:Append(self)
+    local result =  self.Database:GetCategory(domain .. "." .. category)
+    result.ImplicitRecipeList:Append(self)
     return result
 end
 
@@ -94,8 +93,8 @@ function ImplicitRecipe:new(name, prototype, database)
     assert(prototypeName == prototype.name)
 
     local self --
-    = domain == "mining" and MiningRecipe:new(prototype, database) --
-    or domain == "boiling" and BoilingRecipe:new(prototype, database) --
+    = (domain == "mining" or domain == "fluid-mining") and MiningRecipe:new(prototype, database) --
+          or domain == "boiling" and BoilingRecipe:new(prototype, database) --
     self.Domain = domain
 
     self:properties{

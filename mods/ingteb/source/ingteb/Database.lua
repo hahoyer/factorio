@@ -95,11 +95,10 @@ function Database:ScanEntity(prototype)
     end
 
     for category, _ in pairs(prototype.resource_categories or {}) do
-        if prototype.mineable_properties.required_fluid then
+        if #prototype.fluidbox_prototypes > 0  then
             self:AddWorkerForCategory("fluid-mining", category, prototype)
-        else
-            self:AddWorkerForCategory("mining", category, prototype)
         end
+        self:AddWorkerForCategory("mining", category, prototype)
     end
 
     if prototype.burner_prototype then
@@ -112,7 +111,13 @@ function Database:ScanEntity(prototype)
     and prototype.mineable_properties.minable --
     and prototype.mineable_properties.products --
     and not prototype.items_to_place_this --
-    then self:GetImplicitRecipe("mining", prototype) end
+    then 
+        local recipe = self:GetImplicitRecipe("mining", prototype) 
+    
+        EnsureKey(self.RecipesForCategory, recipe.Category.Name, Array:new()):Append(
+            prototype.name
+        )
+        end
 
     if prototype.type == "boiler" then
         self:GetImplicitRecipe("boiling", game.fluid_prototypes["steam"])
@@ -213,3 +218,4 @@ end
 function Database:RefreshTechnology(target) self.Proxies.Technology[target.name]:Refresh() end
 
 return Database
+
