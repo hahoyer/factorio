@@ -46,10 +46,12 @@ end
 
 function EventManager:OnSelectorElementChanged(event)
     self.Player = event.player_index
-    local target = Database:Get(event.element.elem_value)
-    Gui:CloseSelector(self.Player)
-    Gui:PresentTarget(self.Player, target)
-    History:ResetTo(target)
+    local target = Database:Get(event.element.name)
+    if target then
+        Gui:CloseSelector(self.Player)
+        Gui:PresentTarget(self.Player, target)
+        History:ResetTo(target)
+    end
 end
 
 function EventManager:OnSelectorClose(event)
@@ -62,14 +64,18 @@ function EventManager:OnPresentatorClose(event)
     Gui:ClosePresentator(self.Player)
 end
 
-function EventManager:DoNothing(event)
-    self.Player = event.player_index
-end
+function EventManager:DoNothing(event) self.Player = event.player_index end
 
 function EventManager:OnGuiClick(event)
     self.Player = event.player_index
-    local target = Gui:OnGuiClick(self.Player, event)
-    if target then History:AdvanceWith(target) end
+    if event.element then
+        if Gui.Active.Selector then
+            self:OnSelectorElementChanged(event)
+        else
+            local target = Gui:OnGuiClick(self.Player, event)
+            if target then History:AdvanceWith(target) end
+        end
+    end
 end
 
 function EventManager:OnTickInitial()
@@ -98,7 +104,7 @@ end
 
 function EventManager:OnMainInventoryChanged() Helper.RefreshMainInventoryChanged(Database) end
 
-function EventManager:OnMainInventoryChanged() Helper.RefreshStackChanged(Database) end
+function EventManager:OnStackChanged() Helper.RefreshStackChanged(Database) end
 
 function EventManager:OnResearchFinished(event)
     Database:RefreshTechnology(event.research)
@@ -118,12 +124,6 @@ function EventManager:OnBackClicked(event)
         return History.IsBackPossible and self:OnPresentatorBackClick(event)
     else
         return History.Current and self:OnSelectorForeOrBackClick(event)
-    end
-end
-
-function EventManager:OnElementChanged(event)
-    if Gui.Active.Selector then
-        self:OnSelectorElementChanged(event)
     end
 end
 
@@ -169,7 +169,6 @@ function EventManager:new(instance)
     self:SetHandler(defines.events.on_string_translated, Helper.CompleteTranslation)
     self:SetHandler(defines.events.on_gui_click, self.OnGuiClick)
     self:SetHandler(defines.events.on_gui_closed, self.OnClose)
-    self:SetHandler(defines.events.on_gui_elem_changed, self.OnElementChanged)
     self:SetHandler(Constants.Key.Fore, self.OnForeClicked)
     self:SetHandler(Constants.Key.Back, self.OnBackClicked)
 

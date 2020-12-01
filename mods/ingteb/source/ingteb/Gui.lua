@@ -60,11 +60,13 @@ function Gui:ScanActiveGui(player)
 end
 
 function Gui:CloseSelector(player)
+    Helper.OnClose("Selector", self.Active.Selector)
     player.gui.screen.Selector.destroy()
     self.Active.Selector = nil
 end
 
 function Gui:ClosePresentator(player)
+    Helper.OnClose("Presentator", self.Active.Presentator)
     player.gui.screen.Presentator.destroy()
     self.Active.Presentator = nil
 end
@@ -125,6 +127,7 @@ function Gui:OnGuiClick(player, event)
         return
     end
 
+    if self.Active.Presentator then return self:OnGuiClickForPresentator(player, event) end
     if self.Active.Presentator then return self:OnGuiClickForPresentator(player, event) end
 end
 

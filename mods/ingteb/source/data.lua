@@ -112,5 +112,18 @@ data.raw["gui-style"].default["ingteb-light-button"] =
         pie_progress_color = {0.98, 0.66, 0.22, 0.5},
     }
 
-data.raw["gui-style"].default["ingteb-un-button"] = {type = "image_style", width = 40}
-data.raw["gui-style"].default["ingteb-tab"] = {type = "tab_style", width = 40}
+data.raw["gui-style"].default["ingteb-un-button"] = {type = "image_style", size = 40}
+data.raw["gui-style"].default["ingteb-tab"] = {type = "tab_style", size = 40}
+
+data:extend{{type = "font", name = "ingteb-font18", from = "default", size = 18}}
+
+data:extend{{type = "font", name = "ingteb-font24", from = "default", size = 24}}
+
+data:extend{{type = "font", name = "ingteb-font32", from = "default", size = 32}}
+
+data.raw["gui-style"].default["ingteb-big-tab"] = {type = "tab_style", font = "ingteb-font32"}
+
+data.raw["gui-style"].default["ingteb-medium-tab"] =
+    {type = "tab_style", font = "ingteb-font18", size = 40}
+
+data.raw["gui-style"].default["ingteb-big-label"] = {type = "label_style", font = "ingteb-font24"}

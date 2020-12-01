@@ -14,7 +14,7 @@ local function CreateSprite(frame, target)
     local style = Helper.SpriteStyleFromCode(target and target.SpriteStyle)
 
     if target then
-        return  frame.add {
+        return frame.add {
             type = "sprite-button",
             tooltip = tooltip,
             sprite = sprite,
@@ -26,7 +26,6 @@ local function CreateSprite(frame, target)
     return frame.add {type = "sprite-button", style = style}
 end
 
-
 local function RegisterTargetForGuiClick(result, target)
     global.Current.Links[result.index] = target and target.CommonKey
     if target and (target.IsDynamic or target.HasLocalisedDescriptionPending) then
@@ -37,7 +36,7 @@ end
 
 local function CreateSpriteAndRegister(frame, target)
     local result = CreateSprite(frame, target)
-    if target then RegisterTargetForGuiClick(result, target)end
+    if target then RegisterTargetForGuiClick(result, target) end
     return result
 end
 
@@ -113,7 +112,7 @@ local function CreateCraftingGroupPanel(frame, target, category, inCount, outCou
                     type = "tab",
                     caption = "[item-group=" .. group.name .. "]",
                     tooltip = group.localised_name,
-                    style = "ingteb-tab",
+                    style = "ingteb-medium-tab",
                 }
                 local frame = groupPanel.add {type = "frame", direction = "vertical"}
                 groupPanel.add_tab(tab, frame)
@@ -137,13 +136,13 @@ local function CreateCraftingGroupPanel(frame, target, category, inCount, outCou
                             local caption = group.name
                             if value[1] and value[1].Output[1] then
                                 local main = value[1].Output[1]
-                                caption =  main.RichTextName
+                                caption = main.RichTextName
                             end
                             local tab = groupPanel.add {
                                 type = "tab",
                                 caption = caption,
                                 tooltip = group.localised_name,
-                                style = "ingteb-tab",
+                                style = "ingteb-medium-tab",
                             }
                             local subFrame = groupPanel.add {type = "frame", direction = "vertical"}
                             groupPanel.add_tab(tab, subFrame)
@@ -181,7 +180,12 @@ local function CreateCraftingGroupsPanel(frame, target, headerSprites)
         style = "ingteb-flow-centered",
     }
 
-    headerFlow.add {type = "label", name = "headerSprites", caption = headerSprites}
+    headerFlow.add {
+        type = "label",
+        name = "headerSprites",
+        caption = headerSprites,
+        style = "ingteb-big-label",
+    }
 
     local inCount = target:Select(
         function(group)

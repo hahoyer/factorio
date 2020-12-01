@@ -23,13 +23,10 @@ todo:
 - involve achievements
 - "machine-column" for character
 - machine-column for labs
-- machine-column for furnaces
 
 known issue: 
 - it takes seconds when presenting first help page
 - it takes seconds when presenting large help pages the first time
 - it takes second when presenting large help pages (especially machine-columns)
-- burner recipe has hard-coded producivity (60 water into 60 steam in 1s)
-- machine column for miners are gone
 
 **Note: This mod is under development. Please be so kind and use the "Discussion" tab to give feedback - especially if you encounter bugs.** Many thanks in advance

@@ -48,6 +48,10 @@ function result.ShowFrame(player, name, create)
     return main
 end
 
+function result.OnClose(name, frame) 
+    global.Current.Location[name] = frame.location 
+end
+
 function result.DeepEqual(a, b)
     if not a then return not b end
     if not b then return false end
@@ -73,7 +77,8 @@ function result.SpriteStyleFromCode(code)
     or "slot_button"
 end
 
-local function UpdateGui(list, target)
+local function UpdateGui(list, target, dataBase)
+    target = dataBase:GetProxy(target.object_name, target.Name)
     local helperText = target.HelperText
     local number = target.NumberOnSprite
     local style = result.SpriteStyleFromCode(target.SpriteStyle)
@@ -90,8 +95,7 @@ end
 function result.RefreshMainInventoryChanged(dataBase)
     global.Current.Gui --
     :Where(function(_, target) return target.object_name == "Recipe" end) --
-    :Select(function(target)return dataBase:GetProxy(target.object_name, target.name)end) --
-    :Select(UpdateGui) --
+    :Select(function(list, target) UpdateGui(list, target, dataBase) end) --
 end
 
 function result.RefreshStackChanged(dataBase) end
@@ -99,15 +103,14 @@ function result.RefreshStackChanged(dataBase) end
 function result.RefreshResearchChanged(dataBase)
     global.Current.Gui --
     :Where(function(_, target) return target.object_name == "Technology" end) --
-    :Select(function(target)return dataBase:GetProxy(target.object_name, target.name)end) --
-    :Select(UpdateGui) --
+    :Select(function(list, target) UpdateGui(list, target, dataBase) end) --
 end
 
 local function RefreshDescription(this, dataBase)
     global.Current.Gui --
     :Where(function(_, target) return target == this end) --
-    :Select(function(target)return dataBase:GetProxy(target.object_name, target.name)end) --
-    :Select(UpdateGui) --
+    :Select(function(target) return dataBase:GetProxy(target.object_name, target.name) end) --
+    :Select(function(list, target) UpdateGui(list, target, dataBase) end) --
 end
 
 function result.InitiateTranslation()

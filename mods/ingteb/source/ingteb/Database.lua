@@ -192,7 +192,7 @@ function Database:Ensure() self = self:new() end
 
 function Database:Get(target)
     local object_name, Name
-    if not target then
+    if not target or target == "" then
         return
     elseif type(target) == "string" then
         _, _, object_name, Name = target:find("^(.-)%.(.*)$")
