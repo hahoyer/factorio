@@ -84,8 +84,6 @@ function EventManager:OnTickInitial()
     self:SetHandler(defines.events.on_tick)
 end
 
-function EventManager:OnInit() Database:Ensure() end
-
 function EventManager:OnMainKey(event)
     self.Player = event.player_index
     local target = Gui:OnMainButtonPressed(self.Player)
@@ -158,7 +156,6 @@ function EventManager:new(instance)
 
     self = instance
     self:SetHandler("on_load", self.OnLoad)
-    self:SetHandler("on_init", self.OnInit)
     self:SetHandler(defines.events.on_player_joined_game, self.OnPlayerJoined)
     self:SetHandler(defines.events.on_tick, self.OnTickInitial, "initial")
     self:SetHandler(Constants.Key.Main, self.OnMainKey)

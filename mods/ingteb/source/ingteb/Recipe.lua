@@ -15,7 +15,6 @@ function Recipe:new(name, prototype, database)
 
     self.TypeOrder = 1
     self.SpriteType = "recipe"
-    self.TechnologyPrototypes = Array:new()
     self.IsHidden = false
     self.IsDynamic = true
     self.Time = self.Prototype.energy
@@ -33,11 +32,13 @@ function Recipe:new(name, prototype, database)
         Technologies = {
             cache = true,
             get = function()
-                return self.TechnologyPrototypes:Select(
+                local xreturn = (self.Database.TechnologiesForRecipe[self.Name] or Array:new{}) --
+                :Select(
                     function(prototype)
                         return self.Database:GetTechnology(nil, prototype)
                     end
                 )
+                return xreturn
             end,
         },
 
@@ -90,7 +91,7 @@ function Recipe:new(name, prototype, database)
         Category = {
             cache = true,
             get = function()
-                return self.Database.Proxies.Category["crafting." .. self.Prototype.category]
+                return self.Database:GetCategory("crafting." .. self.Prototype.category)
             end,
         },
 
@@ -155,7 +156,7 @@ function Recipe:new(name, prototype, database)
 
     function self:SortAll() end
 
-    function self:GetHandCraftingOrder(event)
+    function self:GetHandCraftingRequest(event)
         if (UI.IsMouseCode(event, "A-- l") --
         or UI.IsMouseCode(event, "A-- r") --
         or UI.IsMouseCode(event, "--S l")) --

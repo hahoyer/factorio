@@ -88,7 +88,7 @@ function Common:new(prototype, database)
 
         RichTextName = {get = function() return "[img=" .. self.SpriteName .. "]" end},
     }
-    function self:GetHandCraftingOrder(event) end
+    function self:GetHandCraftingRequest(event) end
     function self:GetResearchRequest(event) end
 
     function self:SealUp()

@@ -11,8 +11,7 @@ local MiningRecipe = Common:class("MiningRecipe")
 local BoilingRecipe = Common:class("BoilingRecipe")
 
 local function GetCategoryAndRegister(self, domain, category)
-    local result =  self.Database:GetCategory(domain .. "." .. category)
-    result.ImplicitRecipeList:Append(self)
+    local result = self.Database:GetCategory(domain .. "." .. category)
     return result
 end
 
@@ -90,11 +89,12 @@ end
 function ImplicitRecipe:new(name, prototype, database)
     assert(release or name)
     local _, _, domain, prototypeName = name:find("^(.+)%.(.*)$")
-    assert(release or prototypeName == prototype.name)
+    assert(release or not prototype or prototypeName == prototype.name)
 
     local self --
-    = (domain == "mining" or domain == "fluid-mining") and MiningRecipe:new(prototype, database) --
-          or domain == "boiling" and BoilingRecipe:new(prototype, database) --
+    = (domain == "mining" or domain == "fluid-mining" or domain == "hand-mining") --
+          and MiningRecipe:new(prototype or game.entity_prototypes[prototypeName], database) --
+    or domain == "boiling" and BoilingRecipe:new(prototype, database) --
     self.Domain = domain
 
     self:properties{

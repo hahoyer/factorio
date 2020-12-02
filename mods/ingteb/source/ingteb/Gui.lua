@@ -11,6 +11,7 @@ local Selector = require("ingteb.Selector")
 local Gui = {Active = {}}
 
 function Gui:FindTargets(player)
+    Database:Ensure()
     assert(release or player)
     assert(release or self.Active.ingteb)
     assert(release or not self.Active.Selector)
@@ -43,9 +44,13 @@ function Gui:FindTargets(player)
             assert(release or cursor.object_name == "LuaEntity")
             local result = Array:new{Database:GetItem(cursor.name)}
 
-            local inventories = Dictionary:new(defines.inventory)--
-            :Select(function(_, name) return cursor.get_inventory(defines.inventory[name])end)--
-            :Where(function(inventory, name) return #inventory > 0 end)--
+            local inventories = Dictionary:new(defines.inventory) --
+            :Select(
+                function(_, name)
+                    return cursor.get_inventory(defines.inventory[name])
+                end
+            ) --
+            :Where(function(inventory, name) return #inventory > 0 end) --
 
             return result
         end
@@ -132,7 +137,6 @@ function Gui:OnGuiClick(player, event)
     end
 
     if self.Active.Presentator then return self:OnGuiClickForPresentator(player, event) end
-    if self.Active.Presentator then return self:OnGuiClickForPresentator(player, event) end
 end
 
 function Gui:UpdateTabOrder(tabOrder, dropIndex)
@@ -146,7 +150,7 @@ function Gui:OnGuiClickForPresentator(player, event)
     if target and target.Prototype then
         if UI.IsMouseCode(event, "--- l") then return self:PresentTarget(player, target) end
 
-        local order = target:GetHandCraftingOrder(event)
+        local order = target:GetHandCraftingRequest(event)
         if order then
             player.begin_crafting(order)
             return
