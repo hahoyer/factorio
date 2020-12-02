@@ -29,7 +29,7 @@ end
 local function RegisterTargetForGuiClick(result, target)
     global.Current.Links[result.index] = target and target.CommonKey
     if target and (target.IsDynamic or target.HasLocalisedDescriptionPending) then
-        global.Current.Gui:AppendForKey(target, result)
+        Table.AppendForKey(global.Current.Gui,  target, result)
     end
     return result
 end

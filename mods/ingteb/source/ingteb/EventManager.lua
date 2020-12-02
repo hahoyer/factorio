@@ -20,7 +20,7 @@ function EventManager:EnsureGlobal()
     if not global.Current.Links then global.Current.Links = {} end
     if not global.Current.Location then global.Current.Location = {} end
     if not global.Current.Gui or not global.Current.Gui.AppendForKey then
-        global.Current.Gui = Dictionary:new{}
+        global.Current.Gui = {}
     end
     if not global.Current.PendingTranslation then
         global.Current.PendingTranslation = Dictionary:new{}

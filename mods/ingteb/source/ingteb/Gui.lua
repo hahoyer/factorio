@@ -70,7 +70,7 @@ end
 
 function Gui:ClosePresentator(player)
     Helper.OnClose("Presentator", self.Active.Presentator)
-    global.Current.Gui = Dictionary:new()
+    global.Current.Gui = {}
     player.gui.screen.Presentator.destroy()
     self.Active.Presentator = nil
 end

@@ -302,9 +302,9 @@ function Array:AppendMany(values) for _, value in ipairs(values) do table.insert
 
 function Array:InsertAt(position, value) return table.insert(self, position, value) end
 
-local Result = {Array = Array, Dictionary = Dictionary}
+local Table = {Array = Array, Dictionary = Dictionary}
 
-function Result.new(self, target)
+function Table.new(self, target)
     if #target == 0 and next(target) then
         return self.Dictionary:new(target)
     elseif not next(target, #target > 0 and #target or nil) then
@@ -321,4 +321,12 @@ function Dictionary:AppendForKey(key, target)
     end
 end
 
-return Result
+function Table.AppendForKey(self, key, target)
+    if key then
+        local list = self[key]
+        if not list then self[key] = {} end
+        table.insert(self[key], target)
+    end
+end
+
+return Table
