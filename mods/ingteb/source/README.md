@@ -13,7 +13,6 @@ todo:
 - migration-awareness
 - copy recipe 
 - provide information on recipe-combinations
-- tooltip-help and actual keys should be joined
 - provide summary for recipe like in tooltip from crafting menu
 - help on about modules
 - help on fuel consumption

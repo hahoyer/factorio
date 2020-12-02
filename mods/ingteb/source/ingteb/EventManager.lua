@@ -148,7 +148,7 @@ function EventManager:new(instance)
                     global.Current.Player --
                     = type(value) == "number" and game.players[value] --
                     or type(value) == "table" and value.object_name == "LuaPlayer" and value --
-                          or assert()
+                          or assert(release)
                 else
                     global.Current.Player = nil
                 end

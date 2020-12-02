@@ -10,8 +10,8 @@ local Common = {object_name = "Common"}
 function Common:class(name) return {object_name = name} end
 
 function Common:new(prototype, database)
-    assert(prototype)
-    assert(database)
+    assert(release or prototype)
+    assert(release or database)
 
     local self = ValueCacheContainer:new{Prototype = prototype, Database = database}
     function self:properties(list)
@@ -89,7 +89,7 @@ function Common:new(prototype, database)
         RichTextName = {get = function() return "[img=" .. self.SpriteName .. "]" end},
     }
     function self:GetHandCraftingOrder(event) end
-    function self:GetResearchOrder(event) end
+    function self:GetResearchRequest(event) end
 
     function self:SealUp()
         self:SortAll()

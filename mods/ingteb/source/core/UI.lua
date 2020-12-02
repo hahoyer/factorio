@@ -1,6 +1,6 @@
-local Result = {}
+local UI = {}
 
-function Result.GetMouseCode(event)
+function UI.GetMouseCode(event)
     local result --
     = (event.alt and "A" or "-") --
     .. (event.control and "C" or "-") --
@@ -13,7 +13,7 @@ function Result.GetMouseCode(event)
     return result
 end
 
-function Result.IsMouseCode(event, pattern)
+function UI.IsMouseCode(event, pattern)
     if pattern:sub(1,1) == "A" and not event.alt then return end
     if pattern:sub(1,1) == "-" and event.alt then return end
 
@@ -39,4 +39,17 @@ function Result.IsMouseCode(event, pattern)
     return true
 end
 
-return Result
+---@param headText LocalisedString can use \_\_1\_\_ = Alt \_\_2\_\_ = Control \_\_3\_\_ = Shift \_\_2\_\_ = Mouse1 \_\_5\_\_ = Mouse2 to replace texts for buttons or mouse buttons
+---@return LocalisedString
+function UI.GetHelpTextForButtonsACS12(headText)
+    return {
+        headText,
+        {"control-keys.alt"},
+        {"control-keys.control"},
+        {"control-keys.shift"},
+        {"control-keys.mouse-button-1-alt-1"},
+        {"control-keys.mouse-button-2-alt-1"},
+    }
+end
+
+return UI

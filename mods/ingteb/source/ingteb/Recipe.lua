@@ -11,7 +11,7 @@ function Recipe:new(name, prototype, database)
     local self = Common:new(prototype or game.recipe_prototypes[name], database)
     self.object_name = Recipe.object_name
 
-    assert(self.Prototype.object_name == "LuaRecipePrototype")
+    assert(release or self.Prototype.object_name == "LuaRecipePrototype")
 
     self.TypeOrder = 1
     self.SpriteType = "recipe"
@@ -25,14 +25,7 @@ function Recipe:new(name, prototype, database)
         FunctionHelp = {
             get = function(self) --
                 if self.IsResearched and self.NumberOnSprite then
-                    return {
-                        "ingteb_utility.craft",
-                        {"control-keys.alt"},
-                        {"control-keys.control"},
-                        {"control-keys.shift"},
-                        {"control-keys.mouse-button-1-alt-1"},
-                        {"control-keys.mouse-button-2-alt-1"},
-                    }
+                    return UI.GetHelpTextForButtonsACS12("ingteb_utility.craft")
                 end
             end,
         },
@@ -104,7 +97,7 @@ function Recipe:new(name, prototype, database)
         HandCrafter = {
             get = function()
                 return self.Category.Workers:Where(
-                    function(worker) return worker.Prototype.name== "character" end
+                    function(worker) return worker.Prototype.name == "character" end
                 ):Top()
             end,
         },

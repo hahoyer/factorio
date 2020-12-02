@@ -12,7 +12,7 @@ function Item:new(name, prototype, database)
     self.object_name = Item.object_name
     self.SpriteType = "item"
 
-    assert(self.Prototype.object_name == "LuaItemPrototype")
+    assert(release or self.Prototype.object_name == "LuaItemPrototype")
 
     self:properties{
         Entity = {

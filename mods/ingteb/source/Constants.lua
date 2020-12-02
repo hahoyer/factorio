@@ -10,4 +10,5 @@ local result = {
     GraphicsPath = "__" .. modName .. "__/graphics/"
 }
 
+release = not (__DebugAdapter and __DebugAdapter.instrument)
 return result

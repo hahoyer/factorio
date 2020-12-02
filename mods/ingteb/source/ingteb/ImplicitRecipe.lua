@@ -25,7 +25,7 @@ function MiningRecipe:new(prototype, database)
     self.Time = self.Prototype.mineable_properties.mining_time
 
     local configuration = self.Prototype.mineable_properties
-    assert(configuration and configuration.minable)
+    assert(release or configuration and configuration.minable)
 
     local domain = "mining"
     if not self.Prototype.resource_category then domain = "hand-mining" end
@@ -68,7 +68,7 @@ function MiningRecipe:new(prototype, database)
 end
 
 function BoilingRecipe:new(prototype, database)
-    assert(prototype.name == "steam")
+    assert(release or prototype.name == "steam")
     local self = Common:new(prototype, database)
     self.object_name = BoilingRecipe.object_name
     self.SpriteType = "fluid"
@@ -88,9 +88,9 @@ function BoilingRecipe:new(prototype, database)
 end
 
 function ImplicitRecipe:new(name, prototype, database)
-    assert(name)
+    assert(release or name)
     local _, _, domain, prototypeName = name:find("^(.+)%.(.*)$")
-    assert(prototypeName == prototype.name)
+    assert(release or prototypeName == prototype.name)
 
     local self --
     = (domain == "mining" or domain == "fluid-mining") and MiningRecipe:new(prototype, database) --

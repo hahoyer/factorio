@@ -202,7 +202,7 @@ function Database:Get(target)
         elseif target.type == "fluid" then
             object_name = "Fluid"
         else
-            assert(todo)
+            assert(release)
         end
         Name = target.name
     else
@@ -210,8 +210,8 @@ function Database:Get(target)
         Name = target.Name
         Prototype = target.Prototype
     end
-    assert(object_name)
-    assert(Name or Prototype)
+    assert(release or object_name)
+    assert(release or Name or Prototype)
     return self:GetProxy(object_name, Name, Prototype)
 end
 

@@ -54,14 +54,7 @@ function Technology:new(name, prototype, database)
         FunctionHelp = {
             get = function() --
                 if not self.IsResearched and self.IsReady then
-                    return {
-                        "ingteb_utility.research",
-                        {"control-keys.alt"},
-                        {"control-keys.control"},
-                        {"control-keys.shift"},
-                        {"control-keys.mouse-button-1-alt-1"},
-                        {"control-keys.mouse-button-2-alt-1"},
-                    }
+                    return UI.GetHelpTextForButtonsACS12("ingteb_utility.research")
                 end
             end,
         },
@@ -74,7 +67,8 @@ function Technology:new(name, prototype, database)
         },
         IsResearched = {
             get = function()
-                return global.Current.Player.force.technologies[self.Prototype.name].researched == true
+                return global.Current.Player.force.technologies[self.Prototype.name].researched
+                           == true
             end,
         },
         IsReady = {
@@ -148,12 +142,11 @@ function Technology:new(name, prototype, database)
 
     function self:SortAll() end
 
-    function self:GetResearchOrder(event)
+    function self:GetResearchRequest(event)
         if UI.IsMouseCode(event, "-C- l") --
         and self.IsReady --
         then return {Technology = self.Prototype} end
     end
-    
 
     return self
 

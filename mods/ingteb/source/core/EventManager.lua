@@ -21,8 +21,9 @@ function EventManager:Watch(handler, eventId)
 end
 
 function EventManager:Enter(name, event)
-    assert(
-        name == "on_gui_closed" and event.gui_type == 3 --
+    assert(releas or
+        name == "on_gui_closed" --
+        and (event.gui_type == 1 or event.gui_type == 3) --
         or not self.Active --
     )
     self.Active = {name, self.Active}

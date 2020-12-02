@@ -8,12 +8,12 @@ local Common = require("ingteb.Common")
 local FuelCategory = Common:class("FuelCategory")
 
 function FuelCategory:new(name, prototype, database)
-    assert(name)
+    assert(release or name)
 
     local self = Common:new(prototype or game.fuel_category_prototypes[name], database)
     self.object_name = FuelCategory.object_name
 
-    assert(self.Prototype.object_name == "LuaFuelCategoryPrototype")
+    assert(release or self.Prototype.object_name == "LuaFuelCategoryPrototype")
 
     self.Workers = Array:new()
 

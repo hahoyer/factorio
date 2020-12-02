@@ -12,11 +12,11 @@ function Entity:new(name, prototype, database)
     self.object_name = Entity.object_name
     self.SpriteType = "entity"
 
-    assert(self.Prototype.object_name == "LuaEntityPrototype")
+    assert(release or self.Prototype.object_name == "LuaEntityPrototype")
 
     -- special entity for handmining
     if name == "(hand-miner)" then
-        assert(prototype.name == "character")
+        assert(release or prototype.name == "character")
         self:properties{SpriteName = {get = function() return "technology/steel-axe" end}}
     end
 
@@ -35,7 +35,7 @@ function Entity:new(name, prototype, database)
             get = function()
                 local place = self.Prototype.items_to_place_this
                 if not place or #place == 0 then return end
-                assert(#place == 1)
+                assert(release or #place == 1)
                 return self.Database:GetItem(place[1].name)
             end,
         },
@@ -69,7 +69,7 @@ function Entity:new(name, prototype, database)
                         elseif domain == "boiling" then
                             return self.Prototype.lab_inputs
                         else
-                            assert()
+                            assert(release)
                         end
                         return list and list[category.SubName]
                     end

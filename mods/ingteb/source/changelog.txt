@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.13
+Date: 2020-12-01
+  Bugfixes:
+    - fixing group and subgroup tabs are also created when there is only one tab
+    - fixing crash when research is finished during reopened help panel whith that research displayed
+    - fixing crash with assertion
+  Changes:
+  Refactor:
+    - better naming
+---------------------------------------------------------------------------------------------------
 Version: 0.2.12
 Date: 2020-12-01
   Bugfixes:

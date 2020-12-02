@@ -17,12 +17,12 @@ local function GetPrototype(domain, category)
     elseif domain == "boiling" then
         return game.fluid_prototypes[category]
     else
-        assert(todo)
+        assert(release)
     end
 end
 
 function Category:new(name, prototype, database)
-    assert(name)
+    assert(release or name)
 
     local _, _, domain, category = name:find("^(.+)%.(.*)$")
 

@@ -85,7 +85,7 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
 end
 
 local function CreateCraftingGroupPanel(frame, target, category, inCount, outCount)
-    assert(type(category) == "string")
+    assert(release or type(category) == "string")
 
     frame.add {type = "line", direction = "horizontal"}
 
@@ -103,19 +103,24 @@ local function CreateCraftingGroupPanel(frame, target, category, inCount, outCou
     if target:Count() < settings.player["ingteb_group-tab-threshold"].value then
         target:Select(function(recipe) CreateRecipeLine(frame, recipe, inCount, outCount) end)
     else
-        local groupPanel = frame.add {type = "tabbed-pane"}
-        target:ToGroup(function(value) return {Key = value.Group.name, Value = value} end) --
-        :Select(
+        local groups = target:ToGroup(
+            function(value) return {Key = value.Group.name, Value = value} end
+        ):ToArray()
+        local groupPanel = groups:Count() > 1 and frame.add {type = "tabbed-pane"} or frame
+        groups:Select(
             function(value)
                 local group = value[1].Group
-                local tab = groupPanel.add {
-                    type = "tab",
-                    caption = "[item-group=" .. group.name .. "]",
-                    tooltip = group.localised_name,
-                    style = "ingteb-medium-tab",
-                }
-                local frame = groupPanel.add {type = "frame", direction = "vertical"}
-                groupPanel.add_tab(tab, frame)
+                local frame = groupPanel.add {type = "flow", direction = "vertical"}
+
+                if groups:Count() > 1 then
+                    local tab = groupPanel.add {
+                        type = "tab",
+                        caption = "[item-group=" .. group.name .. "]",
+                        tooltip = group.localised_name,
+                        style = "ingteb-medium-tab",
+                    }
+                    groupPanel.add_tab(tab, frame)
+                end
 
                 if value:Count() < settings.player["ingteb_subgroup-tab-threshold"].value then
                     value:Select(
@@ -124,13 +129,13 @@ local function CreateCraftingGroupPanel(frame, target, category, inCount, outCou
                         end
                     )
                 else
-                    local groupPanel = frame.add {type = "tabbed-pane"}
-                    local g = value:ToGroup(
+                    local subGroups = value:ToGroup(
                         function(value)
                             return {Key = value.SubGroup.name, Value = value}
                         end
-                    ) --
-                    g:Select(
+                    ):ToArray() --
+                    local groupPanel = subGroups:Count() > 1 and frame.add {type = "tabbed-pane"} or frame
+                    subGroups:Select(
                         function(value)
                             local group = value[1].SubGroup
                             local caption = group.name
@@ -138,15 +143,18 @@ local function CreateCraftingGroupPanel(frame, target, category, inCount, outCou
                                 local main = value[1].Output[1]
                                 caption = main.RichTextName
                             end
-                            local tab = groupPanel.add {
-                                type = "tab",
-                                caption = caption,
-                                tooltip = group.localised_name,
-                                style = "ingteb-medium-tab",
-                            }
-                            local subFrame = groupPanel.add {type = "frame", direction = "vertical"}
-                            groupPanel.add_tab(tab, subFrame)
-
+                            local subFrame = groupPanel.add {type = "flow", direction = "vertical"}
+                   
+                            if subGroups:Count() > 1 then
+                                local tab = groupPanel.add {
+                                    type = "tab",
+                                    caption = caption,
+                                    tooltip = group.localised_name,
+                                    style = "ingteb-medium-tab",
+                                }
+                                groupPanel.add_tab(tab, subFrame)
+                            end
+                   
                             value:Select(
                                 function(recipe)
                                     CreateRecipeLine(subFrame, recipe, inCount, outCount)
@@ -165,7 +173,7 @@ end
 
 local function CreateCraftingGroupsPanel(frame, target, headerSprites)
     if not target or not target:Any() then return end
-    assert(type(next(target)) == "string")
+    assert(release or type(next(target)) == "string")
 
     local subFrame = frame.add {
         type = "frame",
@@ -201,7 +209,7 @@ local function CreateCraftingGroupsPanel(frame, target, headerSprites)
 
     target:Select(
         function(recipes, category)
-            assert(type(category) == "string")
+            assert(release or type(category) == "string")
             CreateCraftingGroupPanel(subFrame, recipes, category, inCount, outCount)
         end
     )
@@ -221,12 +229,12 @@ function Presentator:new(frame, target)
     }
 
     target:SortAll()
-    assert(
+    assert(release or 
         not target.RecipeList or not next(target.RecipeList) or type(next(target.RecipeList))
             == "string"
     )
-    assert(not target.UsedBy or not next(target.UsedBy) or type(next(target.UsedBy)) == "string")
-    assert(
+    assert(release or not target.UsedBy or not next(target.UsedBy) or type(next(target.UsedBy)) == "string")
+    assert(release or 
         not target.CreatedBy or not next(target.CreatedBy) or type(next(target.CreatedBy))
             == "string"
     )

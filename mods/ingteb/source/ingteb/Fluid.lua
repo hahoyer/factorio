@@ -13,7 +13,7 @@ function Fluid:new(name, prototype, database)
     self.object_name = Fluid.object_name
     self.SpriteType = "fluid"
 
-    assert(self.Prototype.object_name == "LuaFluidPrototype")
+    assert(release or self.Prototype.object_name == "LuaFluidPrototype")
 
 self:properties{
     }

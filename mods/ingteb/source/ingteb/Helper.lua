@@ -24,10 +24,9 @@ function result.HasForce(type) return type == "technology" or type == "recipe" e
 
 function result.GetForce(type, name)
     if type == "technology" then return global.Current.Player.force.technologies[name] end
-
     if type == "recipe" then return global.Current.Player.force.recipes[name] end
 
-    assert()
+    assert(release)
 end
 
 function result.ShowFrame(player, name, create)

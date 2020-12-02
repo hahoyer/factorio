@@ -4,10 +4,10 @@ local Common = require("Common")
 local StackOfGoods = Common:class("StackOfGoods")
 
 function StackOfGoods:new(goods, amounts, database)
-    assert(goods)
+    assert(release or goods)
     local self = Common:new(goods.Prototype, database)
     self.object_name = StackOfGoods.object_name
-    assert(
+    assert(release or 
         self.Prototype.object_name == "LuaItemPrototype" or self.Prototype.object_name
             == "LuaFluidPrototype"
     )
