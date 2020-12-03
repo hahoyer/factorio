@@ -117,7 +117,6 @@ function Gui:EnsureMainButton()
     local player = global.Current.Player -- todo: multiplayer
     if player.gui.top.ingteb == nil then
         assert(release or not self.Active.ingteb)
-
         global.Current.Player.gui.top.add {
             type = "sprite-button",
             name = "ingteb",
@@ -147,6 +146,14 @@ function Gui:UpdateTabOrder(tabOrder, dropIndex)
     tabOrder:Append(dropTabIndex)
 end
 
+function Gui:OnResearchFinished(research)
+    if Database.IsInitialized then 
+    Gui:EnsureDatabase()
+    Gui.Database:RefreshTechnology(research)
+    Helper.RefreshResearchChanged(Database)
+    end
+    end
+
 function Gui:OnGuiClickForPresentator(player, event)
     self:EnsureDatabase()
     local target = self.Database:Get(global.Current.Links[event.element.index])
@@ -173,5 +180,6 @@ function Gui:OnGuiClickForPresentator(player, event)
         return self:PresentTarget(player, target)
     end
 end
+
 
 return Gui

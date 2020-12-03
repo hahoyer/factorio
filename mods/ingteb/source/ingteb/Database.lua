@@ -29,7 +29,9 @@ local function EnsureKey(data, key, value)
 end
 
 function Database:Ensure()
-    if self.Proxies then return self end
+
+    if self.IsInitialized then return self end
+    self.IsInitialized = "pending"
 
     log("database initialize start...")
     self.RecipesForItems = {}
@@ -73,6 +75,7 @@ function Database:Ensure()
     self.Proxies.Category:Select(function(category) return category.RecipeList end)
 
     log("database initialize complete.")
+    self.IsInitialized = true
     return self
 end
 

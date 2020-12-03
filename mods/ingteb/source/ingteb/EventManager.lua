@@ -19,9 +19,7 @@ function EventManager:EnsureGlobal()
     if not global.Current then global.Current = {} end
     if not global.Current.Links then global.Current.Links = {} end
     if not global.Current.Location then global.Current.Location = {} end
-    if not global.Current.Gui or not global.Current.Gui.AppendForKey then
-        global.Current.Gui = {}
-    end
+    if not global.Current.Gui or not global.Current.Gui.AppendForKey then global.Current.Gui = {} end
     if not global.Current.PendingTranslation then
         global.Current.PendingTranslation = Dictionary:new{}
     end
@@ -64,13 +62,25 @@ function EventManager:OnPresentatorClose(event)
     Gui:ClosePresentator(self.Player)
 end
 
+function EventManager:IsIngtebControl(element)
+    if not element then return false end
+    if element == Gui.Active.Selector then return true end
+    if element == Gui.Active.Presentator then return true end
+    if element == Gui.Active.ingteb then return true end
+    return self:IsIngtebControl(element.parent)
+end
+
 function EventManager:DoNothing(event) self.Player = event.player_index end
 
 function EventManager:OnGuiClick(event)
     self.Player = event.player_index
-    if event.element then
+    if self:IsIngtebControl(event.element) then
         if Gui.Active.Selector then
+            assert(release or event.element)
             self:OnSelectorElementChanged(event)
+        elseif Gui.Active.ingteb and event.element == Gui.Active.ingteb then
+            local target = Gui:OnMainButtonPressed(self.Player)
+            if target then History:AdvanceWith(target) end
         else
             local target = Gui:OnGuiClick(self.Player, event)
             if target then History:AdvanceWith(target) end
@@ -80,34 +90,30 @@ end
 
 function EventManager:OnTickInitial()
     self:EnsureGlobal()
-    Gui:EnsureMainButton()
     self:SetHandler(defines.events.on_tick)
 end
 
 function EventManager:OnMainKey(event)
+    self:EnsureGlobal()
     self.Player = event.player_index
     local target = Gui:OnMainButtonPressed(self.Player)
     if target then History:AdvanceWith(target) end
 end
 
 function EventManager:OnLoad()
+    Gui:EnsureMainButton()
     History = History:new()
     --    History = History:new(global.Current and global.Current.History) 
 end
 
-function EventManager:OnPlayerJoined(event)
-    self.Player = event.player_index
-    self:EnsureGlobal()
-end
+function EventManager:OnPlayerJoined(event) self.Player = event.player_index end
 
 function EventManager:OnMainInventoryChanged() Helper.RefreshMainInventoryChanged(Database) end
 
 function EventManager:OnStackChanged() Helper.RefreshStackChanged(Database) end
 
 function EventManager:OnResearchFinished(event)
-    Gui:EnsureDatabase()
-    Gui.Database:RefreshTechnology(event.research)
-    Helper.RefreshResearchChanged(Database)
+    Gui:OnResearchFinished(event.research)
 end
 
 function EventManager:OnForeClicked(event)
@@ -142,12 +148,15 @@ function EventManager:new(instance)
         Player = {
             get = function() return global.Current.Player end,
             set = function(_, value)
+                self:EnsureGlobal()
                 if value then
-                    if not global.Current then global.Current = {} end
-                    global.Current.Player --
-                    = type(value) == "number" and game.players[value] --
+                    local acutalValue = --
+                    type(value) == "number" and game.players[value] --
                     or type(value) == "table" and value.object_name == "LuaPlayer" and value --
-                          or assert(release)
+                        or assert(release)
+                    if acutalValue == global.Current.Player then return end
+                    global.Current.Player = acutalValue
+                    Gui:EnsureMainButton()
                 else
                     global.Current.Player = nil
                 end
@@ -158,6 +167,7 @@ function EventManager:new(instance)
     self = instance
     self:SetHandler("on_load", self.OnLoad)
     self:SetHandler(defines.events.on_player_joined_game, self.OnPlayerJoined)
+    self:SetHandler(defines.events.on_player_created, self.OnPlayerJoined)
     self:SetHandler(defines.events.on_tick, self.OnTickInitial, "initial")
     self:SetHandler(Constants.Key.Main, self.OnMainKey)
 

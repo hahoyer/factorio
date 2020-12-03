@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.16
+Date: 2020-12-03
+  Bugfixes:
+    - fixing crash in on_gui_click caused by any other mod
+    - fixing another crash when research finished: when database isn't initalized yet.
+---------------------------------------------------------------------------------------------------
 Version: 0.2.15
 Date: 2020-12-02
   Bugfixes:
