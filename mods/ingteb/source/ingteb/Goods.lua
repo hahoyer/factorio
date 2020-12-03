@@ -38,6 +38,12 @@ function Goods:new(prototype, database)
 
         OriginalCreatedBy = {
             get = function()
+                log("Current object: "..serpent.block{
+                    Name = self.Name,
+                    object_name = self.object_name,
+                    prototype = self.Prototype and self.Prototype.object_name
+                })
+
                 local names = self.Database.RecipesForItems[self.Prototype.name].CreatedBy
                 if not names then return Dictionary:new{} end
 

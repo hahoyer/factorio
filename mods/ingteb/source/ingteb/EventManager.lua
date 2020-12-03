@@ -101,7 +101,7 @@ function EventManager:OnMainKey(event)
 end
 
 function EventManager:OnLoad()
-    Gui:EnsureMainButton()
+    if global.Current then Gui:EnsureMainButton() end
     History = History:new()
     --    History = History:new(global.Current and global.Current.History) 
 end
@@ -112,9 +112,7 @@ function EventManager:OnMainInventoryChanged() Helper.RefreshMainInventoryChange
 
 function EventManager:OnStackChanged() Helper.RefreshStackChanged(Database) end
 
-function EventManager:OnResearchFinished(event)
-    Gui:OnResearchFinished(event.research)
-end
+function EventManager:OnResearchFinished(event) Gui:OnResearchFinished(event.research) end
 
 function EventManager:OnForeClicked(event)
     if Gui.Active.Presentator then
@@ -174,7 +172,7 @@ function EventManager:new(instance)
     self:SetHandler(defines.events.on_player_main_inventory_changed, self.OnMainInventoryChanged)
     self:SetHandler(defines.events.on_player_cursor_stack_changed, self.OnStackChanged)
     self:SetHandler(defines.events.on_research_finished, self.OnResearchFinished)
-    --self:SetHandler(defines.events.on_string_translated, Helper.CompleteTranslation)
+    -- self:SetHandler(defines.events.on_string_translated, Helper.CompleteTranslation)
     self:SetHandler(defines.events.on_gui_click, self.OnGuiClick)
     self:SetHandler(defines.events.on_gui_closed, self.OnClose)
     self:SetHandler(Constants.Key.Fore, self.OnForeClicked)
