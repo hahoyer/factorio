@@ -3,7 +3,6 @@ local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local Database = require("ingteb.Database")
 local UI = require("core.UI")
 
 local function CreateSprite(frame, target)
@@ -95,7 +94,7 @@ local function CreateCraftingGroupPanel(frame, target, category, inCount, outCou
         direction = "horizontal",
     }
 
-    local workers = Database:GetCategory(category).Workers
+    local workers = target[1].Database:GetCategory(category).Workers
     workers:Select(function(worker) return CreateSpriteAndRegister(workersPanel, worker) end)
 
     frame.add {type = "line", direction = "horizontal"}
@@ -218,7 +217,6 @@ end
 local Presentator = {}
 
 function Presentator:new(frame, target)
-    Database:Ensure()
     frame.caption = target.LocalisedName
 
     local scrollframe = frame.add {

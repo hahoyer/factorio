@@ -3,31 +3,34 @@ local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local Database = require("ingteb.Database")
 local UI = require("core.UI")
 local Presentator = require("ingteb.Presentator")
 local Selector = require("ingteb.Selector")
+local Database = require("ingteb.Database")
 
 local Gui = {Active = {}}
 
+function Gui:EnsureDatabase()
+    self.Database = Database:Ensure()
+end
+
 function Gui:FindTargets(player)
-    Database:Ensure()
-    assert(release or player)
+    self:EnsureDatabase()
     assert(release or self.Active.ingteb)
     assert(release or not self.Active.Selector)
     assert(release or not self.Active.Presentator)
 
     local cursor = player.cursor_stack
     if cursor and cursor.valid and cursor.valid_for_read then
-        return {Database:GetItem(cursor.name)}
+        return {self.Database:GetItem(cursor.name)}
     end
 
     local cursor = player.cursor_ghost
-    if cursor then return {Database:GetItem(cursor.name)} end
+    if cursor then return {self.Database:GetItem(cursor.name)} end
 
     local cursor = player.selected
     if cursor then
-        local result = Database:GetEntity(cursor.name)
+        local result = self.Database:GetEntity(cursor.name)
         if result.IsResource then
             return {result}
         else
@@ -42,16 +45,14 @@ function Gui:FindTargets(player)
         if t == defines.gui_type.custom then assert(release) end
         if t == defines.gui_type.entity then
             assert(release or cursor.object_name == "LuaEntity")
-            local result = Array:new{Database:GetItem(cursor.name)}
-
-            local inventories = Dictionary:new(defines.inventory) --
-            :Select(
-                function(_, name)
-                    return cursor.get_inventory(defines.inventory[name])
-                end
-            ) --
-            :Where(function(inventory, name) return #inventory > 0 end) --
-
+            local result = Array:new{self.Database:GetItem(cursor.name)}
+            local recipePrototype = cursor.get_recipe()
+            if recipePrototype then
+                local recipe = self.Database:GetRecipe(nil, recipePrototype)
+                result:Append(recipe)
+                local items = recipe.Input:Concat(recipe.Output) --
+                items:Select(function(stack) result:Append(stack.Goods) end)
+            end
             return result
         end
 
@@ -127,6 +128,7 @@ function Gui:EnsureMainButton()
 end
 
 function Gui:OnGuiClick(player, event)
+
     local element = event.element
     if element == Gui.Active.ingteb then
         return self:OnMainButtonPressed(player)
@@ -146,7 +148,8 @@ function Gui:UpdateTabOrder(tabOrder, dropIndex)
 end
 
 function Gui:OnGuiClickForPresentator(player, event)
-    local target = Database:Get(global.Current.Links[event.element.index])
+    self:EnsureDatabase()
+    local target = self.Database:Get(global.Current.Links[event.element.index])
     if target and target.Prototype then
         if UI.IsMouseCode(event, "--- l") then return self:PresentTarget(player, target) end
 

@@ -105,7 +105,8 @@ function EventManager:OnMainInventoryChanged() Helper.RefreshMainInventoryChange
 function EventManager:OnStackChanged() Helper.RefreshStackChanged(Database) end
 
 function EventManager:OnResearchFinished(event)
-    Database:RefreshTechnology(event.research)
+    Gui:EnsureDatabase()
+    Gui.Database:RefreshTechnology(event.research)
     Helper.RefreshResearchChanged(Database)
 end
 

@@ -3,7 +3,6 @@ local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
-local Database = require("ingteb.Database")
 local UI = require("core.UI")
 
 ColumnCount = 12 

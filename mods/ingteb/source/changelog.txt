@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.15
+Date: 2020-12-02
+  Bugfixes:
+    - fixing crash when research is finished during reopened help panel whith that research displayed (again)
+    - fixing scope of database
+  Changes:
+    - For assembly machines showing items of current recipe
+---------------------------------------------------------------------------------------------------
 Version: 0.2.14
 Date: 2020-12-02
   Bugfixes:
