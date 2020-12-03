@@ -3,33 +3,33 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 
-local result = {}
+local Helper = {}
 
-function result.GetActualType(type)
+function Helper.GetActualType(type)
     if type == "item" or type == "fluid" or type == "technology" or type == "entity" or type
         == "recipe" then return type end
     if type == "tool" then return "technology" end
     return "entity"
 end
 
-function result.FormatSpriteName(target)
-    if target.name then return result.GetActualType(target.type) .. "." .. target.name end
+function Helper.FormatSpriteName(target)
+    if target.name then return Helper.GetActualType(target.type) .. "." .. target.name end
 end
 
-function result.FormatRichText(target)
-    return "[" .. result.GetActualType(target) .. "=" .. target.name .. "]"
+function Helper.FormatRichText(target)
+    return "[" .. Helper.GetActualType(target) .. "=" .. target.name .. "]"
 end
 
-function result.HasForce(type) return type == "technology" or type == "recipe" end
+function Helper.HasForce(type) return type == "technology" or type == "recipe" end
 
-function result.GetForce(type, name)
+function Helper.GetForce(type, name)
     if type == "technology" then return global.Current.Player.force.technologies[name] end
     if type == "recipe" then return global.Current.Player.force.recipes[name] end
 
     assert(release)
 end
 
-function result.ShowFrame(player, name, create)
+function Helper.ShowFrame(player, name, create)
     local frame = player.gui.screen
     local main = frame[name]
     if main then
@@ -47,9 +47,9 @@ function result.ShowFrame(player, name, create)
     return main
 end
 
-function result.OnClose(name, frame) global.Current.Location[name] = frame.location end
+function Helper.OnClose(name, frame) global.Current.Location[name] = frame.location end
 
-function result.DeepEqual(a, b)
+function Helper.DeepEqual(a, b)
     if not a then return not b end
     if not b then return false end
     if type(a) ~= type(b) then return false end
@@ -59,7 +59,7 @@ function result.DeepEqual(a, b)
 
     for key, value in pairs(a) do
         keyCache[key] = true
-        if not result.DeepEqual(value, b[key]) then return false end
+        if not Helper.DeepEqual(value, b[key]) then return false end
     end
 
     for key, _ in pairs(b) do if not keyCache[key] then return false end end
@@ -68,7 +68,7 @@ function result.DeepEqual(a, b)
 
 end
 
-function result.SpriteStyleFromCode(code)
+function Helper.SpriteStyleFromCode(code)
     return code == true and "ingteb-light-button" --
     or code == false and "red_slot_button" --
     or "slot_button"
@@ -78,7 +78,7 @@ local function UpdateGui(list, target, dataBase)
     target = dataBase:GetProxy(target.object_name, target.Name)
     local helperText = target.HelperText
     local number = target.NumberOnSprite
-    local style = result.SpriteStyleFromCode(target.SpriteStyle)
+    local style = Helper.SpriteStyleFromCode(target.SpriteStyle)
 
     for _, guiElement in pairs(list) do
         guiElement.tooltip = helperText
@@ -87,15 +87,15 @@ local function UpdateGui(list, target, dataBase)
     end
 end
 
-function result.RefreshMainInventoryChanged(dataBase)
+function Helper.RefreshMainInventoryChanged(dataBase)
     Dictionary:new(global.Current.Gui) --
     :Where(function(_, target) return target.object_name == "Recipe" end) --
     :Select(function(list, target) UpdateGui(list, target, dataBase) end) --
 end
 
-function result.RefreshStackChanged(dataBase) end
+function Helper.RefreshStackChanged(dataBase) end
 
-function result.RefreshResearchChanged(dataBase)
+function Helper.RefreshResearchChanged(dataBase)
     Dictionary:new(global.Current.Gui) --
     :Where(function(_, target) return target.object_name == "Technology" end) --
     :Select(function(list, target) UpdateGui(list, target, dataBase) end) --
@@ -108,12 +108,12 @@ local function RefreshDescription(this, dataBase)
     :Select(function(list, target) UpdateGui(list, target, dataBase) end) --
 end
 
-function result.InitiateTranslation()
+function Helper.InitiateTranslation()
     local pending = global.Current.PendingTranslation:Top()
     if pending then assert(global.Current.Player.request_translation {pending.Key}) end
 end
 
-function result.CompleteTranslation(event, dataBase)
+function Helper.CompleteTranslation(event, dataBase)
     local complete = global.Current.PendingTranslation[event.localised_string]
     global.Current.PendingTranslation[event.localised_string] = nil
 
@@ -122,7 +122,7 @@ function result.CompleteTranslation(event, dataBase)
         thing.HasLocalisedDescriptionPending = false
         RefreshDescription(thing, dataBase)
     end
-    result.InitiateTranslation()
+    Helper.InitiateTranslation()
 end
 
-return result
+return Helper
