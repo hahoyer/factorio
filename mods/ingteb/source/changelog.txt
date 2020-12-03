@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.19
+Date: 2020-12-03
+  Bugfixes:
+    - fixing crash when initializing items whithout recipe
+  Changes:
+    - Rolled back to old selector since the new one causes performance problems with huge mods (huge mods are the target of this mod!)
+---------------------------------------------------------------------------------------------------
 Version: 0.2.18
 Date: 2020-12-03
   Changes:

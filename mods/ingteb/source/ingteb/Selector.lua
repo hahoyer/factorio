@@ -32,7 +32,8 @@ function Selector:new(frame, targets)
     if #targets > 0 then
         self:ShowTargets()
     else    
-        self:ShowAllItems()
+        self:ShowSelectionForAllItems()
+        --self:ShowAllItems()
     end
 end
 
@@ -102,5 +103,10 @@ function Selector:ShowAllItems()
     )
     return groups
 end
+
+function Selector:ShowSelectionForAllItems()
+    return self.Frame.add {type = "choose-elem-button", elem_type = "signal"}
+end
+
 
 return Selector

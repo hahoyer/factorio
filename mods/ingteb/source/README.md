@@ -10,6 +10,7 @@ todo:
 - selection from multi-item-entities
 - Sort-performance
 - Load-performance resp. progress information
+- Selector that works for huge mods
 - migration-awareness
 - copy recipe 
 - provide information on recipe-combinations

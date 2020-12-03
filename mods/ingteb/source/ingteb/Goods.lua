@@ -17,9 +17,16 @@ function Goods:new(prototype, database)
             end,
         },
 
+        RecipesForItem = {
+            cache = true,
+            get = function()
+                return self.Database.RecipesForItems[self.Prototype.name] or {}
+            end,
+        },
+
         OriginalUsedBy = {
             get = function()
-                local names = self.Database.RecipesForItems[self.Prototype.name].UsedBy
+                local names = self.RecipesForItem.UsedBy
                 if not names then return Dictionary:new{} end
 
                 return names --
@@ -38,13 +45,7 @@ function Goods:new(prototype, database)
 
         OriginalCreatedBy = {
             get = function()
-                log("Current object: "..serpent.block{
-                    Name = self.Name,
-                    object_name = self.object_name,
-                    prototype = self.Prototype and self.Prototype.object_name
-                })
-
-                local names = self.Database.RecipesForItems[self.Prototype.name].CreatedBy
+                local names = self.RecipesForItem.CreatedBy
                 if not names then return Dictionary:new{} end
 
                 return names --
