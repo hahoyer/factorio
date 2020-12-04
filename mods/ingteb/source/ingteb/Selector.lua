@@ -5,7 +5,7 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 local UI = require("core.UI")
 
-ColumnCount = 12 
+ColumnCount = 12
 
 local Selector = {}
 
@@ -31,9 +31,9 @@ function Selector:new(frame, targets)
 
     if #targets > 0 then
         self:ShowTargets()
-    else    
-        self:ShowSelectionForAllItems()
-        --self:ShowAllItems()
+    else
+        -- self:ShowSelectionForAllItems()
+        self:ShowAllItems()
     end
 end
 
@@ -46,29 +46,45 @@ function Selector:ShowTargets()
 
     self.Targets:Select(
         function(target)
-            targetPanel.add {
-                type = "sprite-button",
-                sprite = target.SpriteName,
-                name = target.CommonKey,
-                tooltip = target.LocalisedName,
-            }
+            if target.SpriteType == "fuel-category" then
+                targetPanel.add {
+                    type = "sprite-button",
+                    sprite = target.Name,
+                    name = target.CommonKey,
+                    tooltip = target.LocalisedName,
+                }
+            else
+                local targetBox = targetPanel.add {
+                    type = "choose-elem-button",
+                    elem_type = target.SpriteType,
+                    name = target.CommonKey,
+                }
+                targetBox.elem_value = target.Name
+                targetBox.locked = true
+            end
         end
-     )
+    )
 
     return frame
+end
+
+function Selector:EnsureGroups()
+    if self.Groups then return self.Groups end
+    self.Groups = Dictionary:new{}
+    local maximalColumns = 0
+    for _, item in pairs(self.Targets) do
+        local group = EnsureKey(self.Groups, item.group.name, Dictionary:new{})
+        local subgroup = EnsureKey(group, item.subgroup.name, Array:new{})
+        subgroup:Append(item)
+        if maximalColumns < subgroup:Count() then maximalColumns = subgroup:Count() end
+    end
+    return self.Groups
 end
 
 function Selector:ShowAllItems()
 
     self.Targets = game.item_prototypes
-    local groups = Dictionary:new{}
-    local maximalColumns = 0
-    for key, item in pairs(self.Targets) do
-        local group = EnsureKey(groups, item.group.name, Dictionary:new{})
-        local subgroup = EnsureKey(group, item.subgroup.name, Array:new{})
-        subgroup:Append(item)
-        if maximalColumns < subgroup:Count() then maximalColumns = subgroup:Count() end
-    end
+    local groups = Selector:EnsureGroups()
 
     local groupPanel = self.Frame.add {type = "tabbed-pane"}
 
@@ -107,6 +123,5 @@ end
 function Selector:ShowSelectionForAllItems()
     return self.Frame.add {type = "choose-elem-button", elem_type = "signal"}
 end
-
 
 return Selector

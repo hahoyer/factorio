@@ -26,6 +26,13 @@ data:extend(
         },
         {
             type = "sprite",
+            name = "chemical",
+            filename = Constants.GraphicsPath .. "chemical.png",
+            size = 64,
+            scale = 0.5,
+        },
+        {
+            type = "sprite",
             name = "hide-this-column",
             filename = "__core__/graphics/cancel.png",
             size = 64,

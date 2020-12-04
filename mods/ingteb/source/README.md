@@ -15,7 +15,7 @@ todo:
 - copy recipe 
 - provide information on recipe-combinations
 - provide summary for recipe like in tooltip from crafting menu
-- help on about modules
+- help on modules
 - help on fuel consumption
 - help on recipes
 - help on technologies
@@ -24,10 +24,12 @@ todo:
 - "machine-column" for character
 - machine-column for labs
 
+
 known issue: 
 - it takes seconds when presenting first help page
 - it takes seconds when presenting large help pages the first time
 - it takes second when presenting large help pages (especially machine-columns)
 - Help on burner-miner shows fluid-mining group in machine-column
+- speed for a worker depends on request (for instance mining or crafting)
 
 **Note: This mod is under development. Please be so kind and use the "Discussion" tab to give feedback - especially if you encounter bugs.** Many thanks in advance

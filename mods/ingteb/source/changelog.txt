@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.20
+Date: 2020-12-04
+  Changes:
+    - fuel category display
+    - more situations for getting help
+    - smarter display of machine list
+    - smarter treating of selector panel
+---------------------------------------------------------------------------------------------------
 Version: 0.2.19
 Date: 2020-12-03
   Bugfixes:

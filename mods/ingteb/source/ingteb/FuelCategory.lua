@@ -16,13 +16,14 @@ function FuelCategory:new(name, prototype, database)
     assert(release or self.Prototype.object_name == "LuaFuelCategoryPrototype")
 
     self.Workers = Array:new()
+    self.SpriteType = "fuel-category"
 
     self:properties{
         Fuels = {
             cache = true,
             get = function()
                 return self.Database.ItemsForFuelCategory[self.Prototype.name] --
-                :Select(function(itemName) return self.Database:GetItem(itemName) end)
+                :Select(function(item) return self.Database:GetItem(nil, item) end)
             end,
         },
     }

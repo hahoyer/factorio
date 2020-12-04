@@ -1,3 +1,4 @@
+local mod_gui = require("mod-gui")
 local Constants = require("Constants")
 local Helper = require("ingteb.Helper")
 local Table = require("core.Table")
@@ -10,8 +11,24 @@ local Database = require("ingteb.Database")
 
 local Gui = {Active = {}}
 
-function Gui:EnsureDatabase()
-    self.Database = Database:Ensure()
+function Gui:EnsureDatabase() self.Database = Database:Ensure() end
+
+function Gui:GetRecipeData(recipePrototype, result)
+    if recipePrototype then
+        local recipe = self.Database:GetRecipe(nil, recipePrototype)
+        result.recipe[recipePrototype.name] = true
+        local inoutItems = recipe.Input:Concat(recipe.Output) --
+        inoutItems:Select(function(stack) result.items[stack.Goods.Name] = true end)
+    end
+end
+
+function Gui:GetInventoryData(inventory, result)
+    if inventory then
+        for index = 1, #inventory do
+            local stack = inventory[index]
+            if stack.valid_for_read then result.items[stack.prototype.name] = true end
+        end
+    end
 end
 
 function Gui:FindTargets(player)
@@ -45,14 +62,59 @@ function Gui:FindTargets(player)
         if t == defines.gui_type.custom then assert(release) end
         if t == defines.gui_type.entity then
             assert(release or cursor.object_name == "LuaEntity")
-            local result = Array:new{self.Database:GetItem(cursor.name)}
-            local recipePrototype = cursor.get_recipe()
-            if recipePrototype then
-                local recipe = self.Database:GetRecipe(nil, recipePrototype)
-                result:Append(recipe)
-                local items = recipe.Input:Concat(recipe.Output) --
-                items:Select(function(stack) result:Append(stack.Goods) end)
+
+            local inventories = Dictionary:new(defines.inventory) --
+            :Select(
+                function(_, name)
+                    local inventory = cursor.get_inventory(defines.inventory[name])
+                    return inventory and #inventory or 0
+                end
+            ) --
+            :Where(function(count) return count > 0 end)
+
+            local results = {
+                items = Dictionary:new{},
+                recipes = Dictionary:new{},
+                enities = Dictionary:new{},
+                fuelCategory = Dictionary:new{},
+            }
+
+            results.items[cursor.name] = true
+            if cursor.type == "container" then
+                Gui:GetInventoryData(cursor.get_inventory(defines.inventory.item_main), results)
+            elseif cursor.type == "assembling-machine" then
+                Gui:GetRecipeData(cursor.get_recipe(), results)
+            elseif cursor.type == "lab" then
+                Gui:GetInventoryData(cursor.get_inventory(defines.inventory.lab_input), results)
+                Gui:GetInventoryData(cursor.get_inventory(defines.inventory.lab_modules), results)
+                Gui:GetRecipeData(player.force.current_research, results)
+            elseif cursor.type == "mining-drill" then
+                results.enities[cursor.mining_target.name] = true
+                if cursor.burner and cursor.burner.fuel_categories then
+                    for category, _ in pairs(cursor.burner.fuel_categories) do
+                        results.fuelCategory[category] = true
+                    end
+                end
+                Gui:GetInventoryData(cursor.get_inventory(defines.inventory.fuel))
+                Gui:GetInventoryData(cursor.get_inventory(defines.inventory.item_main))
+                Gui:GetInventoryData(cursor.get_inventory(defines.inventory.mining_drill_modules))
+            else
+                assert(release)
             end
+
+            local result = Array:new{}
+            results.fuelCategory:Select(
+                function(_, name) result:Append(self.Database:GetFuelCategory(name)) end
+            )
+            results.enities:Select(
+                function(_, name) result:Append(self.Database:GetEntity(name)) end
+            )
+            results.recipes:Select(
+                function(_, name) result:Append(self.Database:GetRecipe(name)) end
+            )
+            results.items:Select(
+                function(_, name) result:Append(self.Database:GetItem(name)) end
+            )
             return result
         end
 
@@ -63,7 +125,7 @@ function Gui:FindTargets(player)
 end
 
 function Gui:ScanActiveGui(player)
-    self.Active.ingteb = player.gui.top.ingteb
+    self.Active.ingteb = mod_gui.get_button_flow(player).ingteb
     self.Active.Selector = player.gui.screen.Selector
     self.Active.Presentator = player.gui.screen.Presentator
 end
@@ -115,9 +177,12 @@ end
 
 function Gui:EnsureMainButton()
     local player = global.Current.Player -- todo: multiplayer
-    if player.gui.top.ingteb == nil then
+    if player.gui.top.ingteb then
+         player.gui.top.ingteb.destroy() 
+        end
+    if mod_gui.get_button_flow(player).ingteb == nil then
         assert(release or not self.Active.ingteb)
-        global.Current.Player.gui.top.add {
+        mod_gui.get_button_flow(player).add {
             type = "sprite-button",
             name = "ingteb",
             sprite = "ingteb",
@@ -147,12 +212,12 @@ function Gui:UpdateTabOrder(tabOrder, dropIndex)
 end
 
 function Gui:OnResearchFinished(research)
-    if Database.IsInitialized then 
-    Gui:EnsureDatabase()
-    Gui.Database:RefreshTechnology(research)
-    Helper.RefreshResearchChanged(Database)
+    if Database.IsInitialized then
+        Gui:EnsureDatabase()
+        Gui.Database:RefreshTechnology(research)
+        Helper.RefreshResearchChanged(Database)
     end
-    end
+end
 
 function Gui:OnGuiClickForPresentator(player, event)
     self:EnsureDatabase()
@@ -180,6 +245,5 @@ function Gui:OnGuiClickForPresentator(player, event)
         return self:PresentTarget(player, target)
     end
 end
-
 
 return Gui

@@ -6,29 +6,30 @@ local Dictionary = Table.Dictionary
 local UI = require("core.UI")
 
 local function CreateSprite(frame, target)
-    local tooltip = target and target.HelperText
-    local sprite = target and target.SpriteName
-    local number = target and target.NumberOnSprite
-    local show_percent_for_small_numbers = target and target.UsePercentage
     local style = Helper.SpriteStyleFromCode(target and target.SpriteStyle)
 
-    if target then
-        return frame.add {
-            type = "sprite-button",
-            tooltip = tooltip,
-            sprite = sprite,
-            number = number,
-            show_percent_for_small_numbers = show_percent_for_small_numbers,
-            style = style,
-        }
-    end
-    return frame.add {type = "sprite-button", style = style}
+    if not target then return frame.add {type = "sprite-button", style = style} end
+
+    local tooltip = target.HelperText
+    local sprite = target.SpriteName
+    local number = target.NumberOnSprite
+    local show_percent_for_small_numbers = target.UsePercentage
+
+    if sprite == "fuel-category/chemical" then sprite = "chemical" end
+    return frame.add {
+        type = "sprite-button",
+        tooltip = tooltip,
+        sprite = sprite,
+        number = number,
+        show_percent_for_small_numbers = show_percent_for_small_numbers,
+        style = style,
+    }
 end
 
 local function RegisterTargetForGuiClick(result, target)
     global.Current.Links[result.index] = target and target.CommonKey
     if target and (target.IsDynamic or target.HasLocalisedDescriptionPending) then
-        Table.AppendForKey(global.Current.Gui,  target, result)
+        Table.AppendForKey(global.Current.Gui, target, result)
     end
     return result
 end
@@ -40,6 +41,12 @@ local function CreateSpriteAndRegister(frame, target)
 end
 
 local maximalCount = 6
+
+local function DummyTiles(frame, count)
+    for _ = 1, count do --
+        frame.add {type = "sprite", style = "ingteb-un-button"}
+    end
+end
 
 local function CreateRecipeLinePart(frame, target, count, isInput)
     local scrollFrame = frame
@@ -62,10 +69,7 @@ local function CreateRecipeLinePart(frame, target, count, isInput)
 
     if isInput then return end
 
-    for _ = target:Count() + 1, count do --
-        subPanel.add {type = "sprite", style = "ingteb-un-button"}
-    end
-
+    DummyTiles(subPanel, count - target:Count())
 end
 
 local function CreateRecipeLine(frame, target, inCount, outCount)
@@ -88,14 +92,40 @@ local function CreateCraftingGroupPanel(frame, target, category, inCount, outCou
 
     frame.add {type = "line", direction = "horizontal"}
 
+    local workers = target[1].Database:GetCategory(category).Workers
+
+    local columnCount = inCount + outCount + 4
+    local workersCount = workers:Count()
+    local lines = math.ceil(workersCount / columnCount)
+    local actualColumnCount = math.ceil(workersCount / lines)
+    local recipeDelta = inCount - outCount
+    local dummyColumnsLeft = math.ceil((columnCount - actualColumnCount + recipeDelta) / 2)
+    local dummyColumnsRight = columnCount - actualColumnCount - dummyColumnsLeft
+
     local workersPanel = frame.add {
-        type = "flow",
-        style = "ingteb-flow-centered",
+        type = "table",
+        column_count = columnCount,
+        style = "ingteb-table-centered",
         direction = "horizontal",
     }
 
-    local workers = target[1].Database:GetCategory(category).Workers
-    workers:Select(function(worker) return CreateSpriteAndRegister(workersPanel, worker) end)
+    local position = 0
+    workers:Select(
+        function(worker)
+            if position == 0 then 
+                DummyTiles(workersPanel, dummyColumnsLeft) 
+                position = position + dummyColumnsLeft
+            end
+            CreateSpriteAndRegister(workersPanel, worker)
+            position = position + 1
+            if position == dummyColumnsLeft + actualColumnCount then 
+                DummyTiles(workersPanel, dummyColumnsRight) 
+                position = 0
+            end
+
+
+        end
+    )
 
     frame.add {type = "line", direction = "horizontal"}
 
@@ -133,7 +163,8 @@ local function CreateCraftingGroupPanel(frame, target, category, inCount, outCou
                             return {Key = value.SubGroup.name, Value = value}
                         end
                     ):ToArray() --
-                    local groupPanel = subGroups:Count() > 1 and frame.add {type = "tabbed-pane"} or frame
+                    local groupPanel = subGroups:Count() > 1 and frame.add {type = "tabbed-pane"}
+                                           or frame
                     subGroups:Select(
                         function(value)
                             local group = value[1].SubGroup
@@ -143,7 +174,7 @@ local function CreateCraftingGroupPanel(frame, target, category, inCount, outCou
                                 caption = main.RichTextName
                             end
                             local subFrame = groupPanel.add {type = "flow", direction = "vertical"}
-                   
+
                             if subGroups:Count() > 1 then
                                 local tab = groupPanel.add {
                                     type = "tab",
@@ -153,7 +184,7 @@ local function CreateCraftingGroupPanel(frame, target, category, inCount, outCou
                                 }
                                 groupPanel.add_tab(tab, subFrame)
                             end
-                   
+
                             value:Select(
                                 function(recipe)
                                     CreateRecipeLine(subFrame, recipe, inCount, outCount)
@@ -227,14 +258,19 @@ function Presentator:new(frame, target)
     }
 
     target:SortAll()
-    assert(release or 
-        not target.RecipeList or not next(target.RecipeList) or type(next(target.RecipeList))
+    assert(
+        release or not target.RecipeList or not next(target.RecipeList)
+            or type(next(target.RecipeList)) == "string"
+    )
+    assert(
+        release or not target.UsedBy or not next(target.UsedBy) or type(next(target.UsedBy))
             == "string"
     )
-    assert(release or not target.UsedBy or not next(target.UsedBy) or type(next(target.UsedBy)) == "string")
-    assert(release or 
-        not target.CreatedBy or not next(target.CreatedBy) or type(next(target.CreatedBy))
-            == "string"
+    assert(
+
+       
+            release or not target.CreatedBy or not next(target.CreatedBy)
+                or type(next(target.CreatedBy)) == "string"
     )
 
     local mainFrame = scrollframe
