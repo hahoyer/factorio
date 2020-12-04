@@ -1,6 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.20
 Date: 2020-12-04
+  Bugfixes:
+    - fixing crash when initializing items whithout recipe
   Changes:
     - fuel category display
     - more situations for getting help

@@ -44,6 +44,7 @@ end
 
 function EventManager:OnSelectorElementChanged(event)
     self.Player = event.player_index
+    log("event.element.name = " .. tostring(event.element.name))
     local target = Database:Get(event.element.name)
     if target then
         Gui:CloseSelector(self.Player)
