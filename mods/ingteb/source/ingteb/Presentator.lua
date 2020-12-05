@@ -5,10 +5,10 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 local UI = require("core.UI")
 
-local function CreateSprite(frame, target)
+local function CreateSprite(frame, target, sprite)
     local style = Helper.SpriteStyleFromCode(target and target.SpriteStyle)
 
-    if not target then return frame.add {type = "sprite-button", style = style} end
+    if not target then return frame.add {type = "sprite-button", sprite = sprite,  style = style} end
 
     local tooltip = target.HelperText
     local sprite = target.SpriteName
@@ -34,8 +34,8 @@ local function RegisterTargetForGuiClick(result, target)
     return result
 end
 
-local function CreateSpriteAndRegister(frame, target)
-    local result = CreateSprite(frame, target)
+local function CreateSpriteAndRegister(frame, target, sprite)
+    local result = CreateSprite(frame, target, sprite)
     if target then RegisterTargetForGuiClick(result, target) end
     return result
 end
@@ -75,55 +75,54 @@ end
 local function CreateRecipeLine(frame, target, inCount, outCount)
     local subFrame = frame.add {type = "flow", direction = "horizontal"}
 
-    CreateRecipeLinePart(subFrame, target.Input, math.min(inCount, maximalCount), true)
+    CreateRecipeLinePart(subFrame, target.Input, inCount, true)
 
     local properties = subFrame.add {type = "flow", direction = "horizontal"}
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
-    CreateSpriteAndRegister(properties, target.Technology)
+    CreateSpriteAndRegister(properties, target.Technology or {SpriteName = "factorio", HelperText = {"ingteb_utility.initial-technology"}} )
     CreateSpriteAndRegister(properties, target)
     CreateSpriteAndRegister(properties, {SpriteName = "utility/clock", NumberOnSprite = target.Time})
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
 
-    CreateRecipeLinePart(subFrame, target.Output, math.min(outCount, maximalCount), false)
+    CreateRecipeLinePart(subFrame, target.Output, outCount, false)
 end
 
 local function CreateCraftingGroupPanel(frame, target, category, inCount, outCount)
     assert(release or type(category) == "string")
+    inCount = math.min(inCount, maximalCount)
+    outCount = math.min(outCount, maximalCount)
 
     frame.add {type = "line", direction = "horizontal"}
 
     local workers = target[1].Database:GetCategory(category).Workers
 
-    local columnCount = inCount + outCount + 4
+    local columnCount = inCount + outCount + 3
     local workersCount = workers:Count()
     local lines = math.ceil(workersCount / columnCount)
-    local actualColumnCount = math.ceil(workersCount / lines)
-    local recipeDelta = inCount - outCount
-    local dummyColumnsLeft = math.ceil((columnCount - actualColumnCount + recipeDelta) / 2)
-    local dummyColumnsRight = columnCount - actualColumnCount - dummyColumnsLeft
+    local potentialWorkerCount = lines * columnCount
+    local dummiesRequired = potentialWorkerCount - workersCount
+    local dummyColumnsLeft = math.ceil((dummiesRequired) / 2)
 
     local workersPanel = frame.add {
         type = "table",
-        column_count = columnCount,
-        style = "ingteb-table-centered",
+        column_count = columnCount + 1,
         direction = "horizontal",
     }
 
     local position = 0
     workers:Select(
         function(worker)
-            if position == 0 then 
-                DummyTiles(workersPanel, dummyColumnsLeft) 
+            if position == 0 then workersPanel.add {type = "sprite", sprite = "utility/change_recipe"} end
+            if lines == 1 and position == 0 then
+                DummyTiles(workersPanel, dummyColumnsLeft)
                 position = position + dummyColumnsLeft
             end
             CreateSpriteAndRegister(workersPanel, worker)
             position = position + 1
-            if position == dummyColumnsLeft + actualColumnCount then 
-                DummyTiles(workersPanel, dummyColumnsRight) 
+            if position >= columnCount then
                 position = 0
+                lines = lines - 1
             end
-
-
         end
     )
 
@@ -300,7 +299,7 @@ function Presentator:new(frame, target)
         return
     end
 
-    CreateCraftingGroupsPanel(mainFrame, target.RecipeList, target.RichTextName .. "[img=factorio]")
+    CreateCraftingGroupsPanel(mainFrame, target.RecipeList, target.RichTextName .. "[img=utility/change_recipe]")
 
     CreateCraftingGroupsPanel(
         mainFrame, target.UsedBy,

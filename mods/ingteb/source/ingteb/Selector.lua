@@ -72,18 +72,22 @@ function Selector:EnsureGroups()
     if self.Groups then return self.Groups end
     self.Groups = Dictionary:new{}
     local maximalColumns = 0
-    for _, item in pairs(self.Targets) do
-        local group = EnsureKey(self.Groups, item.group.name, Dictionary:new{})
-        local subgroup = EnsureKey(group, item.subgroup.name, Array:new{})
-        subgroup:Append(item)
-        if maximalColumns < subgroup:Count() then maximalColumns = subgroup:Count() end
+    for _, domain in pairs(self.Targets) do
+        for _, goods in pairs(domain) do
+            local group = EnsureKey(self.Groups, goods.group.name, Dictionary:new{})
+            local subgroup = EnsureKey(group, goods.subgroup.name, Array:new{})
+            subgroup:Append(goods)
+            if maximalColumns < subgroup:Count() then maximalColumns = subgroup:Count() end
+        end
     end
+
+    self.ColumnCount = maximalColumns < ColumnCount and maximalColumns or self.Groups:Count() * 2
     return self.Groups
 end
 
 function Selector:ShowAllItems()
 
-    self.Targets = game.item_prototypes
+    self.Targets = {game.item_prototypes, game.fluid_prototypes}
     local groups = Selector:EnsureGroups()
 
     local groupPanel = self.Frame.add {type = "tabbed-pane"}
@@ -102,14 +106,16 @@ function Selector:ShowAllItems()
             groupPanel.add_tab(tab, itemPanel)
             group:Select(
                 function(subgroup)
-                    local itemline = itemPanel.add {type = "table", column_count = ColumnCount}
+                    local itemline = itemPanel.add {type = "table", column_count = self.ColumnCount}
                     subgroup:Select(
-                        function(item)
+                        function(goods)
                             itemline.add {
                                 type = "sprite-button",
-                                sprite = "item." .. item.name,
-                                name = "Item." .. item.name,
-                                tooltip = item.localised_name,
+                                sprite = (goods.object_name == "LuaItemPrototype" and "item"
+                                    or "fluid") .. "." .. goods.name,
+                                name = (goods.object_name == "LuaItemPrototype" and "Item" or "Fluid")
+                                    .. "." .. goods.name,
+                                tooltip = goods.localised_name,
                             }
                         end
                     )
