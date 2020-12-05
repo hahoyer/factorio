@@ -33,10 +33,6 @@ function class:new(name, super)
         return setmetatable(instance, self.metatable)
     end
 
-    function classInstance:adopt(instance)
-        return setmetatable(instance, self.metatable)
-    end
-
     function classInstance:properties(list)
         for key, value in pairs(list) do
             if value.cache then

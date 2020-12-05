@@ -158,6 +158,7 @@ function Gui:PresentTarget(player, target)
 end
 
 function Gui:OnMainButtonPressed(player)
+    Gui:EnsureMainButton(player)
     assert(release or self.Active.ingteb)
     assert(release or not self.Active.Selector or not self.Active.Presentator)
 
@@ -175,8 +176,7 @@ function Gui:OnMainButtonPressed(player)
     end
 end
 
-function Gui:EnsureMainButton()
-    local player = global.Current.Player -- todo: multiplayer
+function Gui:EnsureMainButton(player)
     if player.gui.top.ingteb then
          player.gui.top.ingteb.destroy() 
         end

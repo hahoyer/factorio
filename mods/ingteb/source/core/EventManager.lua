@@ -3,6 +3,7 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local class = require("core.class")
+local UI = require("core.UI")
 
 -- __DebugAdapter.breakpoint(mesg:LocalisedString)
 local EventManager = class:new("EventManager")
@@ -10,6 +11,30 @@ local EventManager = class:new("EventManager")
 EventManager.EventDefinesByIndex = Dictionary:new(defines.events) --
 :ToDictionary(function(value, key) return {Key = value, Value = key} end) --
 :ToArray()
+
+function EventManager:new()
+    local self = EventManager:adopt{}
+    
+    self:properties{
+        Player = {
+            get = function() return UI.Player end,
+            set = function(_, value)
+                self:EnsureGlobal()
+                if value then
+                    local acutalValue = --
+                    type(value) == "number" and game.players[value] --
+                    or type(value) == "table" and value.object_name == "LuaPlayer" and value --
+                        or assert(release)
+                    if acutalValue == UI.Player then return end
+                    UI.Player = acutalValue
+                else
+                    UI.Player = nil
+                end
+            end,
+        },
+    }
+    return self
+end
 
 function EventManager:Watch(handler, eventId)
     return function(...)
@@ -20,9 +45,7 @@ function EventManager:Watch(handler, eventId)
     end
 end
 
-function EventManager:Enter(name, event)
-    self.Active = {name, self.Active}
-end
+function EventManager:Enter(name, event) self.Active = {name, self.Active} end
 
 function EventManager:Leave(name) self.Active = self.Active[2] end
 

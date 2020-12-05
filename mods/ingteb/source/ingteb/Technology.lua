@@ -67,7 +67,7 @@ function Technology:new(name, prototype, database)
         },
         IsResearched = {
             get = function()
-                return global.Current.Player.force.technologies[self.Prototype.name].researched
+                return UI.Player.force.technologies[self.Prototype.name].researched
                            == true
             end,
         },

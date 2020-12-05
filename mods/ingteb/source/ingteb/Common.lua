@@ -45,27 +45,7 @@ function Common:new(prototype, database)
 
         FunctionHelp = {get = function() return end},
 
-        HasLocalisedDescription = {
-            get = function()
-                if self.HasLocalisedDescriptionPending ~= nil then
-                    return not self.HasLocalisedDescriptionPending
-                end
-
-                local key = self.LocalizedDescription[1]
-
-                if key then
-                    if key == "modifier-description.train-braking-force-bonus" then
-                        local x = 2
-                    end
-                    local start = not global.Current.PendingTranslation:Any()
-                    global.Current.PendingTranslation[key] = self
-                    self.HasLocalisedDescriptionPending = true
-                    if start then Helper.InitiateTranslation() end
-                end
-                return nil
-
-            end,
-        },
+        HasLocalisedDescription = {get = function() end},
 
         HelperText = {
             get = function()

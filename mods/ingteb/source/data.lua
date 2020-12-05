@@ -65,6 +65,12 @@ data.raw["gui-style"].default["ingteb-flow-right"] =
         horizontal_align = "right",
     }
 
+data.raw["gui-style"].default["ingteb-flow-fill"] =
+    { --
+        type = "vertical_flow_style", --
+        horizontally_stretchable = "on",
+    }
+
 local default_glow_color = {225, 177, 106, 255}
 local default_dirt_color = {15, 7, 3, 100}
 local red_color = {1, 0, 0, 100}

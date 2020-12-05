@@ -83,7 +83,7 @@ function Recipe:new(name, prototype, database)
         NumberOnSprite = {
             get = function()
                 if not self.HandCrafter then return end
-                local result = global.Current.Player.get_craftable_count(self.Prototype.name)
+                local result = UI.Player.get_craftable_count(self.Prototype.name)
                 if result > 0 then return result end
             end,
         },

@@ -22,13 +22,6 @@ end
 
 function Helper.HasForce(type) return type == "technology" or type == "recipe" end
 
-function Helper.GetForce(type, name)
-    if type == "technology" then return global.Current.Player.force.technologies[name] end
-    if type == "recipe" then return global.Current.Player.force.recipes[name] end
-
-    assert(release)
-end
-
 function Helper.ShowFrame(player, name, create)
     local frame = player.gui.screen
     local main = frame[name]
@@ -99,30 +92,6 @@ function Helper.RefreshResearchChanged(dataBase)
     Dictionary:new(global.Current.Gui) --
     :Where(function(_, target) return target.object_name == "Technology" end) --
     :Select(function(list, target) UpdateGui(list, target, dataBase) end) --
-end
-
-local function RefreshDescription(this, dataBase)
-    Dictionary:new(global.Current.Gui) --
-    :Where(function(_, target) return target == this end) --
-    :Select(function(target) return dataBase:GetProxy(target.object_name, target.name) end) --
-    :Select(function(list, target) UpdateGui(list, target, dataBase) end) --
-end
-
-function Helper.InitiateTranslation()
-    local pending = global.Current.PendingTranslation:Top()
-    if pending then assert(global.Current.Player.request_translation {pending.Key}) end
-end
-
-function Helper.CompleteTranslation(event, dataBase)
-    local complete = global.Current.PendingTranslation[event.localised_string]
-    global.Current.PendingTranslation[event.localised_string] = nil
-
-    if event.translated then
-        local thing = complete.Value
-        thing.HasLocalisedDescriptionPending = false
-        RefreshDescription(thing, dataBase)
-    end
-    Helper.InitiateTranslation()
 end
 
 return Helper

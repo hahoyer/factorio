@@ -95,18 +95,32 @@ function Selector:ShowAllItems()
     groups:Select(
         function(group)
             local groupHeader = group[next(group)][1].group
+
             local tab = groupPanel.add {
                 type = "tab",
                 caption = "[item-group=" .. groupHeader.name .. "]",
                 style = "ingteb-big-tab",
                 tooltip = groupHeader.localised_name,
             }
+
             local itemPanel = groupPanel.add {type = "flow", direction = "vertical"}
 
             groupPanel.add_tab(tab, itemPanel)
+
+            local scrollframe = itemPanel.add {
+                type = "scroll-pane",
+                horizontal_scroll_policy = "never",
+                direction = "vertical",
+            }
+
+            local itemPanel = scrollframe.add {type = "flow", direction = "vertical", style = "ingteb-flow-fill"}
+
             group:Select(
                 function(subgroup)
-                    local itemline = itemPanel.add {type = "table", column_count = self.ColumnCount}
+                    local itemline = itemPanel.add {
+                        type = "table",
+                        column_count = self.ColumnCount,
+                    }
                     subgroup:Select(
                         function(goods)
                             itemline.add {

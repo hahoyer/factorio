@@ -23,6 +23,7 @@ function EventManager:EnsureGlobal()
     if not global.Current.PendingTranslation then
         global.Current.PendingTranslation = Dictionary:new{}
     end
+    global.Current.Player = nil
 end
 
 function EventManager:OnSelectorForeOrBackClick(event)
@@ -102,9 +103,13 @@ function EventManager:OnMainKey(event)
 end
 
 function EventManager:OnLoad()
-    if global.Current then Gui:EnsureMainButton() end
+    if self.Player then Gui:EnsureMainButton(self.Player) end
     History = History:new()
     --    History = History:new(global.Current and global.Current.History) 
+end
+
+function EventManager:OnSave()
+    global.Current.Player = nil
 end
 
 function EventManager:OnPlayerJoined(event) self.Player = event.player_index end
@@ -139,29 +144,9 @@ function EventManager:OnClose(event)
     end
 end
 
-function EventManager:new(instance)
-    if not instance then instance = {} end
+function EventManager:new()
+    local instance = core.EventManager:new()
     self:adopt(instance)
-
-    self:properties{
-        Player = {
-            get = function() return global.Current.Player end,
-            set = function(_, value)
-                self:EnsureGlobal()
-                if value then
-                    local acutalValue = --
-                    type(value) == "number" and game.players[value] --
-                    or type(value) == "table" and value.object_name == "LuaPlayer" and value --
-                        or assert(release)
-                    if acutalValue == global.Current.Player then return end
-                    global.Current.Player = acutalValue
-                    Gui:EnsureMainButton()
-                else
-                    global.Current.Player = nil
-                end
-            end,
-        },
-    }
 
     self = instance
     self:SetHandler("on_load", self.OnLoad)
@@ -173,7 +158,6 @@ function EventManager:new(instance)
     self:SetHandler(defines.events.on_player_main_inventory_changed, self.OnMainInventoryChanged)
     self:SetHandler(defines.events.on_player_cursor_stack_changed, self.OnStackChanged)
     self:SetHandler(defines.events.on_research_finished, self.OnResearchFinished)
-    -- self:SetHandler(defines.events.on_string_translated, Helper.CompleteTranslation)
     self:SetHandler(defines.events.on_gui_click, self.OnGuiClick)
     self:SetHandler(defines.events.on_gui_closed, self.OnClose)
     self:SetHandler(Constants.Key.Fore, self.OnForeClicked)
