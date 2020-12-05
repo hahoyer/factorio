@@ -95,12 +95,18 @@ function Technology:new(name, prototype, database)
         Enables = {
             cache = true,
             get = function()
-                return self.Database.EnabledTechnologiesForTechnology[self.Prototype.name] --
-                :Select(
-                    function(technology)
-                        return self.Database:GetTechnology(nil, technology)
-                    end
-                )
+                local enabledTechnologies =
+                    self.Database.EnabledTechnologiesForTechnology[self.Prototype.name]
+                if enabledTechnologies then
+                    return enabledTechnologies --
+                    :Select(
+                        function(technology)
+                            return self.Database:GetTechnology(nil, technology)
+                        end
+                    )
+                else
+                    return Array:new{}
+                end
             end,
         },
 

@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.21
+Date: 2020-12-05
+  Bugfixes:
+    - fixing crash after game.player.force.research_all_technologies()
+  Changes:
+    - zn-CH localisation by Ting_amm
+---------------------------------------------------------------------------------------------------
 Version: 0.2.20
 Date: 2020-12-04
   Bugfixes:
