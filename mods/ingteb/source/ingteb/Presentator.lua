@@ -4,11 +4,14 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local UI = require("core.UI")
+local class = require("core.class")
+
+local DynamicElements = Dictionary:new()
 
 local function CreateSprite(frame, target, sprite)
     local style = Helper.SpriteStyleFromCode(target and target.SpriteStyle)
 
-    if not target then return frame.add {type = "sprite-button", sprite = sprite,  style = style} end
+    if not target then return frame.add {type = "sprite-button", sprite = sprite, style = style} end
 
     local tooltip = target.HelperText
     local sprite = target.SpriteName
@@ -27,9 +30,9 @@ local function CreateSprite(frame, target, sprite)
 end
 
 local function RegisterTargetForGuiClick(result, target)
-    global.Current.Links[result.index] = target and target.CommonKey
+    global.Links[result.index] = target and target.CommonKey
     if target and (target.IsDynamic or target.HasLocalisedDescriptionPending) then
-        Table.AppendForKey(global.Current.Gui, target, result)
+        DynamicElements:AppendForKey(target, result)
     end
     return result
 end
@@ -79,7 +82,10 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
 
     local properties = subFrame.add {type = "flow", direction = "horizontal"}
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
-    CreateSpriteAndRegister(properties, target.Technology or {SpriteName = "factorio", HelperText = {"ingteb_utility.initial-technology"}} )
+    CreateSpriteAndRegister(
+        properties, target.Technology
+            or {SpriteName = "factorio", HelperText = {"ingteb_utility.initial-technology"}}
+    )
     CreateSpriteAndRegister(properties, target)
     CreateSpriteAndRegister(properties, {SpriteName = "utility/clock", NumberOnSprite = target.Time})
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
@@ -112,7 +118,9 @@ local function CreateCraftingGroupPanel(frame, target, category, inCount, outCou
     local position = 0
     workers:Select(
         function(worker)
-            if position == 0 then workersPanel.add {type = "sprite", sprite = "utility/change_recipe"} end
+            if position == 0 then
+                workersPanel.add {type = "sprite", sprite = "utility/change_recipe"}
+            end
             if lines == 1 and position == 0 then
                 DummyTiles(workersPanel, dummyColumnsLeft)
                 position = position + dummyColumnsLeft
@@ -244,9 +252,81 @@ local function CreateCraftingGroupsPanel(frame, target, headerSprites)
     )
 end
 
+function CheckedTabifyColumns(frame, mainFrame, target, columnCount)
+    local maximalColumCount = settings.player["ingteb_column-tab-threshold"].value
+    if maximalColumCount == 0 then maximalColumCount = columnCount end
+
+    if columnCount > maximalColumCount then
+        local tabOrder = target.TabOrder
+        if not tabOrder then
+            tabOrder = Array:FromNumber(columnCount)
+            target.TabOrder = tabOrder
+        end
+
+        tabOrder:Select(
+            function(tabIndex, order)
+                if order > maximalColumCount then
+                    frame.caption --
+                    = {
+                        "",
+                        frame.caption, --
+                        " >>> [" .. mainFrame.children[tabIndex].headerFlow.headerSprites.caption
+                            .. "]",
+                    }
+                    mainFrame.children[tabIndex].visible = false
+                else
+                    mainFrame.children[tabIndex].headerFlow.add {
+                        type = "sprite-button",
+                        sprite = "hide-this-column",
+                        name = order,
+                    }
+                end
+            end
+        )
+        global.Links[frame.index] = target.CommonKey
+
+    end
+
+end
+
+local function UpdateGui(list, target, dataBase)
+    target = dataBase:GetProxy(target.object_name, target.Name)
+    local helperText = target.HelperText
+    local number = target.NumberOnSprite
+    local style = Helper.SpriteStyleFromCode(target.SpriteStyle)
+
+    for _, guiElement in pairs(list) do
+        if guiElement.valid then
+            guiElement.tooltip = helperText
+            guiElement.number = number
+            guiElement.style = style
+        end
+    end
+end
+
 local Presentator = {}
 
+function Presentator:Close()
+    DynamicElements = Dictionary:new() --
+end
+
+function Presentator:RefreshMainInventoryChanged(dataBase)
+    DynamicElements --
+    :Where(function(_, target) return target.object_name == "Recipe" end) --
+    :Select(function(list, target) UpdateGui(list, target, dataBase) end) --
+end
+
+function Presentator:RefreshStackChanged(dataBase) end
+
+function Presentator:RefreshResearchChanged(dataBase)
+    DynamicElements --
+    :Where(function(_, target) return target.object_name == "Technology" end) --
+    :Select(function(list, target) UpdateGui(list, target, dataBase) end) --
+end
+
 function Presentator:new(frame, target)
+    DynamicElements = Dictionary:new() --
+    global.Links = {}
     frame.caption = target.LocalisedName
 
     local scrollframe = frame.add {
@@ -299,7 +379,9 @@ function Presentator:new(frame, target)
         return
     end
 
-    CreateCraftingGroupsPanel(mainFrame, target.RecipeList, target.RichTextName .. "[img=utility/change_recipe]")
+    CreateCraftingGroupsPanel(
+        mainFrame, target.RecipeList, target.RichTextName .. "[img=utility/change_recipe]"
+    )
 
     CreateCraftingGroupsPanel(
         mainFrame, target.UsedBy,
@@ -311,40 +393,7 @@ function Presentator:new(frame, target)
             "[img=utility/missing_icon][img=utility/go_to_arrow]" .. target.RichTextName
     )
 
-    local maximalColumCount = settings.player["ingteb_column-tab-threshold"].value
-    if maximalColumCount == 0 then maximalColumCount = columnCount end
-
-    if columnCount > maximalColumCount then
-        local tabOrder = target.TabOrder
-        if not tabOrder then
-            tabOrder = Array:FromNumber(columnCount)
-            target.TabOrder = tabOrder
-        end
-
-        tabOrder:Select(
-            function(tabIndex, order)
-                if order > maximalColumCount then
-                    frame.caption --
-                    = {
-                        "",
-                        frame.caption, --
-                        " >>> [" .. mainFrame.children[tabIndex].headerFlow.headerSprites.caption
-                            .. "]",
-                    }
-                    mainFrame.children[tabIndex].visible = false
-                else
-                    mainFrame.children[tabIndex].headerFlow.add {
-                        type = "sprite-button",
-                        sprite = "hide-this-column",
-                        name = order,
-                    }
-                end
-            end
-        )
-        global.Current.Links[frame.index] = target.CommonKey
-
-    end
-
+    CheckedTabifyColumns(frame, mainFrame, target, columnCount)
 end
 
 return Presentator

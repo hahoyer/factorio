@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.23
+Date: 2020-12-05
+  Bugfixes:
+    - fixing Crash during save (2nd trial)
+    - fixing can't click quickly twice
+  Changes:
+    - Restructure of global data not using forbidden objects
+---------------------------------------------------------------------------------------------------
 Version: 0.2.22
 Date: 2020-12-05
   Bugfixes:

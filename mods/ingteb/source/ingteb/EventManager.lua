@@ -5,53 +5,37 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Helper = require("ingteb.Helper")
 local Gui = require("ingteb.Gui")
-local History = require("ingteb.History"):new()
-local Database = require("ingteb.Database")
-local UI = require("core.UI")
+local History = require("ingteb.History")
 local class = require("core.class")
 local core = {EventManager = require("core.EventManager")}
 
 -- __DebugAdapter.breakpoint(mesg:LocalisedString)
 -----------------------------------------------------------------------
-EventManager = class:new("EventManager", core.EventManager)
 
-function EventManager:EnsureGlobal()
-    if not global.Current then global.Current = {} end
-    if not global.Current.Links then global.Current.Links = {} end
-    if not global.Current.Location then global.Current.Location = {} end
-    if not global.Current.Gui or not global.Current.Gui.AppendForKey then global.Current.Gui = {} end
-    if not global.Current.PendingTranslation then
-        global.Current.PendingTranslation = Dictionary:new{}
-    end
-    global.Current.Player = nil
-end
+local EventManager = class:new("EventManager", core.EventManager)
 
 function EventManager:OnSelectorForeOrBackClick(event)
     self.Player = event.player_index
-    Gui:PresentTarget(self.Player, History.Current)
+    Gui:PresentTargetFromCommonKey(self.Player, global.History.Current)
 end
 
 function EventManager:OnPresentatorForeClick(event)
     self.Player = event.player_index
-    History:Fore()
-    Gui:PresentTarget(self.Player, History.Current)
+    global.History:Fore()
+    Gui:PresentTargetFromCommonKey(self.Player, global.History.Current)
 end
 
 function EventManager:OnPresentatorBackClick(event)
     self.Player = event.player_index
-    History:Back()
-    Gui:PresentTarget(self.Player, History.Current)
+    global.History:Back()
+    Gui:PresentTargetFromCommonKey(self.Player, global.History.Current)
 end
 
 function EventManager:OnSelectorElementChanged(event)
     self.Player = event.player_index
     log("event.element.name = " .. tostring(event.element.name))
-    local target = Database:Get(event.element.name)
-    if target then
-        Gui:CloseSelector(self.Player)
-        Gui:PresentTarget(self.Player, target)
-        History:ResetTo(target)
-    end
+    local target = Gui:PresentSelected(event.element.name)
+    if target then global.History:ResetTo(target) end
 end
 
 function EventManager:OnSelectorClose(event)
@@ -64,79 +48,82 @@ function EventManager:OnPresentatorClose(event)
     Gui:ClosePresentator(self.Player)
 end
 
-function EventManager:IsIngtebControl(element)
-    if not element then return false end
-    if element == Gui.Active.Selector then return true end
-    if element == Gui.Active.Presentator then return true end
-    if element == Gui.Active.ingteb then return true end
-    return self:IsIngtebControl(element.parent)
+function EventManager:GetIngtebControl(element)
+    if not element then return element end
+    if element == Gui.Active.Selector then return element end
+    if element == Gui.Active.Presentator then return element end
+    if element == Gui.Active.ingteb then return element end
+    return self:GetIngtebControl(element.parent)
 end
 
 function EventManager:DoNothing(event) self.Player = event.player_index end
 
 function EventManager:OnGuiClick(event)
     self.Player = event.player_index
-    if self:IsIngtebControl(event.element) then
-        if Gui.Active.Selector then
+    Gui:EnsureMainButton(self.Player)
+    local active = self:GetIngtebControl(event.element)
+    if active then
+        if active == Gui.Active.ingteb then
+            local target = Gui:OnMainButtonPressed(self.Player)
+            if target then global.History:ResetTo(target) end
+        elseif active == Gui.Active.Selector then
             assert(release or event.element)
             self:OnSelectorElementChanged(event)
-        elseif Gui.Active.ingteb and event.element == Gui.Active.ingteb then
-            local target = Gui:OnMainButtonPressed(self.Player)
-            if target then History:AdvanceWith(target) end
-        else
+        elseif active == Gui.Active.Presentator then
             local target = Gui:OnGuiClick(self.Player, event)
-            if target then History:AdvanceWith(target) end
+            if target then global.History:AdvanceWith(target) end
         end
     end
 end
 
-function EventManager:OnTickInitial()
-    self:EnsureGlobal()
-    self:SetHandler(defines.events.on_tick)
+function EventManager:OnGuiMoved(event) 
+    self.Player = event.player_index
+    Gui:EnsureMainButton(self.Player)
+    local active = self:GetIngtebControl(event.element)
+    if active and active == event.element then
+        if active == Gui.Active.Selector then
+            global.Location.Selector = active.location
+        elseif active == Gui.Active.Presentator then
+            global.Location.Presentator = active.location
+        end
+    end
+
 end
+
+function EventManager:OnTickInitial() self:SetHandler(defines.events.on_tick) end
 
 function EventManager:OnMainKey(event)
-    self:EnsureGlobal()
     self.Player = event.player_index
     local target = Gui:OnMainButtonPressed(self.Player)
-    if target then History:AdvanceWith(target) end
-end
-
-function EventManager:OnLoad()
-    if self.Player then Gui:EnsureMainButton(self.Player) end
-    History = History:new()
-    --    History = History:new(global.Current and global.Current.History) 
-end
-
-function EventManager:OnSave()
-    global.Current.Player = nil
+    if target then global.History:ResetTo(target) end
 end
 
 function EventManager:OnPlayerJoined(event) self.Player = event.player_index end
 
-function EventManager:OnMainInventoryChanged() Helper.RefreshMainInventoryChanged(Database) end
+function EventManager:OnMainInventoryChanged() Gui:OnMainInventoryChanged() end
 
-function EventManager:OnStackChanged() Helper.RefreshStackChanged(Database) end
+function EventManager:OnStackChanged() Gui:OnStackChanged() end
 
 function EventManager:OnResearchFinished(event) Gui:OnResearchFinished(event.research) end
 
 function EventManager:OnForeClicked(event)
     if Gui.Active.Presentator then
-        return History.IsForePossible and self:OnPresentatorForeClick(event)
+        if global.History.IsForePossible then self:OnPresentatorForeClick(event) end
     else
-        return History.Current and self:OnSelectorForeOrBackClick(event)
+        if global.History.Current then self:OnSelectorForeOrBackClick(event) end
     end
 end
 
 function EventManager:OnBackClicked(event)
     if Gui.Active.Presentator then
-        return History.IsBackPossible and self:OnPresentatorBackClick(event)
+        if global.History.IsBackPossible then self:OnPresentatorBackClick(event) end
     else
-        return History.Current and self:OnSelectorForeOrBackClick(event)
+        if global.History.Current then self:OnSelectorForeOrBackClick(event) end
     end
 end
 
 function EventManager:OnClose(event)
+    Gui:EnsureMainButton(game.players[event.player_index])
     if Gui.Active.Selector then
         self:OnSelectorClose(event)
     elseif Gui.Active.Presentator then
@@ -144,11 +131,22 @@ function EventManager:OnClose(event)
     end
 end
 
+function EventManager:OnLoad()
+    if self.Player then Gui:EnsureMainButton(self.Player) end
+    History:adopt(global.History)
+    global.History:Log("OnLoad")
+end
+
+function EventManager:EnsureGlobal() end
+
+function EventManager:OnInitialise() global = {Links = {}, Location = {}, History = History:new()} end
+
 function EventManager:new()
     local instance = core.EventManager:new()
     self:adopt(instance)
 
     self = instance
+    self:SetHandler("on_init", self.OnInitialise)
     self:SetHandler("on_load", self.OnLoad)
     self:SetHandler(defines.events.on_player_joined_game, self.OnPlayerJoined)
     self:SetHandler(defines.events.on_player_created, self.OnPlayerJoined)
@@ -158,6 +156,7 @@ function EventManager:new()
     self:SetHandler(defines.events.on_player_main_inventory_changed, self.OnMainInventoryChanged)
     self:SetHandler(defines.events.on_player_cursor_stack_changed, self.OnStackChanged)
     self:SetHandler(defines.events.on_research_finished, self.OnResearchFinished)
+    self:SetHandler(defines.events.on_gui_location_changed, self.OnGuiMoved)
     self:SetHandler(defines.events.on_gui_click, self.OnGuiClick)
     self:SetHandler(defines.events.on_gui_closed, self.OnClose)
     self:SetHandler(Constants.Key.Fore, self.OnForeClicked)

@@ -31,6 +31,19 @@ function Gui:GetInventoryData(inventory, result)
     end
 end
 
+function Gui:OnMainInventoryChanged() Presentator:RefreshMainInventoryChanged(Database) end
+
+function Gui:OnStackChanged() Presentator:RefreshStackChanged(Database) end
+
+function Gui:PresentSelected(player, name)
+    local target = Database:Get(name)
+    if target then
+        Gui:CloseSelector(player)
+        Gui:PresentTarget(player, target)
+        return target.CommonKey
+    end
+end
+
 function Gui:FindTargets(player)
     self:EnsureDatabase()
     assert(release or self.Active.ingteb)
@@ -138,8 +151,9 @@ end
 
 function Gui:ClosePresentator(player)
     Helper.OnClose("Presentator", self.Active.Presentator)
-    global.Current.Gui = {}
     player.gui.screen.Presentator.destroy()
+    Presentator:Close()
+    global.Links = {}
     self.Active.Presentator = nil
 end
 
@@ -148,13 +162,21 @@ function Gui:SelectTarget(player, targets)
     self:ScanActiveGui(player)
 end
 
+function Gui:PresentTargetFromCommonKey(player, targetKey)
+    local target = Database:GetProxyFromCommonKey(targetKey)
+    Gui:PresentTarget(player, target)
+end
+
 function Gui:PresentTarget(player, target)
-    assert(release or target.Prototype)
+    local actualTarget = target
+    if target.object_name == "Entity" and target.Item then actualTarget = target.Item end
+
+    assert(release or actualTarget.Prototype)
     Helper.ShowFrame(
-        player, "Presentator", function(frame) return Presentator:new(frame, target) end
+        player, "Presentator", function(frame) return Presentator:new(frame, actualTarget) end
     )
     self:ScanActiveGui(player)
-    return target
+    return target.CommonKey
 end
 
 function Gui:OnMainButtonPressed(player)
@@ -177,9 +199,7 @@ function Gui:OnMainButtonPressed(player)
 end
 
 function Gui:EnsureMainButton(player)
-    if player.gui.top.ingteb then
-         player.gui.top.ingteb.destroy() 
-        end
+    if player.gui.top.ingteb then player.gui.top.ingteb.destroy() end
     if mod_gui.get_button_flow(player).ingteb == nil then
         assert(release or not self.Active.ingteb)
         mod_gui.get_button_flow(player).add {
@@ -221,7 +241,7 @@ end
 
 function Gui:OnGuiClickForPresentator(player, event)
     self:EnsureDatabase()
-    local target = self.Database:Get(global.Current.Links[event.element.index])
+    local target = self.Database:Get(global.Links[event.element.index])
     if target and target.Prototype then
         if UI.IsMouseCode(event, "--- l") then return self:PresentTarget(player, target) end
 
@@ -239,7 +259,7 @@ function Gui:OnGuiClickForPresentator(player, event)
         return
     end
 
-    local target = global.Current.Links[self.Active.Presentator.index]
+    local target = global.Links[self.Active.Presentator.index]
     if target then
         self:UpdateTabOrder(target.TabOrder, event.element.name)
         return self:PresentTarget(player, target)

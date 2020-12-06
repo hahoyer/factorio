@@ -32,15 +32,15 @@ function Helper.ShowFrame(player, name, create)
     end
     create(main)
     player.opened = main
-    if global.Current.Location[name] then
-        main.location = global.Current.Location[name]
+    if global.Location[name] then
+        main.location = global.Location[name]
     else
         main.force_auto_center()
     end
     return main
 end
 
-function Helper.OnClose(name, frame) global.Current.Location[name] = frame.location end
+function Helper.OnClose(name, frame) global.Location[name] = frame.location end
 
 function Helper.DeepEqual(a, b)
     if not a then return not b end
@@ -65,33 +65,6 @@ function Helper.SpriteStyleFromCode(code)
     return code == true and "ingteb-light-button" --
     or code == false and "red_slot_button" --
     or "slot_button"
-end
-
-local function UpdateGui(list, target, dataBase)
-    target = dataBase:GetProxy(target.object_name, target.Name)
-    local helperText = target.HelperText
-    local number = target.NumberOnSprite
-    local style = Helper.SpriteStyleFromCode(target.SpriteStyle)
-
-    for _, guiElement in pairs(list) do
-        guiElement.tooltip = helperText
-        guiElement.number = number
-        guiElement.style = style
-    end
-end
-
-function Helper.RefreshMainInventoryChanged(dataBase)
-    Dictionary:new(global.Current.Gui) --
-    :Where(function(_, target) return target.object_name == "Recipe" end) --
-    :Select(function(list, target) UpdateGui(list, target, dataBase) end) --
-end
-
-function Helper.RefreshStackChanged(dataBase) end
-
-function Helper.RefreshResearchChanged(dataBase)
-    Dictionary:new(global.Current.Gui) --
-    :Where(function(_, target) return target.object_name == "Technology" end) --
-    :Select(function(list, target) UpdateGui(list, target, dataBase) end) --
 end
 
 return Helper

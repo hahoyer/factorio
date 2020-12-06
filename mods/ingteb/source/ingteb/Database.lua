@@ -4,6 +4,7 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local ValueCacheContainer = require("core.ValueCacheContainer")
+local class = require("core.class")
 local Proxy = {
     Category = require("ingteb.Category"),
     Entity = require("ingteb.Entity"),
@@ -14,9 +15,11 @@ local Proxy = {
     Recipe = require("ingteb.Recipe"),
     Technology = require("ingteb.Technology"),
 }
+
 local StackOfGoods = require("ingteb.StackOfGoods")
 
-local Database = ValueCacheContainer:new{}
+local DatabaseClass = class:new{"DatabaseClass"}
+local Database = DatabaseClass:adopt{}
 Database.object_name = "Database"
 
 local function EnsureKey(data, key, value)
@@ -29,7 +32,6 @@ local function EnsureKey(data, key, value)
 end
 
 function Database:Ensure()
-
     if self.IsInitialized then return self end
     self.IsInitialized = "pending"
 
@@ -70,13 +72,19 @@ function Database:Ensure()
     for categoryName in pairs(self.WorkersForCategory) do self:GetCategory(categoryName) end
 
     log("database initialize recipes...")
-    self.Proxies.Item =Dictionary:new{}
+    self.Proxies.Item = Dictionary:new{}
     self.Proxies.FuelCategory = Dictionary:new{}
     self.Proxies.Category:Select(function(category) return category.RecipeList end)
 
     log("database initialize complete.")
     self.IsInitialized = true
     return self
+end
+
+function Database:GetProxyFromCommonKey(targetKey)
+    Database:Ensure()
+    local _, _, className, prototypeName = targetKey:find("^(.+)%.(.*)$")
+    return Database:GetProxy(className, prototypeName)
 end
 
 function Database:GetProxy(className, name, prototype)
@@ -227,7 +235,6 @@ function Database:AddBonus(target, technology)
 
     return BonusSet(result, target.modifier, self)
 end
-
 
 function Database:Get(target)
     local object_name, Name

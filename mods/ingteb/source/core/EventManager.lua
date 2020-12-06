@@ -19,7 +19,6 @@ function EventManager:new()
         Player = {
             get = function() return UI.Player end,
             set = function(_, value)
-                self:EnsureGlobal()
                 if value then
                     local acutalValue = --
                     type(value) == "number" and game.players[value] --

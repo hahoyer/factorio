@@ -29,7 +29,7 @@ function Entity:new(name, prototype, database)
     self.CreatedBy = Dictionary:new{}
 
     self:properties{
-        CommonKey = {get = function() return self.Item and self.Item.CommonKey end},
+--        CommonKey = {get = function() return self.Item and self.Item.CommonKey end},
         Item = {
             cache = true,
             get = function()
