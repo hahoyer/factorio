@@ -112,8 +112,7 @@ function Gui:FindTargets(player)
                 Gui:GetInventoryData(cursor.get_inventory(defines.inventory.item_main))
                 Gui:GetInventoryData(cursor.get_inventory(defines.inventory.mining_drill_modules))
             else
-                -- assert(release)
-                return {}
+                assert(release)
             end
 
             local result = Array:new{}
@@ -257,7 +256,7 @@ function Gui:OnResearchFinished(research)
     if Database.IsInitialized then
         Gui:EnsureDatabase()
         Gui.Database:RefreshTechnology(research)
-        Helper.RefreshResearchChanged(Database)
+        Presentator:RefreshResearchChanged(Database)
     end
 end
 
