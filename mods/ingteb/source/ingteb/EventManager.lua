@@ -34,7 +34,7 @@ end
 function EventManager:OnSelectorElementChanged(event)
     self.Player = event.player_index
     log("event.element.name = " .. tostring(event.element.name))
-    local target = Gui:PresentSelected(event.element.name)
+    local target = Gui:PresentSelected(self.Player, event.element.name)
     if target then global.History:ResetTo(target) end
 end
 
@@ -60,7 +60,6 @@ function EventManager:DoNothing(event) self.Player = event.player_index end
 
 function EventManager:OnGuiClick(event)
     self.Player = event.player_index
-    Gui:EnsureMainButton(self.Player)
     local active = self:GetIngtebControl(event.element)
     if active then
         if active == Gui.Active.ingteb then
@@ -76,9 +75,8 @@ function EventManager:OnGuiClick(event)
     end
 end
 
-function EventManager:OnGuiMoved(event) 
+function EventManager:OnGuiMoved(event)
     self.Player = event.player_index
-    Gui:EnsureMainButton(self.Player)
     local active = self:GetIngtebControl(event.element)
     if active and active == event.element then
         if active == Gui.Active.Selector then
@@ -90,7 +88,10 @@ function EventManager:OnGuiMoved(event)
 
 end
 
-function EventManager:OnTickInitial() self:SetHandler(defines.events.on_tick) end
+function EventManager:OnTickInitial()
+    Gui:EnsureMainButton()
+    self:SetHandler(defines.events.on_tick)
+end
 
 function EventManager:OnMainKey(event)
     self.Player = event.player_index
@@ -98,7 +99,10 @@ function EventManager:OnMainKey(event)
     if target then global.History:ResetTo(target) end
 end
 
-function EventManager:OnPlayerJoined(event) self.Player = event.player_index end
+function EventManager:OnPlayerJoined(event) 
+    self.Player = event.player_index 
+    Gui:EnsureMainButton(self.Player)
+end
 
 function EventManager:OnMainInventoryChanged() Gui:OnMainInventoryChanged() end
 
@@ -123,7 +127,6 @@ function EventManager:OnBackClicked(event)
 end
 
 function EventManager:OnClose(event)
-    Gui:EnsureMainButton(game.players[event.player_index])
     if Gui.Active.Selector then
         self:OnSelectorClose(event)
     elseif Gui.Active.Presentator then
@@ -132,14 +135,14 @@ function EventManager:OnClose(event)
 end
 
 function EventManager:OnLoad()
-    if self.Player then Gui:EnsureMainButton(self.Player) end
     History:adopt(global.History)
     global.History:Log("OnLoad")
 end
 
-function EventManager:EnsureGlobal() end
-
-function EventManager:OnInitialise() global = {Links = {}, Location = {}, History = History:new()} end
+function EventManager:OnInitialise()
+    global = {Links = {}, Location = {}, History = History:new()}
+    Gui:EnsureMainButton()
+end
 
 function EventManager:new()
     local instance = core.EventManager:new()

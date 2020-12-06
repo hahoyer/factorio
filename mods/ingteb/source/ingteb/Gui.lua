@@ -16,7 +16,7 @@ function Gui:EnsureDatabase() self.Database = Database:Ensure() end
 function Gui:GetRecipeData(recipePrototype, result)
     if recipePrototype then
         local recipe = self.Database:GetRecipe(nil, recipePrototype)
-        result.recipe[recipePrototype.name] = true
+        result.recipes[recipePrototype.name] = true
         local inoutItems = recipe.Input:Concat(recipe.Output) --
         inoutItems:Select(function(stack) result.items[stack.Goods.Name] = true end)
     end
@@ -112,7 +112,8 @@ function Gui:FindTargets(player)
                 Gui:GetInventoryData(cursor.get_inventory(defines.inventory.item_main))
                 Gui:GetInventoryData(cursor.get_inventory(defines.inventory.mining_drill_modules))
             else
-                assert(release)
+                -- assert(release)
+                return {}
             end
 
             local result = Array:new{}
@@ -180,7 +181,6 @@ function Gui:PresentTarget(player, target)
 end
 
 function Gui:OnMainButtonPressed(player)
-    Gui:EnsureMainButton(player)
     assert(release or self.Active.ingteb)
     assert(release or not self.Active.Selector or not self.Active.Presentator)
 
@@ -190,6 +190,7 @@ function Gui:OnMainButtonPressed(player)
         self:ClosePresentator(player)
     else
         local targets = self:FindTargets(player)
+        player.opened = nil
         if #targets == 1 then
             return self:PresentTarget(player, targets[1])
         else
@@ -199,16 +200,37 @@ function Gui:OnMainButtonPressed(player)
 end
 
 function Gui:EnsureMainButton(player)
-    if player.gui.top.ingteb then player.gui.top.ingteb.destroy() end
-    if mod_gui.get_button_flow(player).ingteb == nil then
-        assert(release or not self.Active.ingteb)
-        mod_gui.get_button_flow(player).add {
-            type = "sprite-button",
-            name = "ingteb",
-            sprite = "ingteb",
-        }
+    if player then
+        if player.gui.top.ingteb then player.gui.top.ingteb.destroy() end
+        if mod_gui.get_button_flow(player).ingteb == nil then
+            assert(release or not self.Active.ingteb)
+            mod_gui.get_button_flow(player).add {
+                type = "sprite-button",
+                name = "ingteb",
+                sprite = "ingteb",
+                tooltip = {"ingteb-utility.ingteb-button-description"},
+            }
+        end
+        self:ScanActiveGui(player)
+    else
+        for _, player in pairs(game.players) do self:EnsureMainButton(player) end
     end
-    self:ScanActiveGui(player)
+end
+
+function Gui:EnsureMainButton()
+    for _, player in pairs(game.players) do
+        if player.gui.top.ingteb then player.gui.top.ingteb.destroy() end
+        if mod_gui.get_button_flow(player).ingteb == nil then
+            assert(release or not self.Active.ingteb)
+            mod_gui.get_button_flow(player).add {
+                type = "sprite-button",
+                name = "ingteb",
+                sprite = "ingteb",
+                tooltip = {"ingteb-utility.ingteb-button-description"},
+            }
+        end
+        self:ScanActiveGui(player)
+    end
 end
 
 function Gui:OnGuiClick(player, event)

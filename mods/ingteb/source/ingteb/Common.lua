@@ -55,9 +55,9 @@ function Common:new(prototype, database)
 
                 local result = name
                 if false and self.HasLocalisedDescription then
-                    result = {"ingteb_utility.Lines2", result, description}
+                    result = {"ingteb-utility.Lines2", result, description}
                 end
-                if help then result = {"ingteb_utility.Lines2", result, help} end
+                if help then result = {"ingteb-utility.Lines2", result, help} end
                 return result
             end,
         },

@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.24
+Date: 2020-12-06
+  Bugfixes:
+    - fixing Crash during save (3nd trial)
+  Changes:
+    - Help-text on main button
+  Refactor:
+    - unused things removed
+    - better naming
+---------------------------------------------------------------------------------------------------
 Version: 0.2.23
 Date: 2020-12-05
   Bugfixes:

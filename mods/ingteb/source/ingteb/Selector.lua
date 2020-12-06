@@ -27,7 +27,7 @@ end
 function Selector:new(frame, targets)
     self.Frame = frame
     self.Targets = targets
-    frame.caption = {"ingteb_utility.selector"}
+    frame.caption = {"ingteb-utility.selector"}
 
     if #targets > 0 then
         self:ShowTargets()
@@ -113,14 +113,15 @@ function Selector:ShowAllItems()
                 direction = "vertical",
             }
 
-            local itemPanel = scrollframe.add {type = "flow", direction = "vertical", style = "ingteb-flow-fill"}
+            local itemPanel = scrollframe.add {
+                type = "flow",
+                direction = "vertical",
+                style = "ingteb-flow-fill",
+            }
 
             group:Select(
                 function(subgroup)
-                    local itemline = itemPanel.add {
-                        type = "table",
-                        column_count = self.ColumnCount,
-                    }
+                    local itemline = itemPanel.add {type = "table", column_count = self.ColumnCount}
                     subgroup:Select(
                         function(goods)
                             itemline.add {

@@ -225,17 +225,6 @@ function Database:GetStackOfGoods(target)
     if goods then return StackOfGoods:new(goods, amounts, self) end
 end
 
-function Database:AddBonus(target, technology)
-    local result = self.Bonusses[target.type]
-    if not result then
-        result = Bonus(target.type, self)
-        self.Bonusses[target.type] = result
-    end
-    result.CreatedBy:Append{Technology = technology, Modifier = target.modifier}
-
-    return BonusSet(result, target.modifier, self)
-end
-
 function Database:Get(target)
     local object_name, Name
     if not target or target == "" then

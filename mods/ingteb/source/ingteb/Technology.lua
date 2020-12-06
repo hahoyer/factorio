@@ -54,7 +54,7 @@ function Technology:new(name, prototype, database)
         FunctionHelp = {
             get = function() --
                 if not self.IsResearched and self.IsReady then
-                    return UI.GetHelpTextForButtonsACS12("ingteb_utility.research")
+                    return UI.GetHelpTextForButtonsACS12("ingteb-utility.research")
                 end
             end,
         },
@@ -67,8 +67,7 @@ function Technology:new(name, prototype, database)
         },
         IsResearched = {
             get = function()
-                return UI.Player.force.technologies[self.Prototype.name].researched
-                           == true
+                return UI.Player.force.technologies[self.Prototype.name].researched == true
             end,
         },
         IsReady = {

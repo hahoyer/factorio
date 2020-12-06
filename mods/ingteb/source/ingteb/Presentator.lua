@@ -84,7 +84,7 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
     CreateSpriteAndRegister(
         properties, target.Technology
-            or {SpriteName = "factorio", HelperText = {"ingteb_utility.initial-technology"}}
+            or {SpriteName = "factorio", HelperText = {"ingteb-utility.initial-technology"}}
     )
     CreateSpriteAndRegister(properties, target)
     CreateSpriteAndRegister(properties, {SpriteName = "utility/clock", NumberOnSprite = target.Time})

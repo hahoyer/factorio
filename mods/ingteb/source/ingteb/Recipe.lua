@@ -24,7 +24,7 @@ function Recipe:new(name, prototype, database)
         FunctionHelp = {
             get = function(self) --
                 if self.IsResearched and self.NumberOnSprite then
-                    return UI.GetHelpTextForButtonsACS12("ingteb_utility.craft")
+                    return UI.GetHelpTextForButtonsACS12("ingteb-utility.craft")
                 end
             end,
         },
