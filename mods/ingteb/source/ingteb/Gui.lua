@@ -16,9 +16,9 @@ function Gui:EnsureDatabase() self.Database = Database:Ensure() end
 function Gui:GetRecipeData(recipePrototype, result)
     if recipePrototype then
         local recipe = self.Database:GetRecipe(nil, recipePrototype)
-        result.recipes[recipePrototype.name] = true
+        result["Recipe." .. recipePrototype.name] = true
         local inoutItems = recipe.Input:Concat(recipe.Output) --
-        inoutItems:Select(function(stack) result.items[stack.Goods.Name] = true end)
+        inoutItems:Select(function(stack) result[stack.Goods.CommonKey] = true end)
     end
 end
 
@@ -26,7 +26,7 @@ function Gui:GetInventoryData(inventory, result)
     if inventory then
         for index = 1, #inventory do
             local stack = inventory[index]
-            if stack.valid_for_read then result.items[stack.prototype.name] = true end
+            if stack.valid_for_read then result["Item." .. stack.prototype.name] = true end
         end
     end
 end
@@ -85,53 +85,43 @@ function Gui:FindTargets(player)
             ) --
             :Where(function(count) return count > 0 end)
 
-            local results = {
-                items = Dictionary:new{},
-                recipes = Dictionary:new{},
-                enities = Dictionary:new{},
-                fuelCategory = Dictionary:new{},
-            }
+            local result = Dictionary:new{}
 
-            results.items[cursor.name] = true
+            result["Item." .. cursor.name] = true
+            if cursor.fluidbox then
+                for index = 1, #cursor.fluidbox do
+                    result["Fluid." .. cursor.fluidbox[index].name] = true
+                end
+            end
             if cursor.type == "container" then
-                Gui:GetInventoryData(cursor.get_inventory(defines.inventory.item_main), results)
+                Gui:GetInventoryData(cursor.get_inventory(defines.inventory.item_main), result)
+            elseif cursor.type == "storage-tank" then
             elseif cursor.type == "assembling-machine" then
-                Gui:GetRecipeData(cursor.get_recipe(), results)
+                Gui:GetRecipeData(cursor.get_recipe(), result)
             elseif cursor.type == "lab" then
-                Gui:GetInventoryData(cursor.get_inventory(defines.inventory.lab_input), results)
-                Gui:GetInventoryData(cursor.get_inventory(defines.inventory.lab_modules), results)
-                Gui:GetRecipeData(player.force.current_research, results)
+                Gui:GetInventoryData(cursor.get_inventory(defines.inventory.lab_input), result)
+                Gui:GetInventoryData(cursor.get_inventory(defines.inventory.lab_modules), result)
+                Gui:GetRecipeData(player.force.current_research, result)
             elseif cursor.type == "mining-drill" then
-                results.enities[cursor.mining_target.name] = true
+                result["Entity." .. cursor.mining_target.name] = true
                 if cursor.burner and cursor.burner.fuel_categories then
                     for category, _ in pairs(cursor.burner.fuel_categories) do
-                        results.fuelCategory[category] = true
+                        result["FuelCategory." .. category] = true
                     end
                 end
                 Gui:GetInventoryData(cursor.get_inventory(defines.inventory.fuel))
                 Gui:GetInventoryData(cursor.get_inventory(defines.inventory.item_main))
                 Gui:GetInventoryData(cursor.get_inventory(defines.inventory.mining_drill_modules))
             else
-                assert(release)
+                __DebugAdapter.breakpoint()
             end
 
-            local result = Array:new{}
-            results.fuelCategory:Select(
-                function(_, name) result:Append(self.Database:GetFuelCategory(name)) end
+            return result:Select(
+                function(_, key) return Database:GetProxyFromCommonKey(key) end
             )
-            results.enities:Select(
-                function(_, name) result:Append(self.Database:GetEntity(name)) end
-            )
-            results.recipes:Select(
-                function(_, name) result:Append(self.Database:GetRecipe(name)) end
-            )
-            results.items:Select(
-                function(_, name) result:Append(self.Database:GetItem(name)) end
-            )
-            return result
         end
 
-        assert(release)
+        __DebugAdapter.breakpoint()
     end
 
     return {}
@@ -189,6 +179,7 @@ function Gui:OnMainButtonPressed(player)
         self:ClosePresentator(player)
     else
         local targets = self:FindTargets(player)
+        if target then return end
         player.opened = nil
         if #targets == 1 then
             return self:PresentTarget(player, targets[1])

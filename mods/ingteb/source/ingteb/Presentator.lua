@@ -252,7 +252,7 @@ local function CreateCraftingGroupsPanel(frame, target, headerSprites)
     )
 end
 
-function CheckedTabifyColumns(frame, mainFrame, target, columnCount)
+local function CheckedTabifyColumns(frame, mainFrame, target, columnCount)
     local maximalColumCount = settings.player["ingteb_column-tab-threshold"].value
     if maximalColumCount == 0 then maximalColumCount = columnCount end
 

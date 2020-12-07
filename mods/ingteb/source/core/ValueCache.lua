@@ -40,7 +40,7 @@ function ValueCacheRaw:Reset()
     end
 end
 
-function ValueCache(getter)
+local function ValueCache(getter)
     local result = PropertyProvider:new{valueCache = ValueCacheRaw:new(getter)}
     result.class_name = "ValueCache"
 

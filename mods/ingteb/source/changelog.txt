@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.26
+Date: 2020-12-07
+  Bugfixes:
+    - fixing Crash when opening an assembly machine with a recipe with a fluid
+    - fixing Crash during save (4th trial): not storing references to game.item_prototypes anywhere - also not as local variable
+---------------------------------------------------------------------------------------------------
 Version: 0.2.25
 Date: 2020-12-06
   Bugfixes:
@@ -7,7 +13,7 @@ Date: 2020-12-06
 Version: 0.2.24
 Date: 2020-12-06
   Bugfixes:
-    - fixing Crash during save (3nd trial)
+    - fixing Crash during save (3rd trial)
   Changes:
     - Help-text on main button
   Refactor:

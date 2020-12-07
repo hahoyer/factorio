@@ -7,8 +7,6 @@ local UI = require("core.UI")
 
 ColumnCount = 12
 
-local Selector = {}
-
 ---@param data Dictionary Dictionary where the key is searched
 ---@param key string
 ---@param value any Value to use if key is not jet contained in data
@@ -22,29 +20,30 @@ local function EnsureKey(data, key, value)
     return result
 end
 
+local Selector = {}
 --- @param frame LuaGuiElement
 --- @param targets Array | nil
 function Selector:new(frame, targets)
     self.Frame = frame
-    self.Targets = targets
     frame.caption = {"ingteb-utility.selector"}
 
     if #targets > 0 then
-        self:ShowTargets()
+        self:ShowTargets(targets)
     else
         -- self:ShowSelectionForAllItems()
         self:ShowAllItems()
     end
+
 end
 
-function Selector:ShowTargets()
+function Selector:ShowTargets(targets)
 
     local frame = self.Frame.add {type = "flow", direction = "vertical"}
     local targetPanel = frame.add {type = "table", column_count = ColumnCount}
     frame.add {type = "line", direction = "horizontal"}
     local recent = frame.add {type = "table", column_count = ColumnCount}
 
-    self.Targets:Select(
+    targets:Select(
         function(target)
             if target.SpriteType == "fuel-category" then
                 targetPanel.add {
@@ -68,30 +67,32 @@ function Selector:ShowTargets()
     return frame
 end
 
-function Selector:EnsureGroups()
-    if self.Groups then return self.Groups end
-    self.Groups = Dictionary:new{}
-    local maximalColumns = 0
-    for _, domain in pairs(self.Targets) do
-        for _, goods in pairs(domain) do
-            local group = EnsureKey(self.Groups, goods.group.name, Dictionary:new{})
-            local subgroup = EnsureKey(group, goods.subgroup.name, Array:new{})
-            subgroup:Append(goods)
-            if maximalColumns < subgroup:Count() then maximalColumns = subgroup:Count() end
+local SelectorCache = {}
+function SelectorCache.EnsureGroups()
+    local self = SelectorCache
+    if not self.Groups then
+        local maximalColumns = 0
+        self.Groups = Dictionary:new{}
+        local targets = {game.item_prototypes, game.fluid_prototypes}
+        for _, domain in pairs(targets) do
+            for _, goods in pairs(domain) do
+                local group = EnsureKey(self.Groups, goods.group.name, Dictionary:new{})
+                local subgroup = EnsureKey(group, goods.subgroup.name, Array:new{})
+                subgroup:Append(goods)
+                if maximalColumns < subgroup:Count() then
+                    maximalColumns = subgroup:Count()
+                end
+            end
         end
+        self.ColumnCount =
+            maximalColumns < ColumnCount and maximalColumns or self.Groups:Count() * 2
     end
-
-    self.ColumnCount = maximalColumns < ColumnCount and maximalColumns or self.Groups:Count() * 2
     return self.Groups
 end
 
 function Selector:ShowAllItems()
-
-    self.Targets = {game.item_prototypes, game.fluid_prototypes}
-    local groups = Selector:EnsureGroups()
-
+    local groups = SelectorCache:EnsureGroups()
     local groupPanel = self.Frame.add {type = "tabbed-pane"}
-
     groups:Select(
         function(group)
             local groupHeader = group[next(group)][1].group
@@ -121,7 +122,10 @@ function Selector:ShowAllItems()
 
             group:Select(
                 function(subgroup)
-                    local itemline = itemPanel.add {type = "table", column_count = self.ColumnCount}
+                    local itemline = itemPanel.add {
+                        type = "table",
+                        column_count = SelectorCache.ColumnCount,
+                    }
                     subgroup:Select(
                         function(goods)
                             itemline.add {
