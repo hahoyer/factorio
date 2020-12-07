@@ -17,7 +17,6 @@ function Technology:new(name, prototype, database)
 
     self.TypeOrder = 3
     self.SpriteType = "technology"
-    self.Technologies = Array:new()
     self.IsDynamic = true
     self.Time = self.Prototype.research_unit_energy
 
@@ -37,12 +36,6 @@ function Technology:new(name, prototype, database)
             end,
         },
 
-        Output = {
-            get = function() --
-                return Array:new{self.Enables, self.EnabledRecipes, self.Effects}:ConcatMany()
-            end,
-        },
-
         NumberOnSprite = {
             get = function() --
                 if self.Prototype.level and self.Prototype.max_level > 1 then
@@ -51,7 +44,7 @@ function Technology:new(name, prototype, database)
             end,
         },
 
-        FunctionHelp = {
+        FunctionalHelp = {
             get = function() --
                 if not self.IsResearched and self.IsReady then
                     return UI.GetHelpTextForButtonsACS12("ingteb-utility.research")
@@ -126,8 +119,14 @@ function Technology:new(name, prototype, database)
             cache = true,
             get = function()
                 return Dictionary:new(self.Prototype.effects) --
-                :Where(function(effect) return effect.type ~= "unlock-recipe" end) --
-                :Select(function(effect) return self.Database:GetBonus(effect) end)
+                :Select(
+                    function(effect)
+                        if effect.type == "unlock-recipe" then
+                            return self.Database:GetRecipe(effect.recipe)
+                        end
+                        return self.Database:GetBonusFromEffect(effect)
+                    end
+                )
             end,
         },
     }
@@ -145,12 +144,19 @@ function Technology:new(name, prototype, database)
         return self.Prototype.order < other.Prototype.order
     end
 
-    function self:SortAll() end
+    function self:SortAll()
+        if not self.CreatedBy then self.CreatedBy = self.OriginalCreatedBy end
+        if not self.UsedBy then self.UsedBy = self.OriginalUsedBy end
+    end
 
-    function self:GetResearchRequest(event)
+    function self:GetAction(event)
         if UI.IsMouseCode(event, "-C- l") --
         and self.IsReady --
-        then return {Technology = self.Prototype} end
+        then return {Research = self} end
+
+        if UI.IsMouseCode(event, "-C- r") --
+        and not self.IsResearched --
+        then return {Research = self, Queue = true} end
     end
 
     return self

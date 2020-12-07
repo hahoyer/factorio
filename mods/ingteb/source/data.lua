@@ -58,6 +58,12 @@ data.raw["gui-style"].default["ingteb-scroll-6x1"] =
         width = 43 * 6,
     }
 
+    data.raw["gui-style"].default["ingteb-main-frame"] =
+    {
+        type = "frame_style", --
+        scalable = true,
+    }
+
 data.raw["gui-style"].default["ingteb-flow-right"] =
     { --
         type = "horizontal_flow_style", --

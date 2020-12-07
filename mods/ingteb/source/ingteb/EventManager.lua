@@ -66,6 +66,7 @@ function EventManager:OnGuiClick(event)
             local target = Gui:OnMainButtonPressed(self.Player)
             if target then global.History:ResetTo(target) end
         elseif active == Gui.Active.Selector then
+            if event.element == active then return end
             assert(release or event.element)
             self:OnSelectorElementChanged(event)
         elseif active == Gui.Active.Presentator then

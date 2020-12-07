@@ -43,7 +43,7 @@ function Common:new(prototype, database)
             end,
         },
 
-        FunctionHelp = {get = function() return end},
+        FunctionalHelp = {get = function() return end},
 
         HasLocalisedDescription = {get = function() end},
 
@@ -51,13 +51,19 @@ function Common:new(prototype, database)
             get = function()
                 local name = self.Prototype.localised_name
                 local description = self.LocalizedDescription
-                local help = self.FunctionHelp
+                local additionalHelp = self.AdditionalHelp
+                local functionalHelp = self.FunctionalHelp
 
                 local result = name
                 if false and self.HasLocalisedDescription then
                     result = {"ingteb-utility.Lines2", result, description}
                 end
-                if help then result = {"ingteb-utility.Lines2", result, help} end
+                if additionalHelp then
+                    result = {"ingteb-utility.Lines2", result, additionalHelp}
+                end
+                if functionalHelp then
+                    result = {"ingteb-utility.Lines2", result, functionalHelp}
+                end
                 return result
             end,
         },

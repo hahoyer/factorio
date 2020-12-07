@@ -8,6 +8,32 @@ local class = require("core.class")
 
 local DynamicElements = Dictionary:new()
 
+local function CreateContentPanel(frame, headerSprites)
+    local subFrame = frame.add {
+        type = "frame",
+        horizontal_scroll_policy = "never",
+        direction = "vertical",
+    }
+
+    local headerFlow = subFrame.add {
+        type = "flow",
+        name = "headerFlow",
+        direction = "horizontal",
+        style = "ingteb-flow-centered",
+    }
+
+    headerFlow.add {
+        type = "label",
+        name = "headerSprites",
+        caption = headerSprites,
+        style = "ingteb-big-label",
+    }
+
+    subFrame.add {type = "line", direction = "horizontal"}
+
+    return subFrame
+end
+
 local function CreateSprite(frame, target, sprite)
     local style = Helper.SpriteStyleFromCode(target and target.SpriteStyle)
 
@@ -51,7 +77,7 @@ local function DummyTiles(frame, count)
     end
 end
 
-local function CreateRecipeLinePart(frame, target, count, isInput)
+local function CreateLinePart(frame, target, count, isLeftSide)
     local scrollFrame = frame
     if target:Count() > count then
         scrollFrame = frame.add {
@@ -65,12 +91,12 @@ local function CreateRecipeLinePart(frame, target, count, isInput)
     local subPanel = scrollFrame.add {
         type = "flow",
         direction = "horizontal",
-        style = isInput and "ingteb-flow-right" or nil,
+        style = isLeftSide and "ingteb-flow-right" or nil,
     }
 
-    target:Select(function(item) return CreateSpriteAndRegister(subPanel, item) end)
+    target:Select(function(element) return CreateSpriteAndRegister(subPanel, element) end)
 
-    if isInput then return end
+    if isLeftSide then return end
 
     DummyTiles(subPanel, count - target:Count())
 end
@@ -78,7 +104,7 @@ end
 local function CreateRecipeLine(frame, target, inCount, outCount)
     local subFrame = frame.add {type = "flow", direction = "horizontal"}
 
-    CreateRecipeLinePart(subFrame, target.Input, inCount, true)
+    CreateLinePart(subFrame, target.Input, inCount, true)
 
     local properties = subFrame.add {type = "flow", direction = "horizontal"}
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
@@ -90,15 +116,17 @@ local function CreateRecipeLine(frame, target, inCount, outCount)
     CreateSpriteAndRegister(properties, {SpriteName = "utility/clock", NumberOnSprite = target.Time})
     properties.add {type = "sprite", sprite = "utility/go_to_arrow"}
 
-    CreateRecipeLinePart(subFrame, target.Output, outCount, false)
+    CreateLinePart(subFrame, target.Output, outCount, false)
+end
+
+local function CreateEffectLine(frame, target)
+    CreateSpriteAndRegister(frame, target)
 end
 
 local function CreateCraftingGroupPanel(frame, target, category, inCount, outCount)
     assert(release or type(category) == "string")
     inCount = math.min(inCount, maximalCount)
     outCount = math.min(outCount, maximalCount)
-
-    frame.add {type = "line", direction = "horizontal"}
 
     local workers = target[1].Database:GetCategory(category).Workers
 
@@ -210,27 +238,10 @@ end
 
 local function CreateCraftingGroupsPanel(frame, target, headerSprites)
     if not target or not target:Any() then return end
-    assert(release or type(next(target)) == "string")
+    assert(release or type(target:Top().Key) == "string")
+    assert(release or target:Top().Value[1].object_name == "Recipe")
 
-    local subFrame = frame.add {
-        type = "frame",
-        horizontal_scroll_policy = "never",
-        direction = "vertical",
-    }
-
-    local headerFlow = subFrame.add {
-        type = "flow",
-        name = "headerFlow",
-        direction = "horizontal",
-        style = "ingteb-flow-centered",
-    }
-
-    headerFlow.add {
-        type = "label",
-        name = "headerSprites",
-        caption = headerSprites,
-        style = "ingteb-big-label",
-    }
+    local subFrame = CreateContentPanel(frame, headerSprites)
 
     local inCount = target:Select(
         function(group)
@@ -248,6 +259,59 @@ local function CreateCraftingGroupsPanel(frame, target, headerSprites)
         function(recipes, category)
             assert(release or type(category) == "string")
             CreateCraftingGroupPanel(subFrame, recipes, category, inCount, outCount)
+        end
+    )
+end
+
+local function CreateTechnologyPanel(frame, target, prerequisitesCount, enablesCount)
+    assert(release or target.object_name == "Technology")
+
+    local frame = frame.add {type = "flow", direction = "horizontal"}
+    CreateLinePart(frame, target.Prerequisites, prerequisitesCount, true)
+    frame.add {type = "sprite", sprite = "utility/go_to_arrow"}
+    CreateSpriteAndRegister(frame, target)
+    frame.add {type = "sprite", sprite = "utility/go_to_arrow"}
+    CreateLinePart(frame, target.Enables, enablesCount, false)
+end
+
+local function CreateTechnologyEffectsPanel(frame, target, headerSprites)
+    if not target or not target:Any() then return end
+    assert(release or target[1].object_name == "Recipe" or target[1].object_name == "Bonus")
+
+    local frame = CreateContentPanel(frame, headerSprites)
+
+    local inCount = target:Select(function(recipe) return recipe.Input:Count() end):Max()
+
+    local outCount = target:Select(function(recipe) return recipe.Output:Count() end):Max()
+
+    target:Select(
+        function(effekt)
+            if effekt.object_name == "Recipe" then
+                CreateRecipeLine(frame, effekt, inCount, outCount)
+            else
+                CreateEffectLine(frame, effekt)
+            end
+        end
+    )
+end
+
+local function CreateTechnologiesPanel(frame, target, headerSprites)
+    if not target or not target:Any() then return end
+    assert(release or target:Top().object_name == "Technology")
+
+    local subFrame = CreateContentPanel(frame, headerSprites)
+
+    local prerequisitesCount = target:Select(
+        function(technology) return technology.Prerequisites:Count() end
+    ):Max()
+
+    local enablesCount = target:Select(function(technology) return technology.Enables:Count() end)
+        :Max()
+
+    target:Select(
+        function(technology)
+            assert(release or technology.object_name == "Technology")
+            CreateTechnologyPanel(subFrame, technology, prerequisitesCount, enablesCount)
         end
     )
 end
@@ -304,6 +368,18 @@ local function UpdateGui(list, target, dataBase)
     end
 end
 
+local function CreateRecipePanel(frame, target)
+    if not target or not target.RecipeData then return end
+    assert(release or target.object_name == "Recipe")
+
+    local subFrame = CreateContentPanel(frame, target.RichTextName)
+
+    CreateCraftingGroupPanel(
+        subFrame, Array:new{target}, target.Category.Name, target.Input:Count(),
+            target.Output:Count()
+    )
+end
+
 local Presentator = {}
 
 function Presentator:Close()
@@ -355,6 +431,10 @@ function Presentator:new(frame, target)
     local mainFrame = scrollframe
     local columnCount --
     = (target.RecipeList and target.RecipeList:Any() and 1 or 0) --
+    + (target.RecipeData and 1 or 0) --
+          + (target.Prerequisites and target.Prerequisites:Any() and 1 or 0) --
+          + (target.Effects and target.Effects:Any() and 1 or 0) --
+          + (target.Enables and target.Enables:Any() and 1 or 0) --
           + (target.UsedBy and target.UsedBy:Any() and 1 or 0) --
           + (target.CreatedBy and target.CreatedBy:Any() and 1 or 0) --
 
@@ -378,6 +458,20 @@ function Presentator:new(frame, target)
 
         return
     end
+
+    CreateTechnologiesPanel(
+        mainFrame, target.Prerequisites,
+            "[img=utility/missing_icon][img=utility/go_to_arrow]" .. target.RichTextName
+    )
+
+    CreateTechnologyEffectsPanel(
+        mainFrame, target.Effects, target.RichTextName .. "[img=utility/change_recipe]"
+    )
+
+    CreateTechnologiesPanel(
+        mainFrame, target.Enables,
+            target.RichTextName .. "[img=utility/go_to_arrow][img=utility/missing_icon]"
+    )
 
     CreateCraftingGroupsPanel(
         mainFrame, target.RecipeList, target.RichTextName .. "[img=utility/change_recipe]"

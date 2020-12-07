@@ -21,10 +21,13 @@ function Recipe:new(name, prototype, database)
 
     self:properties{
 
-        FunctionHelp = {
+        FunctionalHelp = {
             get = function(self) --
                 if self.IsResearched and self.NumberOnSprite then
                     return UI.GetHelpTextForButtonsACS12("ingteb-utility.craft")
+                end
+                if self.Technology and self.Technology.IsReady then
+                    return UI.GetHelpTextForButtonsACS12("ingteb-utility.research")
                 end
             end,
         },
@@ -145,6 +148,7 @@ function Recipe:new(name, prototype, database)
 
             end,
         },
+        RecipeData = {cache = true, get = function() return {} end},
     }
 
     function self:IsBefore(other)
@@ -156,7 +160,7 @@ function Recipe:new(name, prototype, database)
 
     function self:SortAll() end
 
-    function self:GetHandCraftingRequest(event)
+    function self:GetAction(event)
         if (UI.IsMouseCode(event, "A-- l") --
         or UI.IsMouseCode(event, "A-- r") --
         or UI.IsMouseCode(event, "--S l")) --
@@ -171,7 +175,17 @@ function Recipe:new(name, prototype, database)
             else
                 return
             end
-            return {count = amount, recipe = self.Prototype.name}
+            return {HandCrafting = {count = amount, recipe = self}}
+        end
+
+        if (UI.IsMouseCode(event, "-C- l")) --
+        and self.Technology and self.Technology.IsReady then --
+            return {Research = self.Technology}
+        end
+
+        if (UI.IsMouseCode(event, "-C- r")) --
+        and self.Technology and not self.Technology.IsResearched then --
+            return {Research = self.Technology, Queue = true}
         end
     end
 

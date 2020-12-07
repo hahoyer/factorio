@@ -4,22 +4,32 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local ValueCache = require("core.ValueCache")
-require("ingteb.Common")
-require("ingteb.ItemSet")
+local Common = require("ingteb.Common")
+local StackOfGoods = require("ingteb.StackOfGoods")
 
-function Bonus(name, database)
-    local prototype = {
-        name = (name .. "-modifier-icon"):gsub("-", "_"),
-        localised_name = {"gui-bonus." .. name},
-        localised_description = {"modifier-description." .. name},
-    }
-    local self = Common(name, prototype, database)
+local Bonus = Common:class("Bonus")
+
+function Bonus:new(name, prototype, database)
+    local self = Common:new(prototype, database)
     self.object_name = "Bonus"
+    self.Name = name
     self.SpriteType = "utility"
     self.UsedBy = Dictionary:new{}
     self.CreatedBy = Array:new{}
+    self.Input = Array:new{}
+    self.Output = Array:new{}
+    self.UsePercentage = true
 
-    function self:Setup() end
+    self:properties{
+
+    NumberOnSprite = {
+        get = function()
+            return self.Prototype.modifier
+        end,
+    },
+
+    }
+    function self:SortAll() end
 
     return self
 end
@@ -30,3 +40,4 @@ function BonusSet(bonus, amounts, database)
     return self
 end
 
+return Bonus

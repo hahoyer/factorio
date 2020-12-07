@@ -15,19 +15,19 @@ todo:
 - provide summary for recipe like in tooltip from crafting menu
 - help on modules
 - help on fuel consumption
-- help on recipes
-- help on technologies
 - multiplayer
 - involve achievements
 - "machine-column" for character
 - machine-column for labs
-
+- Improve recipe-column-layout in case of huge amount of recipes
+- provide filter for selector
+- provide close buttons for seletor and presentor
 
 known issue: 
 - it takes seconds when presenting first help page
 - it takes seconds when presenting large help pages the first time
 - it takes second when presenting large help pages (especially machine-columns)
-- speed for a worker depends on request (for instance mining or crafting)
-- save files made with older ingteb-versions (before 0.2.23) may not work correctly
+- the displayed speed for a worker depends on request (for instance mining or crafting)
+- Large recipe columns are jerky during handcrafts or research completion 
 
 **Note: This mod is under development. Please be so kind and use the "Discussion" tab to give feedback - especially if you encounter bugs.** Many thanks in advance

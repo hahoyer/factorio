@@ -257,15 +257,16 @@ function Gui:OnGuiClickForPresentator(player, event)
     if target and target.Prototype then
         if UI.IsMouseCode(event, "--- l") then return self:PresentTarget(player, target) end
 
-        local order = target:GetHandCraftingRequest(event)
-        if order then
-            player.begin_crafting(order)
+        local action = target:GetAction(event)
+
+        if action and action.HandCrafting then
+            player.begin_crafting(action.HandCrafting.Name)
             return
         end
 
-        local order = target:GetResearchRequest(event)
-        if order then
-            player.force.add_research(order.Technology)
+        if action and action.Research then
+            local r = player.force.add_research(action.Research.Name)
+            __DebugAdapter.breakpoint()
             return
         end
         return

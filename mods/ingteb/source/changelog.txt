@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.27
+Date: 2020-12-07
+  Changes:
+    - zn-CH localisation by Ting_amm
+    - help on recipes (First version, needs improvement, help welcome)
+    - help on technologies (First version, needs improvement, help welcome)
+---------------------------------------------------------------------------------------------------
 Version: 0.2.26
 Date: 2020-12-07
   Bugfixes:

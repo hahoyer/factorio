@@ -6,6 +6,7 @@ local Dictionary = Table.Dictionary
 local ValueCacheContainer = require("core.ValueCacheContainer")
 local class = require("core.class")
 local Proxy = {
+    Bonus = require("ingteb.Bonus"),
     Category = require("ingteb.Category"),
     Entity = require("ingteb.Entity"),
     FuelCategory = require("ingteb.FuelCategory"),
@@ -76,6 +77,8 @@ function Database:Ensure()
     self.Proxies.FuelCategory = Dictionary:new{}
     self.Proxies.Category:Select(function(category) return category.RecipeList end)
 
+    self.Proxies.Bonus = Dictionary:new{}
+
     log("database initialize complete.")
     self.IsInitialized = true
     return self
@@ -108,6 +111,19 @@ function Database:GetRecipe(name, prototype) return self:GetProxy("Recipe", name
 function Database:GetTechnology(name, prototype) return self:GetProxy("Technology", name, prototype) end
 function Database:GetFuelCategory(name, prototype)
     return self:GetProxy("FuelCategory", name, prototype)
+end
+
+function Database:GetBonusFromEffect(target)
+    local type = target.type
+    local prototype = {
+        name = (type .. "-modifier-icon"):gsub("-", "_"),
+        localised_name = {"gui-bonus." .. type},
+        localised_description = {"modifier-description." .. type},
+        modifier = target.modifier,
+    }
+
+    local name = type .."/"..tostring(target.mining)
+    return self:GetProxy("Bonus", name, prototype)
 end
 
 function Database:GetImplicitRecipeForDomain(domain, name, prototype) --

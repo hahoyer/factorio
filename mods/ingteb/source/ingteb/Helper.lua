@@ -28,7 +28,7 @@ function Helper.ShowFrame(player, name, create)
     if main then
         main.clear()
     else
-        main = frame.add {type = "frame", name = name, direction = "vertical"}
+        main = frame.add {type = "frame", name = name, direction = "vertical", style = "ingteb-main-frame"}
     end
     create(main)
     player.opened = main
