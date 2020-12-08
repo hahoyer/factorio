@@ -11,7 +11,9 @@ end
 
 function Array:Clone(predicate)
     local result = Array:new{}
-    for index, value in ipairs(self) do if predicate(value, index) then result:Append(value) end end
+    for index, value in ipairs(self) do
+        if not predicate or predicate(value, index) then result:Append(value) end
+    end
     return result
 end
 
@@ -64,13 +66,13 @@ function Dictionary:Sum(predicate)
     return result
 end
 
-function Dictionary:Max()
+function Dictionary:Maximum()
     local result
     for key, value in pairs(self) do if not result or result < value then result = value end end
     return result
 end
 
-function Dictionary:Min()
+function Dictionary:Minimum()
     local result
     for key, value in pairs(self) do if not result or result > value then result = value end end
     return result
@@ -84,13 +86,13 @@ function Array:Sum(predicate)
     return result
 end
 
-function Array:Max()
+function Array:Maximum()
     local result
     for key, value in ipairs(self) do if not result or result < value then result = value end end
     return result
 end
 
-function Array:Min()
+function Array:Minimum()
     local result
     for key, value in ipairs(self) do if not result or result > value then result = value end end
     return result
@@ -205,6 +207,7 @@ function Array:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
     elseif #self > 1 then
         if allowMultiple == false or onMultiple then
             error(
+
                
                     onMultiple and onMultiple(#self) or "Array contains more than one element ("
                         .. #self .. ")."
@@ -220,6 +223,7 @@ function Dictionary:Top(allowEmpty, allowMultiple, onEmpty, onMultiple)
         if allowMultiple ~= false then return {Key = key, Value = value} end
         if result then
             error(
+
                
                     onMultiple and onMultiple(#self) or "Array contains more than one element ("
                         .. #self .. ")."
@@ -244,6 +248,7 @@ function Array:Bottom(allowEmpty, allowMultiple, onEmpty, onMultiple)
     elseif #self > 1 then
         if allowMultiple == false or onMultiple then
             error(
+
                
                     onMultiple and onMultiple(#self) or "Array contains more than one element ("
                         .. #self .. ")."
@@ -251,6 +256,18 @@ function Array:Bottom(allowEmpty, allowMultiple, onEmpty, onMultiple)
         end
     end
     return self[#self]
+end
+
+function Array:Stringify(delimiter)
+    local result = ""
+    local actualDelimiter = ""
+    self:Select(
+        function(element)
+            result = result .. actualDelimiter .. element
+            actualDelimiter = delimiter or ""
+        end
+    )
+    return result
 end
 
 function Array:Concat(otherArray)

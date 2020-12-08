@@ -7,6 +7,7 @@ local Common = require("ingteb.Common")
 local UI = require("core.UI")
 
 local Technology = Common:class("Technology")
+local ignore
 
 function Technology:new(name, prototype, database)
 
@@ -21,18 +22,45 @@ function Technology:new(name, prototype, database)
     self.Time = self.Prototype.research_unit_energy
 
     self:properties{
-        Input = {
+        Amount = {
+            cache = true,
+            get = function() --
+                local formula = self.Prototype.research_unit_count_formula
+                if formula then
+                    local level = self.Prototype.level
+                    local result = game.evaluate_expression(formula, {L = level, l = level})
+                    return result
+                else
+                    return self.Prototype.research_unit_count
+                end
+            end,
+        },
+
+        Ingredients = {
             get = function() --
                 return Array:new(self.Prototype.research_unit_ingredients) --
                 :Select(
                     function(tag)
-                        tag.amount = tag.amount * self.Prototype.research_unit_count
                         local result = database:GetStackOfGoods(tag)
-                        result.Item.UsedBy:AppendForKey(" researching", self)
+                        result.Goods.UsedBy:AppendForKey(" researching", self)
                         return result
                     end
                 ) --
-                :Concat(self.Prerequisites)
+            end,
+
+        },
+
+        Input = {
+            get = function() --
+                return self.Ingredients:Select(
+                    function(stack)
+                        return stack:Clone(
+                            function(amounts)
+                                amounts.value = amounts.value * self.Amount
+                            end
+                        )
+                    end
+                ) --
             end,
         },
 
@@ -46,15 +74,19 @@ function Technology:new(name, prototype, database)
 
         FunctionalHelp = {
             get = function() --
-                if not self.IsResearched and self.IsReady then
+                if self.IsResearchedOrResearching then
+                    return
+                elseif self.IsReady then
                     return UI.GetHelpTextForButtonsACS12("ingteb-utility.research")
+                else
+                    return UI.GetHelpTextForButtonsACS12("ingteb-utility.multiple-research")
                 end
             end,
         },
 
         SpriteStyle = {
             get = function()
-                if self.IsResearched then return end
+                if self.IsResearchedOrResearching then return end
                 return self.IsReady
             end,
         },
@@ -63,11 +95,23 @@ function Technology:new(name, prototype, database)
                 return UI.Player.force.technologies[self.Prototype.name].researched == true
             end,
         },
+        IsResearchedOrResearching = {
+            get = function() return self.IsResearched or self.IsResearching end,
+        },
+        IsResearching = {
+            get = function()
+                local queue = UI.Player.force.research_queue
+                for index = 1, #queue do
+                    if queue[index].name == self.Prototype.name then return true end
+                end
+            end,
+        },
         IsReady = {
-            cache = true,
             get = function()
                 return self.Prerequisites:All(
-                    function(technology) return technology.IsResearched end
+                    function(technology)
+                        return technology.IsResearchedOrResearching
+                    end
                 )
             end,
         },
@@ -81,6 +125,17 @@ function Technology:new(name, prototype, database)
                         return self.Database:GetTechnology(nil, technology)
                     end
                 )
+            end,
+        },
+
+        TopReadyPrerequisite = {
+            get = function()
+                if self.IsResearchedOrResearching then return end
+                if self.IsReady then return self end
+                for _, technology in pairs(self.Prerequisites) do
+                    local result = technology.TopReadyPrerequisite
+                    if result then return result end
+                end
             end,
         },
 
@@ -129,12 +184,10 @@ function Technology:new(name, prototype, database)
                 )
             end,
         },
+
     }
 
-    function self:Refresh()
-        self.Enables:Select(function(technology) technology.cache.IsReady.IsValid = false end)
-        self.EnabledRecipes:Select(function(recipe) recipe:Refresh() end)
-    end
+    function self:Refresh() self.EnabledRecipes:Select(function(recipe) recipe:Refresh() end) end
 
     function self:IsBefore(other)
         if self == other then return false end
@@ -154,9 +207,9 @@ function Technology:new(name, prototype, database)
         and self.IsReady --
         then return {Research = self} end
 
-        if UI.IsMouseCode(event, "-C- r") --
-        and not self.IsResearched --
-        then return {Research = self, Queue = true} end
+        if UI.IsMouseCode(event, "AC- l") --
+        and not self.IsResearchedOrResearching --
+        then return {Research = self, Multiple = true} end
     end
 
     return self

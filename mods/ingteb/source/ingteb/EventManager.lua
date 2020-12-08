@@ -109,7 +109,7 @@ function EventManager:OnMainInventoryChanged() Gui:OnMainInventoryChanged() end
 
 function EventManager:OnStackChanged() Gui:OnStackChanged() end
 
-function EventManager:OnResearchFinished(event) Gui:OnResearchFinished(event.research) end
+function EventManager:OnResearchChanged(event) Gui:OnResearchFinished(event.research) end
 
 function EventManager:OnForeClicked(event)
     if Gui.Active.Presentator then
@@ -159,7 +159,8 @@ function EventManager:new()
 
     self:SetHandler(defines.events.on_player_main_inventory_changed, self.OnMainInventoryChanged)
     self:SetHandler(defines.events.on_player_cursor_stack_changed, self.OnStackChanged)
-    self:SetHandler(defines.events.on_research_finished, self.OnResearchFinished)
+    self:SetHandler(defines.events.on_research_finished, self.OnResearchChanged)
+    self:SetHandler(defines.events.on_research_started, self.OnResearchChanged)
     self:SetHandler(defines.events.on_gui_location_changed, self.OnGuiMoved)
     self:SetHandler(defines.events.on_gui_click, self.OnGuiClick)
     self:SetHandler(defines.events.on_gui_closed, self.OnClose)

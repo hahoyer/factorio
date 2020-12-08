@@ -29,6 +29,9 @@ function Recipe:new(name, prototype, database)
                 if self.Technology and self.Technology.IsReady then
                     return UI.GetHelpTextForButtonsACS12("ingteb-utility.research")
                 end
+                if self.Technology and not self.Technology.IsResearchedOrResearching then
+                    return UI.GetHelpTextForButtonsACS12("ingteb-utility.multiple-research")
+                end
             end,
         },
 
@@ -183,9 +186,9 @@ function Recipe:new(name, prototype, database)
             return {Research = self.Technology}
         end
 
-        if (UI.IsMouseCode(event, "-C- r")) --
-        and self.Technology and not self.Technology.IsResearched then --
-            return {Research = self.Technology, Queue = true}
+        if (UI.IsMouseCode(event, "AC- l")) --
+        and self.Technology and not self.Technology.IsResearchedOrResearching then --
+            return {Research = self.Technology, Multiple = true}
         end
     end
 

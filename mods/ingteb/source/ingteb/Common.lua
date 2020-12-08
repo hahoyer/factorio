@@ -31,6 +31,7 @@ function Common:new(prototype, database)
 
     self:properties{
         CommonKey = {get = function() return self.object_name .. "." .. self.Name end},
+        ClickTarget = {get = function() return self.CommonKey end},
         Group = {get = function() return self.Prototype.group end},
         SubGroup = {get = function() return self.Prototype.subgroup end},
 
