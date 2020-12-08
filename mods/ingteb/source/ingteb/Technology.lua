@@ -18,8 +18,8 @@ function Technology:new(name, prototype, database)
 
     self.TypeOrder = 3
     self.SpriteType = "technology"
-    self.IsDynamic = true
     self.Time = self.Prototype.research_unit_energy
+    self.IsRefreshRequired = {Research = true}
 
     self:properties{
         Amount = {
@@ -108,7 +108,8 @@ function Technology:new(name, prototype, database)
         },
         IsReady = {
             get = function()
-                return self.Prerequisites:All(
+                return not self.IsResearchedOrResearching 
+                and self.Prerequisites:All(
                     function(technology)
                         return technology.IsResearchedOrResearching
                     end

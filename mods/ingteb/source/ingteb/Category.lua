@@ -60,8 +60,15 @@ function Category:new(name, prototype, database)
                     function(recipeName)
                         if self.Domain == "crafting" then
                             return self.Database:GetRecipe(recipeName)
+                        elseif self.Domain == "mining" 
+                        or self.Domain == "fluid-mining"
+                        or self.Domain == "hand-mining"
+                         then
+                            return self.Database:GetMiningRecipe(recipeName)
+                        elseif self.Domain == "boiling" then
+                            return self.Database:GetBoilingRecipe(recipeName)
                         else
-                            return self.Database:GetImplicitRecipeForDomain(self.Domain, recipeName)
+                            assert(release)
                         end
                     end
                 ) --

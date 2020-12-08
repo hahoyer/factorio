@@ -16,8 +16,8 @@ function Recipe:new(name, prototype, database)
     self.TypeOrder = 1
     self.SpriteType = "recipe"
     self.IsHidden = false
-    self.IsDynamic = true
     self.Time = self.Prototype.energy
+    self.IsRefreshRequired = {Research = true, MainInventory = true}
 
     self:properties{
 

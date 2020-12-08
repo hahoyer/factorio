@@ -57,7 +57,7 @@ end
 
 local function RegisterTargetForGuiClick(result, target)
     global.Links[result.index] = target and target.ClickTarget
-    if target and (target.IsDynamic or target.HasLocalisedDescriptionPending) then
+    if target and (target.IsRefreshRequired or target.HasLocalisedDescriptionPending) then
         DynamicElements:AppendForKey(target, result)
     end
     return result
@@ -356,7 +356,7 @@ local function CreateTechnologyList(frame, target)
 
             frame.add {type = "label", caption = "[img=utility/go_to_arrow]"}
 
-            local technologiesPanel = frame.add {type = "table", column_count = 3}
+            local technologiesPanel = frame.add {type = "table", column_count = 2}
             values:Select(
                 function(target)
                     local frame = technologiesPanel.add {type = "frame", direction = "horizontal"}
@@ -452,7 +452,7 @@ end
 
 function Presentator:RefreshMainInventoryChanged(dataBase)
     DynamicElements --
-    :Where(function(_, target) return target.object_name == "Recipe" end) --
+    :Where(function(_, target) return target.IsRefreshRequired.MainInventory end) --
     :Select(function(list, target) UpdateGui(list, target, dataBase) end) --
 end
 
@@ -460,7 +460,7 @@ function Presentator:RefreshStackChanged(dataBase) end
 
 function Presentator:RefreshResearchChanged(dataBase)
     DynamicElements --
-    :Where(function(_, target) return target.object_name == "Technology" end) --
+    :Where(function(_, target) return target.IsRefreshRequired.Research end) --
     :Select(function(list, target) UpdateGui(list, target, dataBase) end) --
 end
 

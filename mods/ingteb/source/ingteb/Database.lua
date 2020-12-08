@@ -6,13 +6,14 @@ local Dictionary = Table.Dictionary
 local ValueCacheContainer = require("core.ValueCacheContainer")
 local class = require("core.class")
 local Proxy = {
+    BoilingRecipe = require("ingteb.BoilingRecipe"),
     Bonus = require("ingteb.Bonus"),
     Category = require("ingteb.Category"),
     Entity = require("ingteb.Entity"),
     FuelCategory = require("ingteb.FuelCategory"),
     Fluid = require("ingteb.Fluid"),
     Item = require("ingteb.Item"),
-    ImplicitRecipe = require("ingteb.ImplicitRecipe"),
+    MiningRecipe = require("ingteb.MiningRecipe"),
     Recipe = require("ingteb.Recipe"),
     Technology = require("ingteb.Technology"),
 }
@@ -55,7 +56,8 @@ function Database:Ensure()
 
     log("database initialize proxies...")
     self.Proxies = {
-        ImplicitRecipe = Dictionary:new{},
+        MiningRecipe = Dictionary:new{},
+        BoilingRecipe = Dictionary:new{},
         Category = Dictionary:new{},
         Fluid = Dictionary:new{},
         Recipe = Dictionary:new{},
@@ -108,6 +110,8 @@ function Database:GetItem(name, prototype) return self:GetProxy("Item", name, pr
 function Database:GetEntity(name, prototype) return self:GetProxy("Entity", name, prototype) end
 function Database:GetCategory(name, prototype) return self:GetProxy("Category", name, prototype) end
 function Database:GetRecipe(name, prototype) return self:GetProxy("Recipe", name, prototype) end
+function Database:GetMiningRecipe(name, prototype) return self:GetProxy("MiningRecipe", name, prototype) end
+function Database:GetBoilingRecipe(name, prototype) return self:GetProxy("BoilingRecipe", name, prototype) end
 function Database:GetTechnology(name, prototype) return self:GetProxy("Technology", name, prototype) end
 function Database:GetFuelCategory(name, prototype)
     return self:GetProxy("FuelCategory", name, prototype)
@@ -124,10 +128,6 @@ function Database:GetBonusFromEffect(target)
 
     local name = type .."/"..tostring(target.mining)
     return self:GetProxy("Bonus", name, prototype)
-end
-
-function Database:GetImplicitRecipeForDomain(domain, name, prototype) --
-    return self:GetProxy("ImplicitRecipe", domain .. "." .. (name or prototype.name), prototype)
 end
 
 ---@param domain string
@@ -188,7 +188,7 @@ function Database:CreateHandMiningCategory() self:GetCategory("hand-mining.steel
 function Database:CreateBoilerRecipe()
     local prototype = game.entity_prototypes.boiler
     self:AddWorkerForCategory("boiling", "steam", prototype)
-    self:GetImplicitRecipeForDomain("boiling", "steam", game.fluid_prototypes["steam"])
+    self:GetBoilingRecipe("steam", prototype)
 end
 
 function Database:ScanTechnology(prototype)
