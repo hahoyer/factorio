@@ -4,6 +4,7 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local ValueCacheContainer = require("core.ValueCacheContainer")
+local UI = require("core.UI")
 
 local Common = {object_name = "Common"}
 
@@ -44,28 +45,36 @@ function Common:new(prototype, database)
             end,
         },
 
-        FunctionalHelp = {get = function() return end},
-
+        SpecialFunctions = {get = function() return Array:new() end},
+        AdditionalHelp = {get = function() return Array:new{} end},
+        FunctionalHelp = {
+            get = function()
+                return self.SpecialFunctions:Select(
+                    function(specialFunction)
+                        return (not specialFunction.IsAvailable or specialFunction.IsAvailable()) --
+                                   and specialFunction.HelpText --
+                                   and UI.GetHelpTextForButtons(specialFunction.HelpText,specialFunction.UICode) or nil
+                    end
+                )
+            end,
+        },
         HasLocalisedDescription = {get = function() end},
 
         HelperText = {
             get = function()
-                local name = self.Prototype.localised_name
-                local description = self.LocalizedDescription
-                local additionalHelp = self.AdditionalHelp
-                local functionalHelp = self.FunctionalHelp
 
-                local result = name
-                if false and self.HasLocalisedDescription then
-                    result = {"ingteb-utility.Lines2", result, description}
+                local name = self.Prototype.localised_name
+                local lines = Array:new{""}
+                local function append(line)
+                    if line then
+                        lines:Append("\n")
+                        lines:Append(line)
+                    end
                 end
-                if additionalHelp then
-                    result = {"ingteb-utility.Lines2", result, additionalHelp}
-                end
-                if functionalHelp then
-                    result = {"ingteb-utility.Lines2", result, functionalHelp}
-                end
-                return result
+                -- append(self.LocalizedDescription)
+                self.AdditionalHelp:Select(append)
+                self.FunctionalHelp:Select(append)
+                return {"", name, lines}
             end,
         },
         SpriteName = {
@@ -81,6 +90,16 @@ function Common:new(prototype, database)
     function self:SealUp()
         self:SortAll()
         return self
+    end
+
+    function self:GetAction(event)
+        for _, specialFunction in pairs(self.SpecialFunctions) do
+            if UI.IsMouseCode(event, specialFunction.UICode) then
+                if (not specialFunction.IsAvailable or specialFunction.IsAvailable()) then
+                    return specialFunction.Action(event)
+                end
+            end
+        end
     end
 
     return self

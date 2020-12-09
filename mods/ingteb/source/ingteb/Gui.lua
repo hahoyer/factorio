@@ -301,11 +301,13 @@ function Gui:OnGuiClickForPresentator(player, event)
         if UI.IsMouseCode(event, "--- l") then return self:PresentTarget(player, target) end
 
         local action = target:GetAction(event)
-
-        if action and action.HandCrafting then
-            player.begin_crafting(action.HandCrafting.Name)
-            return
+        if action and action.Selecting then
+            if not action.Entity or not player.pipette_entity(action.Entity.Prototype) then
+                player.cursor_ghost = action.Selecting.Prototype
+            end
         end
+
+        if action and action.HandCrafting then player.begin_crafting(action.HandCrafting) end
 
         if action and action.Research then
             if action.Research.IsReady then
@@ -313,7 +315,6 @@ function Gui:OnGuiClickForPresentator(player, event)
             elseif action.Multiple then
                 self:MulipleQueueResearch(player, action.Research)
             end
-            return
         end
         return
     end

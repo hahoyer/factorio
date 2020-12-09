@@ -4,6 +4,7 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Common = require("ingteb.Common")
 local UI = require("core.UI")
+local class = require("core.class")
 
 local Recipe = Common:class("Recipe")
 
@@ -20,20 +21,6 @@ function Recipe:new(name, prototype, database)
     self.IsRefreshRequired = {Research = true, MainInventory = true}
 
     self:properties{
-
-        FunctionalHelp = {
-            get = function(self) --
-                if self.IsResearched and self.NumberOnSprite then
-                    return UI.GetHelpTextForButtonsACS12("ingteb-utility.craft")
-                end
-                if self.Technology and self.Technology.IsReady then
-                    return UI.GetHelpTextForButtonsACS12("ingteb-utility.research")
-                end
-                if self.Technology and not self.Technology.IsResearchedOrResearching then
-                    return UI.GetHelpTextForButtonsACS12("ingteb-utility.multiple-research")
-                end
-            end,
-        },
 
         Technologies = {
             cache = true,
@@ -152,6 +139,66 @@ function Recipe:new(name, prototype, database)
             end,
         },
         RecipeData = {cache = true, get = function() return {} end},
+
+        SpecialFunctions = {
+            get = function(self) --
+                return Array:new{
+                    {
+                        UICode = "A-- l",
+                        HelpText = "controls.craft",
+                        IsAvailable = function()
+                            return self.HandCrafter and self.NumberOnSprite
+                        end,
+                        Action = function(event)
+                            return {HandCrafting = {count = 1, recipe = self.Name}}
+                        end,
+                    },
+                    {
+                        UICode = "A-- r",
+                        HelpText = "controls.craft-5",
+                        IsAvailable = function()
+                            return self.HandCrafter and self.NumberOnSprite
+                        end,
+                        Action = function()
+                            return {HandCrafting = {count = 5, recipe = self.Name}}
+                        end,
+                    },
+                    {
+                        UICode = "--S l",
+                        HelpText = "controls.craft-all",
+                        IsAvailable = function()
+                            return self.HandCrafter and self.NumberOnSprite
+                        end,
+                        Action = function(event)
+                            local amount = game.players[event.player_index].get_craftable_count(
+                                self.Prototype.name
+                            )
+                            return {HandCrafting = {count = amount, recipe = self.Name}}
+                        end,
+                    },
+                    {
+                        UICode = "-C- l",
+                        HelpText = "gui-technology-preview.start-research",
+                        IsAvailable = function()
+                            return self.Technology and self.Technology.IsReady
+                        end,
+                        Action = function()
+                            return {Research = self.Technology}
+                        end,
+                    },
+                    {
+                        UICode = "AC- l",
+                        HelpText = "ingteb-utility.multiple-research",
+                        IsAvailable = function()
+                            return self.Technology and self.Technology.IsNextGeneration
+                        end,
+                        Action = function()
+                            return {Research = self.Technology, Multiple = true}
+                        end,
+                    },
+                }
+            end,
+        },
     }
 
     function self:IsBefore(other)
@@ -162,35 +209,6 @@ function Recipe:new(name, prototype, database)
     function self:Refresh() self.cache.OrderValue.IsValid = false end
 
     function self:SortAll() end
-
-    function self:GetAction(event)
-        if (UI.IsMouseCode(event, "A-- l") --
-        or UI.IsMouseCode(event, "A-- r") --
-        or UI.IsMouseCode(event, "--S l")) --
-        and self.HandCrafter and self.NumberOnSprite then
-            local amount = 0
-            if event.shift then
-                amount = game.players[event.player_index].get_craftable_count(self.Prototype.name)
-            elseif event.button == defines.mouse_button_type.left then
-                amount = 1
-            elseif event.button == defines.mouse_button_type.right then
-                amount = 5
-            else
-                return
-            end
-            return {HandCrafting = {count = amount, recipe = self}}
-        end
-
-        if (UI.IsMouseCode(event, "-C- l")) --
-        and self.Technology and self.Technology.IsReady then --
-            return {Research = self.Technology}
-        end
-
-        if (UI.IsMouseCode(event, "AC- l")) --
-        and self.Technology and not self.Technology.IsResearchedOrResearching then --
-            return {Research = self.Technology, Multiple = true}
-        end
-    end
 
     return self
 

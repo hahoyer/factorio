@@ -46,8 +46,15 @@ function StackOfGoods:new(goods, amounts, database)
             end,
         },
         ClickTarget = {get = function() return self.Goods.ClickTarget end},
-        CommonKey = {get = function() return self.Goods.CommonKey .. "/".. self:GetAmountsKey() end},
+        CommonKey = {
+            get = function() return self.Goods.CommonKey .. "/" .. self:GetAmountsKey() end,
+        },
         SpriteName = {get = function() return self.Goods.SpriteName end},
+
+        AdditionalHelp = {
+            get = function() if self.Goods then return self.Goods.FuelDescription end end,
+        },
+
     }
 
     function self:GetAmountsKey()

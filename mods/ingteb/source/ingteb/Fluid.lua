@@ -15,7 +15,22 @@ function Fluid:new(name, prototype, database)
 
     assert(release or self.Prototype.object_name == "LuaFluidPrototype")
 
-self:properties{
+    self:properties{
+        FuelDescription = {
+            get = function()
+                local result = Array:new{}
+
+                if self.Prototype.fuel_value then
+                    result:Append{
+                        "",
+                        {"description.fuel-value"},
+                        " " .. FormatEnergy(self.Fuel.Value),
+                    }
+                end
+                return result
+            end,
+        },
+
     }
 
     return self

@@ -1,10 +1,21 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.29
+Date: 2020-12-08
+  Bugfixes:
+    - fixing crafting order from recipe on any inteb-help panel causes a crash
+  Changes:
+    - Shift-click handler on item: select into cursor
+    - zn-CH localisation by Ting_amm
+	- Fuel tooltip
+  Refactor:
+    - Special actions reworked (uses less localised strings)
+---------------------------------------------------------------------------------------------------
 Version: 0.2.28
 Date: 2020-12-08
   Changes:
     - help on technologies improved
     - Alignment in technology panels
-    - Correct data for inifinte technologies 
+    - Correct data for inifinite technologies 
     - Prerequisite reseaches
     - Array:Clone whithout predicate was missing
     - Array:Stringify introduced

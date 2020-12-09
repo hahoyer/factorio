@@ -12,9 +12,7 @@ function Goods:new(prototype, database)
 
     self:properties{
         OriginalRecipeList = {
-            get = function()
-                return self.Entity and self.Entity.RecipeList or Array:new{} 
-            end,
+            get = function() return self.Entity and self.Entity.RecipeList or Array:new{} end,
         },
 
         RecipesForItem = {
@@ -62,6 +60,9 @@ function Goods:new(prototype, database)
 
             end,
         },
+
+        AdditionalHelp = {get = function() return self.FuelDescription end},
+
     }
 
     local function Sort(target)
@@ -99,7 +100,7 @@ function Goods:new(prototype, database)
         if not self.RecipeList then self.RecipeList = self.OriginalRecipeList end
         if not self.CreatedBy then self.CreatedBy = self.OriginalCreatedBy end
         if not self.UsedBy then self.UsedBy = self.OriginalUsedBy end
-        
+
         self.RecipeList = Sort(self.RecipeList)
         self.CreatedBy = Sort(self.CreatedBy)
         self.UsedBy = Sort(self.UsedBy)

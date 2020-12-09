@@ -72,18 +72,6 @@ function Technology:new(name, prototype, database)
             end,
         },
 
-        FunctionalHelp = {
-            get = function() --
-                if self.IsResearchedOrResearching then
-                    return
-                elseif self.IsReady then
-                    return UI.GetHelpTextForButtonsACS12("ingteb-utility.research")
-                else
-                    return UI.GetHelpTextForButtonsACS12("ingteb-utility.multiple-research")
-                end
-            end,
-        },
-
         SpriteStyle = {
             get = function()
                 if self.IsResearchedOrResearching then return end
@@ -98,6 +86,11 @@ function Technology:new(name, prototype, database)
         IsResearchedOrResearching = {
             get = function() return self.IsResearched or self.IsResearching end,
         },
+
+        IsNextGeneration = {
+            get = function() return not (self.IsResearched or self.IsReady or self.IsResearching) end,
+        },
+
         IsResearching = {
             get = function()
                 local queue = UI.Player.force.research_queue
@@ -108,8 +101,7 @@ function Technology:new(name, prototype, database)
         },
         IsReady = {
             get = function()
-                return not self.IsResearchedOrResearching 
-                and self.Prerequisites:All(
+                return not self.IsResearchedOrResearching and self.Prerequisites:All(
                     function(technology)
                         return technology.IsResearchedOrResearching
                     end
@@ -186,6 +178,24 @@ function Technology:new(name, prototype, database)
             end,
         },
 
+        SpecialFunctions = {
+            get = function(self) --
+                return Array:new{
+                    {
+                        UICode = "-C- l",
+                        HelpText = "gui-technology-preview.start-research",
+                        IsAvailable = function() return self.IsReady end,
+                        Action = function() return {Research = self} end,
+                    },
+                    {
+                        UICode = "AC- l",
+                        HelpText = "ingteb-utility.multiple-research",
+                        IsAvailable = function() return self.IsNextGeneration end,
+                        Action = function() return {Research = self, Multiple = true} end,
+                    },
+                }
+            end,
+        },
     }
 
     function self:Refresh() self.EnabledRecipes:Select(function(recipe) recipe:Refresh() end) end
@@ -201,16 +211,6 @@ function Technology:new(name, prototype, database)
     function self:SortAll()
         if not self.CreatedBy then self.CreatedBy = self.OriginalCreatedBy end
         if not self.UsedBy then self.UsedBy = self.OriginalUsedBy end
-    end
-
-    function self:GetAction(event)
-        if UI.IsMouseCode(event, "-C- l") --
-        and self.IsReady --
-        then return {Research = self} end
-
-        if UI.IsMouseCode(event, "AC- l") --
-        and not self.IsResearchedOrResearching --
-        then return {Research = self, Multiple = true} end
     end
 
     return self

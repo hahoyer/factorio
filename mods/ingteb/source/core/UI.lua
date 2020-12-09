@@ -14,25 +14,25 @@ function UI.GetMouseCode(event)
 end
 
 function UI.IsMouseCode(event, pattern)
-    if pattern:sub(1,1) == "A" and not event.alt then return end
-    if pattern:sub(1,1) == "-" and event.alt then return end
+    if pattern:sub(1, 1) == "A" and not event.alt then return end
+    if pattern:sub(1, 1) == "-" and event.alt then return end
 
-    if pattern:sub(2,2) == "C" and not event.control then return end
-    if pattern:sub(2,2) == "-" and event.control then return end
+    if pattern:sub(2, 2) == "C" and not event.control then return end
+    if pattern:sub(2, 2) == "-" and event.control then return end
 
-    if pattern:sub(3,3) == "S" and not event.shift then return end
-    if pattern:sub(3,3) == "-" and event.shift then return end
+    if pattern:sub(3, 3) == "S" and not event.shift then return end
+    if pattern:sub(3, 3) == "-" and event.shift then return end
 
-    if pattern:sub(5,5) == "-" and not (event.button == defines.mouse_button_type.none) then
+    if pattern:sub(5, 5) == "-" and not (event.button == defines.mouse_button_type.none) then
         return
     end
-    if pattern:sub(5,5) == "l" and not (event.button == defines.mouse_button_type.left) then
+    if pattern:sub(5, 5) == "l" and not (event.button == defines.mouse_button_type.left) then
         return
     end
-    if pattern:sub(5,5) == "r" and not (event.button == defines.mouse_button_type.right) then
+    if pattern:sub(5, 5) == "r" and not (event.button == defines.mouse_button_type.right) then
         return
     end
-    if pattern:sub(5,5) == "m" and not (event.button == defines.mouse_button_type.middle) then
+    if pattern:sub(5, 5) == "m" and not (event.button == defines.mouse_button_type.middle) then
         return
     end
 
@@ -51,5 +51,23 @@ function UI.GetHelpTextForButtonsACS12(headText)
         {"control-keys.mouse-button-2-alt-1"},
     }
 end
+function UI.GetHelpTextForButtons(helpTag, pattern)
+    local result = {""}
 
+    local function append(key)
+        table.insert(result, {"control-keys." .. key})
+        table.insert(result, " ")
+    end
+
+    if pattern:sub(1, 1) == "A" then append("alt") end
+    if pattern:sub(2, 2) == "C" then append("control") end
+    if pattern:sub(3, 3) == "S" then append("shift") end
+    if pattern:sub(5, 5) == "l" then append("mouse-button-1-alt-1") end
+    if pattern:sub(5, 5) == "r" then append("mouse-button-2-alt-1") end
+    if pattern:sub(5, 5) == "m" then append("mouse-button-3-alt-1") end
+
+    table.insert(result, "- ")
+    table.insert(result, {helpTag})
+    return {"ingteb-utility.blue", result}
+end
 return UI
