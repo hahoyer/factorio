@@ -6,12 +6,14 @@ local Dictionary = Table.Dictionary
 local ValueCache = require("core.ValueCache")
 local Common = require("ingteb.Common")
 local StackOfGoods = require("ingteb.StackOfGoods")
+local class = require("core.class")
 
-local Bonus = Common:class("Bonus")
+local Bonus = class:new("Bonus", Common)
+
+Bonus.property = {NumberOnSprite = {get = function(self) return self.Prototype.modifier end}}
 
 function Bonus:new(name, prototype, database)
-    local self = Common:new(prototype, database)
-    self.object_name = "Bonus"
+    local self = self:adopt(self.base:new(prototype, database))
     self.Name = name
     self.SpriteType = "utility"
     self.UsedBy = Dictionary:new{}
@@ -20,23 +22,8 @@ function Bonus:new(name, prototype, database)
     self.Output = Array:new{}
     self.UsePercentage = true
 
-    self:properties{
-
-    NumberOnSprite = {
-        get = function()
-            return self.Prototype.modifier
-        end,
-    },
-
-    }
     function self:SortAll() end
 
-    return self
-end
-
-function BonusSet(bonus, amounts, database)
-    local self = ItemSet(bonus, {value = amounts, probability = 1}, database)
-    self.object_name = "BonusSet"
     return self
 end
 

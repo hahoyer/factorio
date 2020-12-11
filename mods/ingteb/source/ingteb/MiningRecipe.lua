@@ -5,35 +5,35 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 local ValueCache = require("core.ValueCache")
 local Common = require("ingteb.Common")
+local class = require("core.class")
 
-local MiningRecipe = Common:class("MiningRecipe")
+local MiningRecipe = class:new("MiningRecipe", Common)
 
 local function GetCategoryAndRegister(self, domain, category)
     local result = self.Database:GetCategory(domain .. "." .. category)
     return result
 end
 
+MiningRecipe.property = {
+    OrderValue = {
+        cache = true,
+        get = function(self)
+            return self.TypeOrder --
+            .. " R R " --
+            .. self.Prototype.group.order --
+            .. " " .. self.Prototype.subgroup.order --
+            .. " " .. self.Prototype.order
+        end,
+    },
+
+}
+
 function MiningRecipe:new(name, prototype, database)
-    local self = Common:new(prototype or game.entity_prototypes[name], database)
-    self.object_name = MiningRecipe.object_name
+    local self = self:adopt(self.base:new(prototype or game.entity_prototypes[name], database))
 
     self.TypeOrder = 2
     self.SpriteType = "entity"
     self.Time = self.Prototype.mineable_properties.mining_time
-
-    self:properties{
-        OrderValue = {
-            cache = true,
-            get = function()
-                return self.TypeOrder --
-                .. " R R " --
-                .. self.Prototype.group.order --
-                .. " " .. self.Prototype.subgroup.order --
-                .. " " .. self.Prototype.order
-            end,
-        },
-
-    }
 
     local configuration = self.Prototype.mineable_properties
     assert(release or configuration and configuration.minable)
@@ -56,23 +56,24 @@ function MiningRecipe:new(name, prototype, database)
             amount = configuration.fluid_amount,
         }
         fluid.Goods.UsedBy:AppendForKey(self.Category.Name, self)
+        fluid.Source = {Recipe = self, IngredientIndex = 0}
         self.Input:Append(fluid)
     end
 
     self.IsHidden = false
     self.Output = Array:new(configuration.products) --
     :Select(
-        function(product)
+        function(product, index)
             local result = database:GetStackOfGoods(product)
             if result then
                 result.Goods.CreatedBy:AppendForKey(self.Category.Name, self)
+                result.Source = {Recipe = self, ProductIndex = index}
             else
                 self.IsHidden = true
             end
             return result
         end
     )
-
 
     function self:IsBefore(other)
         if self == other then return false end

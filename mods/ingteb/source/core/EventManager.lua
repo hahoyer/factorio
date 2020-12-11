@@ -12,26 +12,26 @@ EventManager.EventDefinesByIndex = Dictionary:new(defines.events) --
 :ToDictionary(function(value, key) return {Key = value, Value = key} end) --
 :ToArray()
 
+EventManager.property = {
+    Player = {
+        get = function() return UI.Player end,
+        set = function(_, value)
+            if value then
+                local acutalValue = --
+                type(value) == "number" and game.players[value] --
+                or type(value) == "table" and value.object_name == "LuaPlayer" and value --
+                    or assert(release)
+                if acutalValue == UI.Player then return end
+                UI.Player = acutalValue
+            else
+                UI.Player = nil
+            end
+        end,
+    },
+}
+
 function EventManager:new()
     local self = EventManager:adopt{}
-    
-    self:properties{
-        Player = {
-            get = function() return UI.Player end,
-            set = function(_, value)
-                if value then
-                    local acutalValue = --
-                    type(value) == "number" and game.players[value] --
-                    or type(value) == "table" and value.object_name == "LuaPlayer" and value --
-                        or assert(release)
-                    if acutalValue == UI.Player then return end
-                    UI.Player = acutalValue
-                else
-                    UI.Player = nil
-                end
-            end,
-        },
-    }
     return self
 end
 

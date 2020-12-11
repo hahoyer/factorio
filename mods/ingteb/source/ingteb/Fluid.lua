@@ -5,33 +5,33 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Common = require("ingteb.Common")
 local Goods = require("ingteb.Goods")
+local class = require("core.class")
 
-local Fluid = Common:class("Fluid")
+local Fluid = class:new("Fluid", Goods)
+
+Fluid.property = {
+    FuelDescription = {
+        get = function(self)
+            local result = Array:new{}
+
+            if self.Prototype.fuel_value and self.Prototype.fuel_value > 0 then
+                result:Append{
+                    "",
+                    {"description.fuel-value"},
+                    " " .. FormatEnergy(self.Prototype.fuel_value),
+                }
+            end
+
+            return result
+        end,
+    },
+}
 
 function Fluid:new(name, prototype, database)
-    local self = Goods:new(prototype or game.fluid_prototypes[name], database)
-    self.object_name = Fluid.object_name
+    local self = self:adopt(self.base:new(prototype or game.fluid_prototypes[name], database))
     self.SpriteType = "fluid"
 
     assert(release or self.Prototype.object_name == "LuaFluidPrototype")
-
-    self:properties{
-        FuelDescription = {
-            get = function()
-                local result = Array:new{}
-
-                if self.Prototype.fuel_value then
-                    result:Append{
-                        "",
-                        {"description.fuel-value"},
-                        " " .. FormatEnergy(self.Fuel.Value),
-                    }
-                end
-                return result
-            end,
-        },
-
-    }
 
     return self
 

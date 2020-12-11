@@ -22,6 +22,8 @@ todo:
 - Improve recipe-column-layout in case of huge amount of recipes
 - provide filter for selector
 - provide close buttons for seletor and presentor
+- crafting from any item in Recipe panel
+- tooltip on items: inventory amount and crafting potential
 
 known issue: 
 - it takes seconds when presenting first help page

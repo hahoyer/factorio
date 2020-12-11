@@ -5,6 +5,9 @@ local Array = Table.Array
 local Dictionary = Table.Dictionary
 local UI = require("core.UI")
 local class = require("core.class")
+local MiningRecipe = require("ingteb.MiningRecipe")
+local Recipe = require("ingteb.Recipe")
+local Technology = require("ingteb.Technology")
 
 local DynamicElements = Dictionary:new()
 
@@ -235,7 +238,10 @@ end
 local function CreateCraftingGroupsPanel(frame, target, headerSprites)
     if not target or not target:Any() then return end
     assert(release or type(target:Top().Key) == "string")
-    assert(release or target:Top().Value[1].object_name == "Recipe"or target:Top().Value[1].object_name == "MiningRecipe")
+    assert(
+        release or target:Top().Value[1].class == Recipe --
+        or target:Top().Value[1].class == MiningRecipe
+    )
 
     local subFrame = CreateContentPanel(frame, headerSprites)
 
@@ -263,7 +269,9 @@ local function CreateTechnologyEffectsPanel(frame, target)
     local effects = target.Effects
     if not effects then return end
 
-    local frame = CreateContentPanel(frame,{"", target.RichTextName, " ", {"gui-technology-preview.effects"}})
+    local frame = CreateContentPanel(
+        frame, {"", target.RichTextName, " ", {"gui-technology-preview.effects"}}
+    )
 
     local ingredientsLine = frame.add {type = "flow", direction = "horizontal"}
     ingredientsLine.add {type = "sprite", sprite = "utility/change_recipe"}
@@ -289,7 +297,7 @@ local function CreateTechnologyEffectsPanel(frame, target)
         return
     end
 
-    assert(release or effects[1].object_name == "Recipe" or effects[1].object_name == "Bonus")
+    assert(release or effects[1].class == Recipe or effects[1].class == Bonus)
 
     local inCount = effects:Select(function(recipe) return recipe.Input:Count() end):Maximum()
     local outCount = effects:Select(function(recipe) return recipe.Output:Count() end):Maximum()
@@ -297,7 +305,7 @@ local function CreateTechnologyEffectsPanel(frame, target)
     local frame = frame.add {type = "flow", direction = "vertical"}
     effects:Select(
         function(effekt)
-            if effekt.object_name == "Recipe" then
+            if effekt.class == Recipe then
                 CreateRecipeLine(frame, effekt, inCount, outCount)
             else
                 local frame = frame.add {type = "flow", direction = "horizontal"}
@@ -371,7 +379,7 @@ end
 
 local function CreateTechnologiesPanel(frame, target, headerSprites, isPrerequisites)
     if not target or not target:Any() then return end
-    assert(release or target:Top().object_name == "Technology")
+    assert(release or target:Top().class == Technology)
 
     local frame = CreateContentPanel(frame, headerSprites)
 
@@ -430,7 +438,7 @@ local function CheckedTabifyColumns(frame, mainFrame, target, columnCount)
 end
 
 local function UpdateGui(list, target, dataBase)
-    target = dataBase:GetProxy(target.object_name, target.Name)
+    target = dataBase:GetProxy(target.class.name, target.Name)
     local helperText = target.HelperText
     local number = target.NumberOnSprite
     local style = Helper.SpriteStyleFromCode(target.SpriteStyle)
@@ -540,13 +548,13 @@ function Presentator:new(frame, target)
     )
 
     CreateCraftingGroupsPanel(
-        mainFrame, target.UsedBy,
-            target.RichTextName .. "[img=utility/go_to_arrow][img=utility/missing_icon]"
+        mainFrame, target.CreatedBy,
+            "[img=utility/missing_icon][img=utility/go_to_arrow]" .. target.RichTextName
     )
 
     CreateCraftingGroupsPanel(
-        mainFrame, target.CreatedBy,
-            "[img=utility/missing_icon][img=utility/go_to_arrow]" .. target.RichTextName
+        mainFrame, target.UsedBy,
+            target.RichTextName .. "[img=utility/go_to_arrow][img=utility/missing_icon]"
     )
 
     CheckedTabifyColumns(frame, mainFrame, target, columnCount)

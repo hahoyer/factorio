@@ -2,7 +2,7 @@ local Constants = require("Constants")
 local class = require("core.class")
 
 local History = class:new("History")
-History:properties{
+History.property = {
     IsForePossible = {
         get = function(self)
             return self.Index < #self.Data --
@@ -13,26 +13,11 @@ History:properties{
             return self.Index > 1 --
         end,
     },
-    Current = {get = function(self)
-        return self.Index > 0 and self.Data[self.Index] or nil
-    end},
+    Current = {get = function(self) return self.Index > 0 and self.Data[self.Index] or nil end},
 }
 
-function History:new(target)
+function History:new()
     local instance = self:adopt{Data = {}, Index = 0}
-    if target then
-        instance.Data = target.Data
-        if type(target.Index) == "number" then
-            if target.Index > #instance.Data then
-                instance.Index = #instance.Data
-            elseif target.Index < #instance.Data then
-                instance.Index = 1
-            else
-                instance.Index = target.Index
-            end
-        end
-    end
-
     instance:Log("History:new")
     return instance
 end

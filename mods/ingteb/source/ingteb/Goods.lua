@@ -3,67 +3,57 @@ local Table = require("core.Table")
 local Array = Table.Array
 local Dictionary = Table.Dictionary
 local Common = require("ingteb.Common")
+local class = require("core.class")
 
-local Goods = Common:class("Goods")
+local Goods = class:new("Goods", Common)
+
+Goods.property = {
+    OriginalRecipeList = {
+        get = function(self) return self.Entity and self.Entity.RecipeList or Array:new{} end,
+    },
+
+    RecipesForItem = {
+        cache = true,
+        get = function(self) return self.Database.RecipesForItems[self.Prototype.name] or {} end,
+    },
+
+    OriginalUsedBy = {
+        get = function(self)
+            local names = self.RecipesForItem.UsedBy
+            if not names then return Dictionary:new{} end
+
+            return names --
+            :Select(
+                function(value)
+                    return value --
+                    :Select(function(value) return self.Database:GetRecipe(value) end)
+                end
+            )
+        end,
+    },
+
+    OriginalCreatedBy = {
+        get = function(self)
+            local names = self.RecipesForItem.CreatedBy
+            if not names then return Dictionary:new{} end
+
+            return names --
+            :Select(
+                function(value)
+                    return value --
+                    :Select(function(value) return self.Database:GetRecipe(value) end)
+                end
+            )
+
+        end,
+    },
+
+    AdditionalHelp = {get = function(self) return self.FuelDescription end},
+
+}
 
 function Goods:new(prototype, database)
-    local self = Common:new(prototype, database)
-    self.object_name = Goods.object_name
-
-    self:properties{
-        OriginalRecipeList = {
-            get = function() return self.Entity and self.Entity.RecipeList or Array:new{} end,
-        },
-
-        RecipesForItem = {
-            cache = true,
-            get = function()
-                return self.Database.RecipesForItems[self.Prototype.name] or {}
-            end,
-        },
-
-        OriginalUsedBy = {
-            get = function()
-                local names = self.RecipesForItem.UsedBy
-                if not names then return Dictionary:new{} end
-
-                return names --
-                :Select(
-                    function(value)
-                        return value --
-                        :Select(
-                            function(value)
-                                return self.Database:GetRecipe(value)
-                            end
-                        )
-                    end
-                )
-            end,
-        },
-
-        OriginalCreatedBy = {
-            get = function()
-                local names = self.RecipesForItem.CreatedBy
-                if not names then return Dictionary:new{} end
-
-                return names --
-                :Select(
-                    function(value)
-                        return value --
-                        :Select(
-                            function(value)
-                                return self.Database:GetRecipe(value)
-                            end
-                        )
-                    end
-                )
-
-            end,
-        },
-
-        AdditionalHelp = {get = function() return self.FuelDescription end},
-
-    }
+    local self = self:adopt(self.base:new(prototype, database))
 
     local function Sort(target)
         local targetArray = target:ToArray(
@@ -89,7 +79,11 @@ function Goods:new(prototype, database)
 
         return targetArray:ToDictionary(
             function(value)
-                value.Value:Sort(function(a, b) return a:IsBefore(b) end)
+                value.Value:Sort(
+                    function(a, b) --
+                        return a:IsBefore(b)
+                    end
+                )
                 return value
             end
         )

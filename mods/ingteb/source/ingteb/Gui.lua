@@ -159,7 +159,7 @@ end
 
 function Gui:PresentTarget(player, target)
     local actualTarget = target
-    if target.object_name == "Entity" and target.Item then actualTarget = target.Item end
+    if target.class == Entity and target.Item then actualTarget = target.Item end
 
     assert(release or actualTarget.Prototype)
     Helper.ShowFrame(

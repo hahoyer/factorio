@@ -20,9 +20,9 @@ local Proxy = {
 
 local StackOfGoods = require("ingteb.StackOfGoods")
 
-local DatabaseClass = class:new{"DatabaseClass"}
+local DatabaseClass = class:new("Database")
 local Database = DatabaseClass:adopt{}
-Database.object_name = "Database"
+Database.class = DatabaseClass
 
 local function EnsureKey(data, key, value)
     local result = data[key]
@@ -242,29 +242,29 @@ function Database:GetStackOfGoods(target)
 end
 
 function Database:Get(target)
-    local object_name, Name
+    local className, Name
     if not target or target == "" then
         return
     elseif type(target) == "string" then
-        _, _, object_name, Name = target:find("^(.-)%.(.*)$")
+        _, _, className, Name = target:find("^(.-)%.(.*)$")
     elseif target.type then
         if target.type == "item" then
-            object_name = "Item"
+            className = "Item"
         elseif target.type == "fluid" then
-            object_name = "Fluid"
+            className = "Fluid"
         else
             assert(release)
         end
         Name = target.name
     else
-        object_name = target.object_name
+        className = target.class.name
         Name = target.Name
         Prototype = target.Prototype
     end
     self:Ensure()
-    assert(release or object_name)
+    assert(release or className)
     assert(release or Name or Prototype)
-    return self:GetProxy(object_name, Name, Prototype)
+    return self:GetProxy(className, Name, Prototype)
 end
 
 function Database:RefreshTechnology(target) self:GetTechnology(target.name):Refresh() end

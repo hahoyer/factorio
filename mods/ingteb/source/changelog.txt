@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.30
+Date: 2020-12-10
+  Changes:
+    - putting panel for created-by in then center since it is more important
+    - [tech] extend class-class to handle inherited properties
+  Refactor:
+    - [tech] using "class" everywhere where class pattern is used
+---------------------------------------------------------------------------------------------------
 Version: 0.2.29
 Date: 2020-12-08
   Bugfixes:
@@ -6,7 +14,6 @@ Date: 2020-12-08
   Changes:
     - Shift-click handler on item: select into cursor
     - zn-CH localisation by Ting_amm
-	- Fuel tooltip
   Refactor:
     - Special actions reworked (uses less localised strings)
 ---------------------------------------------------------------------------------------------------

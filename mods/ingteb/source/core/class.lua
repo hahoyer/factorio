@@ -1,50 +1,16 @@
-local class = {}
+local class = require("core.classclass")
+local ValueCache = require("core.ValueCache2")
 
-function class:new(name, super)
-    local classInstance = {name = name, metatable = {}, property = {}}
-
-    local metatable = classInstance.metatable
-
-    function metatable:__index(key)
-        local accessors = classInstance.property[key]
-        if accessors then
-            return accessors.get(self)
-        elseif classInstance[key] ~= nil then
-            return classInstance[key]
-        elseif super then
-            return super.metatable.__index(self, key)
-        else
-            return nil
-        end
-    end
-
-    function metatable:__newindex(key, value)
-        local accessors = classInstance.property[key]
-        if accessors then
-            return accessors.set(self, value)
-        elseif super then
-            return super.metatable.__newindex(self, key, value)
-        else
-            rawset(self, key, value)
-        end
-    end
-
-    function classInstance:adopt(instance)
-        return setmetatable(instance, self.metatable)
-    end
-
-    function classInstance:properties(list)
-        for key, value in pairs(list) do
-            if value.cache then
-                class:addCachedProperty(key, value.get)
-            else
-                self.property[key] = {get = value.get, set = value.set}
-            end
-
-        end
-    end
-
-    return classInstance
+--- installs the cache for a cached property
+--- @param instance table will be patched to contain metatable, property, inherited and cache , if required
+--- @param classInstance class
+--- @param name string then property name
+--- @param getter function the function that calulates the actual value
+function class.addCachedProperty(instance, classInstance, name, getter)
+    local className = classInstance.name
+    if not rawget(instance, "cache") then rawset(instance, "cache", {}) end
+    if not instance.cache[className] then instance.cache[className] = {} end
+    instance.cache[className][name] = ValueCache:new(instance, getter)
 end
 
 return class
