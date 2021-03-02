@@ -72,7 +72,7 @@ local settings_values = {
     color = settings.global["bottleneck-color-for-empty"].value,
     icon = "alert"
   },
-  ["fluid_production_overload"] = {
+  ["full_output"] = {
     color = settings.global["bottleneck-color-for-full"].value,
     icon = "pause"
   },
