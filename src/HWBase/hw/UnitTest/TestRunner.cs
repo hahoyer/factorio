@@ -1,198 +1,276 @@
 ﻿using System;
 using System.Collections.Generic;
-using hw.Helper;
 using System.Linq;
 using System.Reflection;
 using hw.DebugFormatter;
+using hw.Helper;
+using JetBrains.Annotations;
 
-namespace hw.UnitTest
+// ReSharper disable CheckNamespace
+
+namespace hw.UnitTest;
+
+[PublicAPI]
+public sealed class TestRunner : Dumpable
 {
-    public sealed class TestRunner : Dumpable
+    [PublicAPI]
+    public class ConfigurationContainer
     {
-        readonly TestType[] _testTypes;
-        public static bool IsModeErrorFocus;
-        readonly SmbFile _configFile = "Test.HWconfig".ToSmbFile();
-        string _status = "Start";
-        int _complete;
-        string _currentMethodName = "";
+        public bool IsBreakEnabled;
+        public bool SaveResults;
+        public bool SkipSuccessfulMethods;
+        public string TestsFileName;
+    }
 
-        readonly Func<Type, bool>[] _testLevels;
 
-        static bool IsNormalPriority(Type type)
+    public static readonly ConfigurationContainer Configuration = new();
+
+    public static readonly List<IFramework> RegisteredFrameworks = new();
+
+    // ReSharper disable once StringLiteralTypo
+    readonly SmbFile ConfigFile = "Test.HW.config".ToSmbFile();
+    readonly SmbFile PendingTestsFile = Configuration.TestsFileName?.ToSmbFile();
+
+    readonly Func<Type, bool>[] TestLevels;
+    readonly TestType[] TestTypes;
+    int Complete;
+    string CurrentMethodName = "";
+    string Status = "Start";
+
+    TestRunner(IEnumerable<TestType> testTypes)
+    {
+        TestLevels = new Func<Type, bool>[] { IsNormalPriority, IsLowPriority };
+        TestTypes = testTypes.ToArray();
+        TestTypes.IsCircuitFree(DependentTypes).Assert
+            (() => Tracer.Dump(TestTypes.Circuits(DependentTypes).ToArray()));
+        if(Configuration.SkipSuccessfulMethods)
+            LoadConfiguration();
+    }
+
+    bool AllIsFine => TestTypes.All(t => !t.IsStarted || t.IsSuccessful);
+
+    string ConfigurationString
+    {
+        get => HeaderText +
+            "\n" +
+            TestTypes.OrderBy(testType => testType.ConfigurationModePriority)
+                .Aggregate("", (current, testType) => current + testType.ConfigurationString);
+        set
         {
-            return type.GetAttribute<LowPriority>(true) == null;
-            ;
-        }
-        static bool IsLowPriority(Type type) { return true; }
-
-        TestRunner(IEnumerable<TestType> testTypes)
-        {
-            _testLevels = new Func<Type, bool>[] {IsNormalPriority, IsLowPriority};
-            _testTypes = testTypes.ToArray();
-            Tracer.Assert
+            if(value == null)
+                return;
+            var pairs = value.Split('\n')
+                .Where((line, i) => i > 0 && line != "")
+                .Join
                 (
-                    _testTypes.IsCircuidFree(Dependants),
-                    () => Tracer.Dump(_testTypes.Circuids(Dependants).ToArray()));
-            if(IsModeErrorFocus)
-                LoadConfiguration();
-        }
-
-        public static bool RunTests(Assembly rootAssembly)
-        {
-            var testRunner = new TestRunner(GetUnitTestTypes(rootAssembly));
-            testRunner.Run();
-            return testRunner.AllIsFine;
-        }
-
-        TestType[] Dependants(TestType type)
-        {
-            if(IsModeErrorFocus)
-                return new TestType[0];
-            return
-                type.Dependants.SelectMany
-                    (attribute => attribute.AsTestType(_testTypes).NullableToArray()).ToArray();
-        }
-
-        void Run()
-        {
-            _status = "run";
-            for(var index = 0; index < _testLevels.Length && AllIsFine; index++)
-            {
-                var level = _testLevels[index];
-                while(RunLevel(level))
-                    continue;
-            }
-
-            _status = "ran";
-            SaveConfiguration();
-        }
-
-        bool AllIsFine { get { return _testTypes.All(t => !t.IsStarted || t.IsSuccessfull); } }
-
-        bool RunLevel(Func<Type, bool> isLevel)
-        {
-            var openTests = _testTypes.Where(x => x.IsStartable(isLevel)).ToArray();
-            if(openTests.Length == 0)
-                return false;
-
-            var hasAnyTestRan = false;
-            foreach(var openTest in openTests)
-            {
-                var dependants = Dependants(openTest);
-                if(dependants.All(test => test.IsStarted))
-                {
-                    openTest.IsStarted = true;
-                    if(dependants.All(test => test.IsSuccessfull))
+                    TestTypes,
+                    line => line.Split(' ')[1],
+                    type => type.Type.FullName,
+                    (line, type) => new
                     {
-                        if(!IsModeErrorFocus)
-                        {
-                            _currentMethodName = openTest.Type.FullName;
-                            SaveConfiguration();
-                            _currentMethodName = "";
-                        }
-                        openTest.Run();
-                        _complete++;
-                        hasAnyTestRan = true;
-                    }
+                        line, type
+                    });
+            foreach(var pair in pairs)
+                pair.type.ConfigurationString = pair.line;
+        }
+    }
+
+    string PendingTestsString
+        => $@"//{HeaderText}
+
+// ReSharper disable once CheckNamespace
+namespace hw.UnitTest
+{{
+    public static class PendingTests
+    {{
+        public static void Run()
+        {{
+        {GeneratedTestCalls}
+}}}}}}
+";
+
+    string GeneratedTestCalls
+        => TestTypes
+            .SelectMany(type => type.PendingTestsMethods.Select(method => (type, method)))
+            .Where(item => !item.type.IsSuccessful)
+            .OrderBy(item => item.type.GetPriority(item.method))
+            .GroupBy(item => item.type.GetMode(item.method))
+            .Select(GeneratedTestCallsForMode)
+            .Stringify("\n");
+
+    string HeaderText => $"{DateTime.Now.Format()} {Status} {Complete} of {TestTypes.Length} {CurrentMethodName}";
+
+    public static bool IsModeErrorFocus
+    {
+        set
+        {
+            Configuration.IsBreakEnabled = value;
+            Configuration.SaveResults = !value;
+            Configuration.SkipSuccessfulMethods = value;
+        }
+    }
+
+    string GeneratedTestCallsForMode(IGrouping<string, (TestType type, TestMethod method)> group)
+        => $"\n// {group.Key} \n\n" +
+            group
+                .Select(testType => $"{testType.method.RunString};")
+                .Stringify("\n");
+
+    public static bool RunTests(Assembly rootAssembly)
+    {
+        var testRunner = new TestRunner(GetUnitTestTypes(rootAssembly));
+        testRunner.Run();
+        return testRunner.AllIsFine;
+    }
+
+    static bool IsNormalPriority(Type type) => type.GetAttribute<LowPriority>(true) == null;
+
+    static bool IsLowPriority(Type type) => true;
+
+    TestType[] DependentTypes(TestType type)
+    {
+        if(Configuration.SkipSuccessfulMethods)
+            return new TestType[0];
+        return
+            type.DependenceProviders.SelectMany
+                (attribute => attribute.AsTestType(TestTypes).NullableToArray()).ToArray();
+    }
+
+    void Run()
+    {
+        "".Log();
+        "".Log();
+        "======================================".Log();
+        "Test run started.".Log();
+        "======================================".Log();
+        "".Log();
+        PendingTestsFile?.FilePosition(null, FilePositionTag.Test).Log();
+        Status = "run";
+        for(var index = 0; index < TestLevels.Length && AllIsFine; index++)
+        {
+            var level = TestLevels[index];
+            while(RunLevel(level)) { }
+        }
+
+        Status = "ran";
+        SaveConfiguration();
+        "".Log();
+        "======================================".Log();
+        "Test run completed.".Log();
+        "======================================".Log();
+    }
+
+    bool RunLevel(Func<Type, bool> isLevel)
+    {
+        var openTests = TestTypes.Where(target => target.CanBeStarted(isLevel)).ToArray();
+        if(openTests.Length == 0)
+            return false;
+
+        var hasAnyTestRan = false;
+        foreach(var openTest in openTests)
+        {
+            var dependentTypes = DependentTypes(openTest);
+            if(dependentTypes.All(test => test.IsStarted))
+            {
+                openTest.IsStarted = true;
+                if(dependentTypes.All(test => test.IsSuccessful))
+                {
+                    Run(openTest);
+                    Complete++;
+                    hasAnyTestRan = true;
                 }
             }
-            return hasAnyTestRan;
         }
 
-        string ConfigurationString
-        {
-            get
-            {
-                return HeaderText + "\n"
-                    + _testTypes.OrderBy(t => t.ConfigurationModePriority)
-                        .Aggregate
-                        ("", (current, testType) => current + testType.ConfigurationString);
-            }
-            set
-            {
-                if(value == null)
-                    return;
-                var pairs = value.Split('\n')
-                    .Where((line, i) => i > 0 && line != "")
-                    .Join
-                    (
-                        _testTypes,
-                        line => line.Split(' ')[1],
-                        type => type.Type.FullName,
-                        (line, type) => new
-                        {
-                            line,
-                            type
-                        });
-                foreach(var pair in pairs)
-                    pair.type.ConfigurationString = pair.line;
-            }
-        }
-
-        string HeaderText
-        {
-            get
-            {
-                return DateTime.Now.Format() + " " + _status + " " + _complete + " of "
-                    + _testTypes.Length + " " + _currentMethodName;
-            }
-        }
-
-        void SaveConfiguration()
-        {
-            _configFile.String = ConfigurationString;
-            ConfigFileMessage("Configuration saved");
-        }
-
-        void ConfigFileMessage(string flagText)
-        {
-            Tracer.Line(Tracer.FilePosn(_configFile.FullName, 1, 1, FilePositionTag.Test) + flagText);
-        }
-
-
-        void LoadConfiguration()
-        {
-            ConfigurationString = _configFile.String;
-            ConfigFileMessage("Configuration loaded");
-        }
-
-        static IEnumerable<TestType> GetUnitTestTypes(Assembly rootAssembly)
-        {
-            return rootAssembly
-                .GetReferencedTypes()
-                .Where
-                (type => IsUnitTestType(type))
-                .Select(type => new TestType(type));
-        }
-
-        static bool IsUnitTestType(Type type)
-        {
-            if(!type.IsSealed)
-                return false;
-            if(type.GetAttribute<UnitTestAttribute>(true) != null)
-                return true;
-            return RegisteredFrameworks.Any(any => any.IsUnitTestType(type));
-        }
-
-        public static readonly List<IFramework> RegisteredFrameworks = new List<IFramework>();
+        return hasAnyTestRan;
     }
 
-    public interface IFramework
+    void Run(TestType type)
     {
-        bool IsUnitTestType(Type type);
-        bool IsUnitTestMethod(MethodInfo methodInfo);
+        foreach(var method in type.UnitTestMethods.Where(unitTestMethod => !unitTestMethod.IsSuspended))
+            try
+            {
+                method.IsActive = true;
+                CurrentMethodName = method.LongName;
+                SaveConfiguration();
+                CurrentMethodName = "";
+
+                method.Run();
+                method.IsSuccessful = true;
+            }
+            catch(TestFailedException)
+            {
+                type.FailedMethods.Add(method);
+                method.IsSuccessful = false;
+            }
+            finally
+            {
+                method.IsActive = false;
+            }
+
+        type.IsComplete = true;
     }
 
-    public class AttributedFramework<TType, TMethod> : IFramework
-        where TType : Attribute
-        where TMethod : Attribute
+    void SaveConfiguration()
     {
-        bool IFramework.IsUnitTestType(Type type) { return type.GetAttributes<TType>(true).Any(); }
-        bool IFramework.IsUnitTestMethod(MethodInfo methodInfo)
+        try
         {
-            return methodInfo.GetAttributes<TMethod>(true).Any();
+            if(Configuration.SaveResults)
+            {
+                ConfigFile.String = ConfigurationString;
+                ConfigFileMessage("Configuration saved");
+            }
+
+            if(PendingTestsFile != null)
+                PendingTestsFile.String = PendingTestsString;
+        }
+        catch(Exception)
+        {
+            // ignored
         }
     }
 
-    sealed class TestFailedException : Exception {}
+    void ConfigFileMessage(string flagText)
+        => (Tracer.FilePosition(ConfigFile.FullName, null, FilePositionTag.Test) + flagText).Log();
+
+
+    void LoadConfiguration()
+    {
+        ConfigurationString = ConfigFile.String;
+        ConfigFileMessage("Configuration loaded");
+    }
+
+    static IEnumerable<TestType> GetUnitTestTypes(Assembly rootAssembly) => rootAssembly
+        .GetReferencedTypes()
+        .Where(IsUnitTestType)
+        .Select(type => new TestType(type));
+
+    static bool IsUnitTestType(Type type)
+    {
+        if(!type.IsSealed)
+            return false;
+        if(type.GetAttribute<UnitTestAttribute>(true) != null)
+            return true;
+        return RegisteredFrameworks.Any(any => any.IsUnitTestType(type));
+    }
+
+    public static void RunTest(Action action) => new TestMethod(action).Run();
+    public static void RunTest(MethodInfo method) => new TestMethod(method).Run();
 }
+
+public interface IFramework
+{
+    bool IsUnitTestType(Type type);
+    bool IsUnitTestMethod(MethodInfo methodInfo);
+}
+
+[PublicAPI]
+public class AttributedFramework<TType, TMethod> : IFramework
+    where TType : Attribute
+    where TMethod : Attribute
+{
+    bool IFramework.IsUnitTestMethod(MethodInfo methodInfo) => methodInfo.GetAttributes<TMethod>(true).Any();
+    bool IFramework.IsUnitTestType(Type type) => type.GetAttributes<TType>(true).Any();
+}
+
+sealed class TestFailedException : Exception { }

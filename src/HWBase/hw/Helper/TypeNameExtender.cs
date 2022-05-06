@@ -1,56 +1,51 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
+using JetBrains.Annotations;
 
-namespace hw.Helper
+// ReSharper disable CheckNamespace
+
+namespace hw.Helper;
+
+[PublicAPI]
+public static class TypeNameExtender
 {
-    public static class TypeNameExtender
+    static readonly ValueCache<TypeLibrary> ReferencedTypesCache = new(ObtainReferencedTypes);
+
+    public static Type[] Types => ReferencedTypes.Types;
+
+    static TypeLibrary ReferencedTypes
     {
-        static readonly ValueCache<TypeLibrary> _referencedTypesCache = new ValueCache<TypeLibrary>
-            (ObtainReferencedTypes);
-
-        public static void OnModuleLoaded() { _referencedTypesCache.IsValid = false; }
-
-        public static Type[] Types => ReferencedTypes.Types;
-
-        public static Type[] ResolveType(this string typeName)
+        get
         {
-            return ReferencedTypes.ByNamePartMulti[typeName];
+            lock(ReferencedTypesCache)
+                return ReferencedTypesCache.Value;
         }
+    }
 
-        public static Type ResolveUniqueType(this string typeName)
-        {
-            return ReferencedTypes.ByNamePart[typeName];
-        }
+    public static void OnModuleLoaded()
+    {
+        lock(ReferencedTypesCache)
+            ReferencedTypesCache.IsValid = false;
+    }
 
-        public static string PrettyName(this Type type) { return ReferencedTypes.PrettyName[type]; }
+    public static Type[] ResolveType(this string typeName) => ReferencedTypes.ByNamePartMulti[typeName];
 
-        public static string CompleteName(this Type type)
-        {
-            return ReferencedTypes.CompleteName[type];
-        }
+    public static Type ResolveUniqueType(this string typeName) => ReferencedTypes.ByNamePart[typeName];
 
-        static TypeLibrary ObtainReferencedTypes()
-        {
-            var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
-            return new TypeLibrary(assembly.GetReferencedTypes());
-        }
+    public static string PrettyName(this Type type) => ReferencedTypes.PrettyName[type];
 
-        static TypeLibrary ReferencedTypes
-        {
-            get
-            {
-                lock(_referencedTypesCache)
-                    return _referencedTypesCache.Value;
-            }
-        }
+    public static string CompleteName(this Type type) => ReferencedTypes.CompleteName[type];
 
-        public static string NullableName(this Type type)
-        {
-            if(type.IsClass)
-                return type.PrettyName();
-            return type.PrettyName() + "?";
-        }
+    public static string NullableName(this Type type)
+    {
+        if(type.IsClass)
+            return type.PrettyName();
+        return type.PrettyName() + "?";
+    }
+
+    static TypeLibrary ObtainReferencedTypes()
+    {
+        var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
+        return new(assembly.GetReferencedTypes());
     }
 }

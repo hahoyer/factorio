@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+// ReSharper disable CheckNamespace
 
-namespace hw.UnitTest
+namespace hw.UnitTest;
+
+public interface ITestFixture
 {
-    interface ITestFixture
-    {
-        void Run();
-    }
+    void Run();
 }

@@ -11,11 +11,17 @@
     <!-- CSharp specific settings -->
 
     <PropertyGroup>
+        <LangVersion>default</LangVersion>
         <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-        <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+        <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace Condition=" '$(RootNamespace)' == '' ">$(AssemblyName)</RootNamespace>
+        <Prefer32Bit>false</Prefer32Bit>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+        <NoWarn>649</NoWarn>
     </PropertyGroup>
+
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' "/>
 
@@ -31,12 +37,6 @@
         <DebugType>pdbonly</DebugType>
         <Optimize>true</Optimize>
         <DefineConstants>TRACE</DefineConstants>
-    </PropertyGroup>
-
-    <PropertyGroup>
-        <ErrorReport>prompt</ErrorReport>
-        <WarningLevel>4</WarningLevel>
-        <NoWarn>649</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

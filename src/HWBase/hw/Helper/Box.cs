@@ -1,13 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using JetBrains.Annotations;
 
-namespace hw.Helper
+// ReSharper disable CheckNamespace
+
+namespace hw.Helper;
+
+sealed class Box<TTarget>
 {
-    sealed class Box<T>
-    {
-        public T Content;
-        public Box(T content) { Content = content; }
-        public Box() { Content = default(T); }
-    }
+    [PublicAPI]
+    public TTarget Content;
+
+    public Box(TTarget content) => Content = content;
+    public Box() => Content = default;
 }

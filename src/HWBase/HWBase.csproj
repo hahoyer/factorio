@@ -31,7 +31,6 @@
     <Compile Include="hw\DebugFormatter\EnableDumpAttribute.cs" />
     <Compile Include="hw\DebugFormatter\EnableDumpExceptAttribute.cs" />
     <Compile Include="hw\DebugFormatter\EnableDumpWithExceptionPredicateAttribute.cs" />
-    <Compile Include="hw\DebugFormatter\Log4NetTextWriter.cs" />
     <Compile Include="hw\DebugFormatter\Profiler.cs" />
     <Compile Include="hw\DebugFormatter\TextWriters.cs" />
     <Compile Include="hw\DebugFormatter\Tracer.cs" />
@@ -41,19 +40,22 @@
     <Compile Include="hw\Helper\DateTimeExtender.cs" />
     <Compile Include="hw\Helper\EnumEx.cs" />
     <Compile Include="hw\Helper\FunctionCache.cs" />
+    <Compile Include="hw\Helper\IFile.cs" />
     <Compile Include="hw\Helper\IUniqueIdProvider.cs" />
     <Compile Include="hw\Helper\LinqExtension.cs" />
+    <Compile Include="hw\Helper\LocationProviderAttribute.cs" />
     <Compile Include="hw\Helper\LongExtender.cs" />
     <Compile Include="hw\Helper\ReflectionExtender.cs" />
     <Compile Include="hw\Helper\SmbFile.cs" />
     <Compile Include="hw\Helper\StringAligner.cs" />
     <Compile Include="hw\Helper\StringExtender.cs" />
+    <Compile Include="hw\Helper\TextPart.cs" />
     <Compile Include="hw\Helper\TypeLibrary.cs" />
     <Compile Include="hw\Helper\TypeNameExtender.cs" />
     <Compile Include="hw\Helper\ValueCache.cs" />
     <Compile Include="hw\Helper\ValueCacheExtension.cs" />
     <Compile Include="hw\UnitTest\CategoryAttribute.cs" />
-    <Compile Include="hw\UnitTest\DependantAttribute.cs" />
+    <Compile Include="hw\UnitTest\DependenceProvider.cs" />
     <Compile Include="hw\UnitTest\ITestFixture.cs" />
     <Compile Include="hw\UnitTest\TestExtender.cs" />
     <Compile Include="hw\UnitTest\TestMethod.cs" />
@@ -70,18 +72,20 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="JetBrains.Annotations, Version=2019.1.1.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
-      <HintPath>..\packages\JetBrains.Annotations.2019.1.1\lib\net20\JetBrains.Annotations.dll</HintPath>
-    </Reference>
-    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+    <Reference Include="JetBrains.Annotations, Version=4242.42.42.42, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>..\packages\JetBrains.Annotations.2022.1.0\lib\net20\JetBrains.Annotations.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net, Version=2.0.14.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.14\lib\net45\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web" />
   </ItemGroup>
   <Import Project="sys.targets" />
   <PropertyGroup>

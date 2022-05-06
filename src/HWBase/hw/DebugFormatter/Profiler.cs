@@ -3,316 +3,324 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using hw.Helper;
+using JetBrains.Annotations;
 
-namespace hw.DebugFormatter
+// ReSharper disable CheckNamespace
+
+namespace hw.DebugFormatter;
+
+[PublicAPI]
+public sealed class Profiler
 {
-    public sealed class Profiler
+    /// <summary>
+    ///     Measurement Item
+    /// </summary>
+    public sealed class Item
     {
-        sealed class Dumper
+        readonly Profiler Profiler;
+        ProfileItem ProfileItem;
+
+        internal Item(Profiler profiler, string flag, int stackFrameDepth)
         {
-            readonly int? _count;
-            readonly ProfileItem[] _data;
-            readonly TimeSpan _sumMax;
-            readonly TimeSpan _sumAll;
-            int _index;
-            TimeSpan _sum;
-
-            public Dumper(Profiler profiler, int? count, double hidden)
-            {
-                _count = count;
-                _data = profiler._profileItems.Values.OrderByDescending(x => x.Duration).ToArray();
-                _sumAll = _data.Sum(x => x.Duration);
-                _sumMax = new TimeSpan((long) (_sumAll.Ticks * (1.0 - hidden)));
-                _index = 0;
-                _sum = new TimeSpan();
-            }
-
-            public string Format()
-            {
-                if(_data.Length == 0)
-                    return "\n=========== Profile empty ============\n";
-
-                var result = "";
-                for(; _index < _data.Length && _index != _count && _sum <= _sumMax; _index++)
-                {
-                    var item = _data[_index];
-                    result += item.Format(_index.ToString());
-                    _sum += item.Duration;
-                }
-
-                var stringAligner = new StringAligner();
-                stringAligner.AddFloatingColumn("#");
-                stringAligner.AddFloatingColumn("  ");
-                stringAligner.AddFloatingColumn("  ");
-                stringAligner.AddFloatingColumn("  ");
-
-                result = "\n=========== Profile ==================\n" + stringAligner.Format(result);
-                result += "Total:\t" + _sumAll.Format3Digits();
-                if(_index < _data.Length)
-                    result +=
-                        " ("
-                            + (_data.Length - _index)
-                            + " not-shown-items "
-                            + (_sumAll - _sum).Format3Digits()
-                            + ")";
-                result += "\n======================================\n";
-                return result;
-            }
+            Profiler = profiler;
+            Start(flag, stackFrameDepth + 1);
         }
 
         /// <summary>
-        ///     Provides a standard frame for accumulating and reporting result of measurements, that are contained in the given
-        ///     action
+        ///     End of measurement for this item
         /// </summary>
-        /// <param name="action"></param>
-        /// <param name="count"> The number of measured expressions in result, default is "null" for "no restricton. </param>
-        /// <param name="hidden"> The relative amount of time that will be hidden in result, default is 0.1. </param>
-        public static void Frame(Action action, int? count = null, double hidden = 0.1)
+        [PublicAPI]
+        public void End()
         {
-            Reset();
-            _instance.InternalMeasure(action, "", 1);
-            Tracer.FlaggedLine(Format(count, hidden));
+            (Profiler.Current == ProfileItem).Assert();
+            Profiler.AfterAction();
         }
 
         /// <summary>
-        ///     Provides a standard frame for accumulating and reporting result of measurements, that are contained in the given
-        ///     function
+        ///     End of measurement for this item and start of new measurement
         /// </summary>
-        /// <param name="function"></param>
-        /// <param name="count"> The number of measured expressions in result, default is "null" for "no restricton. </param>
-        /// <param name="hidden"> The relative amount of time that will be hidden in result, default is 0.1. </param>
-        public static TResult Frame<TResult>(Func<TResult> function, int? count = null, double hidden = 0.1)
+        [PublicAPI]
+        public void Next(string flag = "")
         {
-            Reset();
-            var result = _instance.InternalMeasure(function, "", 1);
-            Tracer.FlaggedLine(Format(count, hidden));
-            return result;
+            End();
+            Start(flag, 1);
         }
 
-        /// <summary>
-        ///     Start measurement of the following code parts until next item.End() statement.
-        /// </summary>
-        /// <param name="flag"> </param>
-        /// <returns> an item, that represents the measurement.</returns>
-        public static Item Start(string flag = "") { return new Item(_instance, flag, 1); }
-
-        /// <summary>
-        ///     Measures the specified expression.
-        /// </summary>
-        /// <typeparam name="T"> The type the specitied expression returns </typeparam>
-        /// <param name="expression"> a function without parameters returning something. </param>
-        /// <param name="flag"> A flag that is used in dump. </param>
-        /// <returns> the result of the invokation of the specified expression </returns>
-        public static T Measure<T>(Func<T> expression, string flag = "") { return _instance.InternalMeasure(expression, flag, 1); }
-
-        /// <summary>
-        ///     Measures the specified action.
-        /// </summary>
-        /// <param name="action"> The action. </param>
-        /// <param name="flag"> A flag that is used in dump. </param>
-        public static void Measure(Action action, string flag = "") { _instance.InternalMeasure(action, flag, 1); }
-
-        /// <summary>
-        ///     Resets the profiler data.
-        /// </summary>
-        public static void Reset()
+        void Start(string flag, int stackFrameDepth)
         {
-            lock(_instance)
-                _instance.InternalReset();
-            _instance = new Profiler();
-        }
-
-        /// <summary>
-        ///     Formats the data accumulated so far.
-        /// </summary>
-        /// <param name="count"> The number of measured expressions in result, default is "null" for "no restricton. </param>
-        /// <param name="hidden"> The relative amount of time that will be hidden in result, default is 0.1. </param>
-        /// <returns> The formatted data. </returns>
-        /// <remarks>
-        ///     The result contains one line for each measured expression, that is not ignored.
-        ///     Each line contains
-        ///     <para>
-        ///         - the file path, the line and the start column of the measuered expression in the source file, (The
-        ///         information is formatted in a way, that within VisualStudio doubleclicking on such a line will open it.)
-        ///     </para>
-        ///     <para> - the flag, if provided, </para>
-        ///     <para> - the ranking, </para>
-        ///     <para> - the execution count, </para>
-        ///     <para> - the average duration of one execution, </para>
-        ///     <para> - the duration, </para>
-        ///     of the expression.
-        ///     The the lines are sorted by descending duration.
-        ///     by use of <paramref name="count" /> and <paramref name="hidden" /> the number of lines can be restricted.
-        /// </remarks>
-        public static string Format(int? count = null, double hidden = 0.1)
-        {
-            lock(_instance)
-                return new Dumper(_instance, count, hidden).Format();
-        }
-
-        static Profiler _instance = new Profiler();
-
-        readonly Dictionary<string, ProfileItem> _profileItems = new Dictionary<string, ProfileItem>();
-        readonly Stopwatch _stopwatch;
-        readonly Stack<ProfileItem> _stack = new Stack<ProfileItem>();
-        ProfileItem _current;
-
-
-        Profiler()
-        {
-            _current = new ProfileItem("");
-            _stopwatch = new Stopwatch();
-            _current.Start(_stopwatch.Elapsed);
-            _stopwatch.Start();
-        }
-
-        void InternalMeasure(Action action, string flag, int stackFrameDepth)
-        {
-            BeforeAction(flag, stackFrameDepth + 1);
-            action();
-            AfterAction();
-        }
-
-        T InternalMeasure<T>(Func<T> expression, string flag, int stackFrameDepth)
-        {
-            BeforeAction(flag, stackFrameDepth + 1);
-            var result = expression();
-            AfterAction();
-            return result;
-        }
-
-        void BeforeAction(string flag, int stackFrameDepth)
-        {
-            lock(this)
-            {
-                _stopwatch.Stop();
-                var start = _stopwatch.Elapsed;
-                _current.Suspend(start);
-                _stack.Push(_current);
-                var position = Tracer.MethodHeader(stackFrameDepth:stackFrameDepth + 1) + flag;
-                if(!_profileItems.TryGetValue(position, out _current))
-                {
-                    _current = new ProfileItem(position);
-                    _profileItems.Add(position, _current);
-                }
-                _current.Start(start);
-                _stopwatch.Start();
-            }
-        }
-
-        void AfterAction()
-        {
-            lock(this)
-            {
-                _stopwatch.Stop();
-                var end = _stopwatch.Elapsed;
-                _current.End(end);
-                _current = _stack.Pop();
-                _current.Resume(end);
-                _stopwatch.Start();
-            }
-        }
-
-        void InternalReset() { Tracer.Assert(_stack.Count == 0); }
-
-
-        /// <summary>
-        ///     Measuement Item
-        /// </summary>
-        public sealed class Item
-        {
-            readonly Profiler _profiler;
-            ProfileItem _item;
-            internal Item(Profiler profiler, string flag, int stackFrameDepth)
-            {
-                _profiler = profiler;
-                Start(flag, stackFrameDepth + 1);
-            }
-            void Start(string flag, int stackFrameDepth)
-            {
-                _instance.BeforeAction(flag, stackFrameDepth + 1);
-                _item = _profiler._current;
-            }
-
-            /// <summary>
-            ///     End of measurement for this item
-            /// </summary>
-            public void End()
-            {
-                Tracer.Assert(_profiler._current == _item);
-                _profiler.AfterAction();
-            }
-            /// <summary>
-            ///     End of measurement for this item and start of new measurement
-            /// </summary>
-            public void Next(string flag = "")
-            {
-                End();
-                Start(flag, 1);
-            }
+            Instance.BeforeAction(flag, stackFrameDepth + 1);
+            ProfileItem = Profiler.Current;
         }
     }
 
-    sealed class ProfileItem
+    sealed class Dumper
     {
-        readonly string _position;
-        TimeSpan _duration;
-        long _countStart;
-        long _countEnd;
-        long _suspendCount;
+        readonly int? Count;
+        readonly ProfileItem[] Data;
+        readonly TimeSpan SumAll;
+        readonly TimeSpan SumMax;
+        int Index;
+        TimeSpan Sum;
 
-        public ProfileItem(string position) { _position = position; }
-
-        public TimeSpan Duration { get { return _duration; } }
-        TimeSpan AverageDuration { get { return new TimeSpan(_duration.Ticks / _countEnd); } }
-
-        bool IsValid { get { return _countStart == _countEnd && _suspendCount == 0; } }
-
-        public void Start(TimeSpan duration)
+        public Dumper(Profiler profiler, int? count, double hidden)
         {
-            _countStart++;
-            _duration -= duration;
-            if(IsValid)
-                Tracer.Assert(_duration.Ticks >= 0);
+            Count = count;
+            Data = profiler.ProfileItems.Values.OrderByDescending(target => target.Duration).ToArray();
+            SumAll = Data.Sum(target => target.Duration);
+            SumMax = new((long)(SumAll.Ticks * (1.0 - hidden)));
+            Index = 0;
+            Sum = new();
         }
 
-        public void End(TimeSpan duration)
+        public string Format()
         {
-            _countEnd++;
-            _duration += duration;
-            if(IsValid)
-                Tracer.Assert(_duration.Ticks >= 0);
-        }
+            if(Data.Length == 0)
+                return "\n=========== Profile empty ============\n";
 
-        public string Format(string tag)
-        {
-            Tracer.Assert(IsValid);
-            return _position
-                + " #"
-                + tag
-                + ":  "
-                + _countEnd.Format3Digits()
-                + "x  "
-                + AverageDuration.Format3Digits()
-                + "  "
-                + _duration.Format3Digits()
-                + "\n";
-        }
+            var result = "";
+            for(; Index < Data.Length && Index != Count && Sum <= SumMax; Index++)
+            {
+                var item = Data[Index];
+                result += item.Format(Index.ToString());
+                Sum += item.Duration;
+            }
 
-        public void Suspend(TimeSpan start)
-        {
-            _suspendCount++;
-            _duration += start;
-            if(IsValid)
-                Tracer.Assert(_duration.Ticks >= 0);
-        }
+            var stringAligner = new StringAligner();
+            stringAligner.AddFloatingColumn("#");
+            stringAligner.AddFloatingColumn("  ");
+            stringAligner.AddFloatingColumn("  ");
+            stringAligner.AddFloatingColumn("  ");
 
-        public void Resume(TimeSpan end)
-        {
-            _suspendCount--;
-            _duration -= end;
-            if(IsValid)
-                Tracer.Assert(_duration.Ticks >= 0);
+            result = "\n=========== Profile ==================\n" + stringAligner.Format(result);
+            result += "Total:\t" + SumAll.Format3Digits();
+            if(Index < Data.Length)
+                result +=
+                    " (" + (Data.Length - Index) + " not-shown-items " + (SumAll - Sum).Format3Digits() + ")";
+            result += "\n======================================\n";
+            return result;
         }
+    }
+
+    static Profiler Instance = new();
+
+    readonly Dictionary<string, ProfileItem> ProfileItems = new();
+    readonly Stack<ProfileItem> Stack = new();
+    readonly Stopwatch Stopwatch;
+    ProfileItem Current;
+
+
+    Profiler()
+    {
+        Current = new("");
+        Stopwatch = new();
+        Current.Start(Stopwatch.Elapsed);
+        Stopwatch.Start();
+    }
+
+    /// <summary>
+    ///     Provides a standard frame for accumulating and reporting result of measurements, that are contained in the given
+    ///     action
+    /// </summary>
+    /// <param name="action"></param>
+    /// <param name="count"> The number of measured expressions in result, default is "null" for "no restriction. </param>
+    /// <param name="hidden"> The relative amount of time that will be hidden in result, default is 0.1. </param>
+    public static void Frame(Action action, int? count = null, double hidden = 0.1)
+    {
+        Reset();
+        Instance.InternalMeasure(action, "", 1);
+        Format(count, hidden).FlaggedLine();
+    }
+
+    /// <summary>
+    ///     Provides a standard frame for accumulating and reporting result of measurements, that are contained in the given
+    ///     function
+    /// </summary>
+    /// <param name="function"></param>
+    /// <param name="count"> The number of measured expressions in result, default is "null" for "no restriction. </param>
+    /// <param name="hidden"> The relative amount of time that will be hidden in result, default is 0.1. </param>
+    public static TResult Frame<TResult>(Func<TResult> function, int? count = null, double hidden = 0.1)
+    {
+        Reset();
+        var result = Instance.InternalMeasure(function, "", 1);
+        Format(count, hidden).FlaggedLine();
+        return result;
+    }
+
+    /// <summary>
+    ///     Start measurement of the following code parts until next item.End() statement.
+    /// </summary>
+    /// <param name="flag"> </param>
+    /// <returns> an item, that represents the measurement.</returns>
+    public static Item Start(string flag = "") => new(Instance, flag, 1);
+
+    /// <summary>
+    ///     Measures the specified expression.
+    /// </summary>
+    /// <typeparam name="T"> The type the specified expression returns </typeparam>
+    /// <param name="expression"> a function without parameters returning something. </param>
+    /// <param name="flag"> A flag that is used in dump. </param>
+    /// <returns> the result of the invocation of the specified expression </returns>
+    public static T Measure<T>
+        (Func<T> expression, string flag = "") => Instance.InternalMeasure(expression, flag, 1);
+
+    /// <summary>
+    ///     Measures the specified action.
+    /// </summary>
+    /// <param name="action"> The action. </param>
+    /// <param name="flag"> A flag that is used in dump. </param>
+    public static void Measure(Action action, string flag = "") => Instance.InternalMeasure(action, flag, 1);
+
+    /// <summary>
+    ///     Resets the profiler data.
+    /// </summary>
+    public static void Reset()
+    {
+        lock(Instance)
+            Instance.InternalReset();
+
+        Instance = new();
+    }
+
+    /// <summary>
+    ///     Formats the data accumulated so far.
+    /// </summary>
+    /// <param name="count"> The number of measured expressions in result, default is "null" for "no restriction. </param>
+    /// <param name="hidden"> The relative amount of time that will be hidden in result, default is 0.1. </param>
+    /// <returns> The formatted data. </returns>
+    /// <remarks>
+    ///     The result contains one line for each measured expression, that is not ignored.
+    ///     Each line contains
+    ///     <para>
+    ///         - the file path, the line and the start column of the measured expression in the source file, (The
+    ///         information is formatted in a way, that within VisualStudio double clicking on such a line will open it.)
+    ///     </para>
+    ///     <para> - the flag, if provided, </para>
+    ///     <para> - the ranking, </para>
+    ///     <para> - the execution count, </para>
+    ///     <para> - the average duration of one execution, </para>
+    ///     <para> - the duration, </para>
+    ///     of the expression.
+    ///     The the lines are sorted by descending duration.
+    ///     by use of <paramref name="count" /> and <paramref name="hidden" /> the number of lines can be restricted.
+    /// </remarks>
+    public static string Format(int? count = null, double hidden = 0.1)
+    {
+        lock(Instance)
+            return new Dumper(Instance, count, hidden).Format();
+    }
+
+    void InternalMeasure(Action action, string flag, int stackFrameDepth)
+    {
+        BeforeAction(flag, stackFrameDepth + 1);
+        action();
+        AfterAction();
+    }
+
+    T InternalMeasure<T>(Func<T> expression, string flag, int stackFrameDepth)
+    {
+        BeforeAction(flag, stackFrameDepth + 1);
+        var result = expression();
+        AfterAction();
+        return result;
+    }
+
+    void BeforeAction(string flag, int stackFrameDepth)
+    {
+        lock(this)
+        {
+            Stopwatch.Stop();
+            var start = Stopwatch.Elapsed;
+            Current.Suspend(start);
+            Stack.Push(Current);
+            var position = Tracer.MethodHeader(stackFrameDepth: stackFrameDepth + 1) + flag;
+            if(!ProfileItems.TryGetValue(position, out Current))
+            {
+                Current = new(position);
+                ProfileItems.Add(position, Current);
+            }
+
+            Current.Start(start);
+            Stopwatch.Start();
+        }
+    }
+
+    void AfterAction()
+    {
+        lock(this)
+        {
+            Stopwatch.Stop();
+            var end = Stopwatch.Elapsed;
+            Current.End(end);
+            Current = Stack.Pop();
+            Current.Resume(end);
+            Stopwatch.Start();
+        }
+    }
+
+    void InternalReset()
+    {
+        lock(this)
+            (Stack.Count == 0).Assert();
+    }
+}
+
+sealed class ProfileItem
+{
+    public TimeSpan Duration { get; private set; }
+    readonly string Position;
+    long CountEnd;
+    long CountStart;
+    long SuspendCount;
+
+    public ProfileItem(string position) => Position = position;
+    TimeSpan AverageDuration => new(Duration.Ticks / CountEnd);
+
+    bool IsValid => CountStart == CountEnd && SuspendCount == 0;
+
+    public void Start(TimeSpan duration)
+    {
+        CountStart++;
+        Duration -= duration;
+        if(IsValid)
+            (Duration.Ticks >= 0).Assert();
+    }
+
+    public void End(TimeSpan duration)
+    {
+        CountEnd++;
+        Duration += duration;
+        if(IsValid)
+            (Duration.Ticks >= 0).Assert();
+    }
+
+    public string Format(string tag)
+    {
+        IsValid.Assert();
+        return Position +
+            " #" +
+            tag +
+            ":  " +
+            CountEnd.Format3Digits() +
+            "target  " +
+            AverageDuration.Format3Digits() +
+            "  " +
+            Duration.Format3Digits() +
+            "\n";
+    }
+
+    public void Suspend(TimeSpan start)
+    {
+        SuspendCount++;
+        Duration += start;
+        if(IsValid)
+            (Duration.Ticks >= 0).Assert();
+    }
+
+    public void Resume(TimeSpan end)
+    {
+        SuspendCount--;
+        Duration -= end;
+        if(IsValid)
+            (Duration.Ticks >= 0).Assert();
     }
 }
