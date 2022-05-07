@@ -25,6 +25,7 @@ static class Program
         var information = GetInformation(x.Source);
         var version = information["version"];
         var name = information["name"];
+        name.AssertIsNotNull();
         var releaseFileName = name + "_" + version;
         var releaseFolder = x.Destination;
         var zipFile = releaseFolder.PathCombine(releaseFileName + ".zip");
