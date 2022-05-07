@@ -41,7 +41,7 @@ sealed class Assessments
             .Select(c => c.Name)
             .ToArray();
 
-        if(!@new.Any())
+        if(!@new.Any() && old.New.Length == 0)
             return null;
 
         var result = new Classes
@@ -82,7 +82,7 @@ sealed class Assessments
             .Where(name => !name.In(known))
             .ToArray();
 
-        if(!@new.Any())
+        if(!@new.Any() && old.New.Length == 0)
             return null;
 
         var newClasses = GameApi

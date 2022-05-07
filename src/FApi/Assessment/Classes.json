@@ -13,7 +13,8 @@
     "LuaModuleCategoryPrototype",
     "LuaRecipeCategoryPrototype",
     "LuaRecipePrototype",
-    "LuaResourceCategoryPrototype"
+    "LuaResourceCategoryPrototype",
+    "LuaTechnologyPrototype"
   ],
   "Irrelevant": [
     "LuaAccumulatorControlBehavior",
@@ -100,7 +101,5 @@
     "LuaVoidEnergySourcePrototype",
     "LuaWallControlBehavior"
   ],
-  "New": [
-    "LuaTechnologyPrototype"
-  ]
+  "New": []
 }

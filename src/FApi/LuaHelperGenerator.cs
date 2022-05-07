@@ -38,10 +38,10 @@ sealed class LuaHelperGenerator : DumpableObject
             .Attributes
             .Where(field => IsRelevant(luaClass, field))
             .Select(field => field.Name)
-            .Stringify(", ");
+            .Stringify(",\n");
         return @$"{luaClass.Name} = 
 {{
-    {attributeData}
+    {attributeData.Indent()}
 }}";
     }
 

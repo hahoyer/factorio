@@ -17,7 +17,7 @@ sealed class Classes
     [JsonProperty]
     public string[] New;
 
-    int AssessmentDomain<Classes>.ITarget.NewLength => New.Length;
+    int AssessmentDomain<Classes>.ITarget.NewLength => New?.Length ?? 0;
 }
 
 sealed class ClassMembers
@@ -62,5 +62,5 @@ sealed class Members
     [JsonProperty]
     public ClassMembers[] New;
 
-    int AssessmentDomain<Members>.ITarget.NewLength => New.Length;
+    int AssessmentDomain<Members>.ITarget.NewLength => New?.Length ?? 0;
 }
