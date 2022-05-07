@@ -52,7 +52,7 @@ namespace ManageModsAndSaveFiles
                 if(!Path.ToSmbFile().Exists)
                     return Data.Any();
 
-                var internalVersion = this.ToJson();
+                var internalVersion = this.ToJSon();
                 var persistentVersion = Path.ToSmbFile().String;
                 return internalVersion != persistentVersion;
             }

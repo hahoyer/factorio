@@ -116,7 +116,7 @@ public sealed class FileCluster : DumpableObject
             reader.UserContext = new UserContext();
             DataValue = reader.GetNext<BinaryData>();
         }
-        catch(Exception exception)
+        catch(Exception)
         {
             DataValue = new(false);
         }

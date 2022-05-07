@@ -91,7 +91,7 @@ public static class Extension
         return target.Substring(-delta);
     }
 
-    public static string ToJson<T>(this T o)
+    public static string ToJSon<T>(this T o)
         => JsonConvert.SerializeObject
         (
             o,
@@ -113,7 +113,7 @@ public static class Extension
 
     public static void ToJsonFile<T>(this string jsonFileName, T o)
         where T : class
-        => jsonFileName.ToSmbFile().String = o.ToJson();
+        => jsonFileName.ToSmbFile().String = o.ToJSon();
 
     public static T FromJson<T>(this string jsonText, params JsonConverter[] converters)
         => JsonConvert.DeserializeObject<T>(jsonText, converters);

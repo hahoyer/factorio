@@ -107,7 +107,7 @@ namespace MmasfUI.Common
             fileHandle.String = "{0}\n{1}"
                 .ReplaceArgs
                 (
-                    position == null ? "" : position.Value.ToJson(),
+                    position == null ? "" : position.Value.ToJSon(),
                     state
                 );
         }

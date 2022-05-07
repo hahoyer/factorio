@@ -179,8 +179,6 @@ public sealed class LogfileWatcher : DumpableObject
             StartTime = null;
         }
     }
-
-    static IEnumerable<TValue> T<TValue>(params TValue[] value) => value;
 }
 
 sealed class UnknownLine : ILineData
