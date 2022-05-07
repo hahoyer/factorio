@@ -3,6 +3,7 @@
 namespace FactorioApi.Assessment;
 
 sealed class Classes
+    : AssessmentDomain<Classes>.ITarget
 {
     [JsonProperty]
     public string FactorioVersion;
@@ -15,6 +16,8 @@ sealed class Classes
 
     [JsonProperty]
     public string[] New;
+
+    int AssessmentDomain<Classes>.ITarget.NewLength => New.Length;
 }
 
 sealed class ClassMembers
@@ -33,25 +36,31 @@ sealed class ClassMembers
 }
 
 sealed class Members
+    : AssessmentDomain<Members>.ITarget
 {
     [JsonProperty]
     public string FactorioVersion;
 
     [JsonProperty]
-    public ClassMembers[] Specific;
-
-    [JsonProperty]
     public string[] AlwaysRelevant;
-
-    [JsonProperty]
-    public string[] OtherwiseRelevant;
 
     [JsonProperty]
     public string[] AlwaysIrrelevant;
 
     [JsonProperty]
-    public string[] OtherwiseIrrelevant;
+    public ClassMembers[] Specific;
 
     [JsonProperty]
-    public string[] New;
+    public string[] Relevant;
+
+    [JsonProperty]
+    public string[] Irrelevant;
+
+    [JsonProperty]
+    public string[] RescanClasses;
+
+    [JsonProperty]
+    public ClassMembers[] New;
+
+    int AssessmentDomain<Members>.ITarget.NewLength => New.Length;
 }

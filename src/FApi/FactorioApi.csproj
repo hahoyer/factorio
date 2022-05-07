@@ -7,7 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AssessmentApi.cs" />
-    <Compile Include="AssessmentArea.cs" />
+    <Compile Include="AssessmentDomain.cs" />
     <Compile Include="GameApi.cs" />
     <Compile Include="AssemblyInfo.cs">
       <AutoGen>True</AutoGen>

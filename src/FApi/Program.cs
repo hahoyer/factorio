@@ -10,6 +10,7 @@ static class Program
         var luaHelper = new LuaHelperGenerator("https://lua-api.factorio.com/latest/runtime-api.json".ToWebSite());
         // var luaHelper = new LuaHelperGenerator("A:\\develop\\factorio-data\\runtime-api.json".ToSmbFile());
 
+        Tracer.ConditionalBreak(luaHelper.HasNewEntries, () => "\n***Warning: new entries found. See previous log.");
         luaHelper.GetAttributeList().Log();
 
         Tracer.ConditionalBreak(true);

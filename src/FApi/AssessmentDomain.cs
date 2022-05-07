@@ -4,15 +4,19 @@ using HWBase;
 
 namespace FactorioApi;
 
-sealed class AssessmentArea<T> : DumpableObject
-    where T : class
+sealed class AssessmentDomain<T> : DumpableObject
+    where T : class, AssessmentDomain<T>.ITarget
 {
+    internal interface ITarget
+    {
+        int NewLength { get; }
+    }
+
     internal interface IConfiguration
     {
         T Default { get; }
         string JsonPath { get; }
         T GetNewValue(T old);
-        void Log(T result);
     }
 
     readonly IConfiguration Configuration;
@@ -21,7 +25,7 @@ sealed class AssessmentArea<T> : DumpableObject
     readonly ValueCache<T> CurrentCache;
     readonly ValueCache<SmbFile> File;
 
-    public AssessmentArea(IConfiguration configuration)
+    public AssessmentDomain(IConfiguration configuration)
     {
         Configuration = configuration;
         OldCache = new(GetOldValue);
@@ -41,9 +45,10 @@ sealed class AssessmentArea<T> : DumpableObject
 
         var result = NewCache.Value;
         File.Value.String = result.ToJSon();
-        "------------------------".Log();
-        $"New assessment saved to {File.Value.FullName}".Log();
-        Configuration.Log(result);
+        $"***Information: New assessment saved to {File.Value.FullName.Quote()}.".Log();
+        if(result.NewLength > 0)
+            $"***Information: Number of new {typeof(T).Name} found: {result.NewLength}.".Log();
+
         return result;
     }
 

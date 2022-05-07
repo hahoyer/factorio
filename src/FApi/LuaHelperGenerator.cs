@@ -20,6 +20,8 @@ sealed class LuaHelperGenerator : DumpableObject
 
     Class[] Classes => GameApi.Classes;
 
+    public bool HasNewEntries => Assessments.HasNewEntries;
+
     GameApi GetApi()
     {
         var text = Source.String;
@@ -35,7 +37,7 @@ sealed class LuaHelperGenerator : DumpableObject
         var attributeData = luaClass
             .Attributes
             .Where(field => IsRelevant(luaClass, field))
-            .Select(GetAttribute)
+            .Select(field => field.Name)
             .Stringify(", ");
         return @$"{luaClass.Name} = 
 {{
@@ -46,10 +48,4 @@ sealed class LuaHelperGenerator : DumpableObject
     bool IsRelevant(Class arg) => Assessments.IsRelevant(arg);
 
     bool IsRelevant(Class parent, Field field) => Assessments.IsRelevant(parent, field);
-
-    string GetAttribute(Field field)
-    {
-        NotImplementedMethod(field);
-        return default;
-    }
 }

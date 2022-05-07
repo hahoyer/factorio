@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using FactorioApi.Assessment;
 using hw.DebugFormatter;
 using hw.Helper;
@@ -8,14 +7,14 @@ namespace FactorioApi;
 
 sealed class Assessments
     : DumpableObject
-        , AssessmentArea<Classes>.IConfiguration
-        , AssessmentArea<Members>.IConfiguration
+        , AssessmentDomain<Classes>.IConfiguration
+        , AssessmentDomain<Members>.IConfiguration
 {
     readonly string JsonPath;
     readonly GameApi GameApi;
 
-    readonly AssessmentArea<Classes> Classes;
-    readonly AssessmentArea<Members> Members;
+    readonly AssessmentDomain<Classes> Classes;
+    readonly AssessmentDomain<Members> Members;
 
     public Assessments(string jsonPath, GameApi gameApi)
     {
@@ -25,9 +24,9 @@ sealed class Assessments
         Members = new(this);
     }
 
-    Classes AssessmentArea<Classes>.IConfiguration.Default => new() { FactorioVersion = GameApi.Version };
+    Classes AssessmentDomain<Classes>.IConfiguration.Default => new() { FactorioVersion = GameApi.Version };
 
-    Classes AssessmentArea<Classes>.IConfiguration.GetNewValue(Classes old)
+    Classes AssessmentDomain<Classes>.IConfiguration.GetNewValue(Classes old)
     {
         var known = T(
                 old.Irrelevant,
@@ -48,48 +47,35 @@ sealed class Assessments
         var result = new Classes
         {
             FactorioVersion = GameApi.Version
-            , Irrelevant = old.Irrelevant ?? new string[0]
-            , Relevant = old.Relevant ?? new string[0]
-            , New = @new
+            , Irrelevant = UnifyStrings(old.Irrelevant)
+            , Relevant = UnifyStrings(old.Relevant)
+            , New = UnifyStrings(@new)
         };
         return result;
     }
 
-    string AssessmentArea<Classes>.IConfiguration.JsonPath => JsonPath;
+    string AssessmentDomain<Classes>.IConfiguration.JsonPath => JsonPath;
 
-    void AssessmentArea<Classes>.IConfiguration.Log(Classes result)
-    {
-        "------------------------".Log();
-        "New classes: ".Log();
-        var newClasses = result.New;
-        newClasses.Stringify("\n").Log();
-        "------------------------".Log();
-        $"  Classes: {result.Irrelevant.Length + result.Relevant.Length}".Log();
-        $"    relevant: {result.Relevant.Length}".Log();
-        $"    irrelevant: {result.Irrelevant.Length}".Log();
-        $"    new: {newClasses.Length}".Log();
-        "------------------------".Log();
-    }
-
-    Members AssessmentArea<Members>.IConfiguration.Default
+    Members AssessmentDomain<Members>.IConfiguration.Default
         => new()
         {
             FactorioVersion = GameApi.Version
         };
 
-    Members AssessmentArea<Members>.IConfiguration.GetNewValue(Members old)
+    Members AssessmentDomain<Members>.IConfiguration.GetNewValue(Members old)
     {
         var known = T(
                 old.AlwaysIrrelevant,
                 old.AlwaysRelevant,
-                old.OtherwiseIrrelevant,
-                old.OtherwiseRelevant
+                old.Irrelevant,
+                old.Relevant
             )
             .ConcatMany()
             .ToArray();
 
         var @new = GameApi
             .Classes
+            .Where(@class => !IsIrrelevant(@class))
             .SelectMany(GetMemberNames)
             .OrderBy(name => name)
             .Distinct()
@@ -99,34 +85,73 @@ sealed class Assessments
         if(!@new.Any())
             return null;
 
+        var newClasses = GameApi
+            .Classes
+            .Where(@class => !IsIrrelevant(@class))
+            .Select(@class => GetNewClassForMembers(@class, known))
+            .Where(@class => @class != null)
+            .ToArray();
+
+        var rescan = old
+            .RescanClasses?
+            .Select(GetNewClassForMembers)
+            .ToArray();
+
+
         var result = new Members
         {
             FactorioVersion = GameApi.Version
-            , AlwaysIrrelevant = old.AlwaysIrrelevant ?? new string[0]
-            , AlwaysRelevant = old.AlwaysRelevant ?? new string[0]
-            , OtherwiseIrrelevant = old.OtherwiseIrrelevant ?? new string[0]
-            , OtherwiseRelevant = old.OtherwiseRelevant ?? new string[0]
-            , Specific = old.Specific ?? new ClassMembers[0]
-            , New = @new
+            , AlwaysIrrelevant = UnifyStrings(old.AlwaysIrrelevant)
+            , AlwaysRelevant = UnifyStrings(old.AlwaysRelevant)
+            , Irrelevant = UnifyStrings(old.Irrelevant)
+            , Relevant = UnifyStrings(old.Relevant)
+            , Specific = UnifyStrings(old.Specific)
+            , RescanClasses = new string[0]
+            , New = newClasses.Any()? newClasses : rescan
         };
         return result;
     }
 
-    string AssessmentArea<Members>.IConfiguration.JsonPath => JsonPath;
+    string AssessmentDomain<Members>.IConfiguration.JsonPath => JsonPath;
 
-    void AssessmentArea<Members>.IConfiguration.Log(Members result)
+    public bool HasNewEntries => Classes.Current.New.Length + Members.Current.New.Length > 0;
+
+    ClassMembers GetNewClassForMembers(string name)
     {
-        "------------------------".Log();
-        "New members: ".Log();
-        var @new = result.New;
-        @new.Stringify("\n").Log();
-        "------------------------".Log();
+        var @class = GameApi.Classes.Single(@class => @class.Name == name);
+        return GetNewClassForMembers(@class, new string[0]);
     }
 
-    static IEnumerable<string> GetMemberNames(Class arg)
-        => arg.Attributes.Select(item => item.Name);
+    ClassMembers[] UnifyStrings(ClassMembers[] target)
+    {
+        if(target == null)
+            return null;
+
+        NotImplementedMethod(target, "", "");
+        return default;
+    }
+
+    static string[] UnifyStrings(string[] target)
+        => target == null? new string[0] : target.Distinct().OrderBy(item => item).ToArray();
+
+    static ClassMembers GetNewClassForMembers(Class arg, string[] knownMembers)
+    {
+        var newMembers = GetMemberNames(arg).Except(knownMembers).ToArray();
+        if(newMembers.Any())
+            return new()
+            {
+                ClassName = arg.Name
+                , New = newMembers
+            };
+
+        return null;
+    }
+
+    static string[] GetMemberNames(Class arg)
+        => arg.Attributes.Select(item => item.Name).ToArray();
 
     public bool IsRelevant(Class arg) => arg.Name.In(Classes.Current.Relevant);
+    bool IsIrrelevant(Class arg) => arg.Name.In(Classes.Current.Irrelevant);
 
     public bool IsRelevant(Class argClass, Field argField)
     {
@@ -135,7 +160,7 @@ sealed class Assessments
         if(argField.Name.In(Members.Current.AlwaysIrrelevant))
             return false;
 
-        var specific = Members.Current.Specific.SingleOrDefault(s => s.ClassName == argClass.Name);
+        var specific = Members.Current.Specific?.SingleOrDefault(s => s.ClassName == argClass.Name);
         if(specific != null)
         {
             if(argField.Name.In(specific.Relevant))
@@ -144,6 +169,6 @@ sealed class Assessments
                 return false;
         }
 
-        return argField.Name.In(Members.Current.OtherwiseRelevant);
+        return argField.Name.In(Members.Current.Relevant);
     }
 }
