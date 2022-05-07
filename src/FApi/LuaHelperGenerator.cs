@@ -7,11 +7,11 @@ namespace FactorioApi;
 
 sealed class LuaHelperGenerator : DumpableObject
 {
-    readonly IFile Source;
+    readonly WebSite Source;
     readonly Assessments Assessments;
     readonly GameApi GameApi;
 
-    public LuaHelperGenerator(IFile source)
+    public LuaHelperGenerator(WebSite source)
     {
         Source = source;
         GameApi = GetApi();

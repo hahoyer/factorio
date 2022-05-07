@@ -13,7 +13,9 @@ public sealed class UserConfiguration : DumpableObject, IIdentified<string>
 {
     public readonly SmbFile Path;
     readonly SmbFile[] AllPaths;
+#pragma warning disable CS0169
     readonly LogfileWatcher LogfileWatcher;
+#pragma warning restore CS0169
     readonly ValueCache<IDictionary<string, bool>> ModConfigurationCache;
     readonly ValueCache<Mods.FileCluster[]> ModFilesCache;
     readonly MmasfContext Parent;
@@ -28,8 +30,10 @@ public sealed class UserConfiguration : DumpableObject, IIdentified<string>
         ModFilesCache = new(GetModFiles);
         SaveFilesCache = new(GetSaveFiles);
         return;
+/*
         RunLua();
         LogfileWatcher = new(Path);
+*/
     }
 
     string IIdentified<string>.Identifier => Name;

@@ -71,7 +71,8 @@ public sealed class BinaryRead : DumpableObject
         (count < 10000).Assert();
         var result = new byte[count];
         Reader.Position = Position;
-        Reader.Read(result, 0, count);
+        var read = Reader.Read(result, 0, count);
+        (read == count).Assert();
         return result;
     }
 

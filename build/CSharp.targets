@@ -19,7 +19,7 @@
         <Prefer32Bit>false</Prefer32Bit>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
-        <NoWarn>649</NoWarn>
+        <NoWarn>649,169</NoWarn>
     </PropertyGroup>
 
 

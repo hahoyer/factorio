@@ -1,32 +1,32 @@
 ﻿using hw.DebugFormatter;
 
-namespace Lua {
-    internal sealed class MemoryView : NativeStack
+namespace Lua;
+
+sealed class MemoryView : NativeStack
+{
+    public readonly StackView Top;
+
+    public MemoryView(HWLua parent)
+        : base(parent) => Top = new(parent);
+
+    public new int Count => base.Count;
+
+    public VirtualObjectView this[int index]
     {
-        public readonly StackView Top;
-
-        public MemoryView(HWLua parent)
-            : base(parent) => Top = new StackView(parent);
-
-        public new int Count => base.Count;
-
-        public VirtualObjectView this[int index]
+        get
         {
-            get
-            {
-                Tracer.Assert(index >= 0);
-                Tracer.Assert(index < Count);
-                return GetVirtualObject(index);
-            }
+            (index >= 0).Assert();
+            (index < Count).Assert();
+            return GetVirtualObject(index);
         }
+    }
 
-        internal void GetTable(string key, int index)
-        {
-            Tracer.Assert(index >= 0);
-            Tracer.Assert(index < Count);
+    internal void GetTable(string key, int index)
+    {
+        (index >= 0).Assert();
+        (index < Count).Assert();
 
-            Parent.Stack.Push(key);
-            Parent.Kernel.LuaGetTable(index + 1);
-        }
+        Parent.Stack.Push(key);
+        Parent.Kernel.LuaGetTable(index + 1);
     }
 }

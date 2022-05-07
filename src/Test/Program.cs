@@ -17,10 +17,10 @@ static class Program
     public static void Main(string[] args) => new ProfilerParser("develop").Format();
     // ManageModsAndSaveFiles.Game.Test();
 
-    static int T(int[] A)
+    static int T(int[] a)
     {
         var p =
-            A
+            a
                 .Where(i1 => i1 > 0)
                 .OrderBy(i1 => i1)
                 .Distinct()

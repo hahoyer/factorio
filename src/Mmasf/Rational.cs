@@ -31,6 +31,16 @@ sealed class Rational : DumpableObject, IAggregateable<Rational>
 
     Rational IAggregateable<Rational>.Aggregate(Rational other) => this + other;
 
+    public override bool Equals(object obj) => ReferenceEquals(this, obj) || (obj is Rational other && Equals(other));
+
+    public override int GetHashCode()
+    {
+        unchecked
+        {
+            return (Numerator * 397) ^ Denominator;
+        }
+    }
+
     protected override string GetNodeDump()
     {
         if(Denominator == 1)
@@ -41,6 +51,7 @@ sealed class Rational : DumpableObject, IAggregateable<Rational>
     public override string ToString() => NodeDump;
 
     public int Ceiling => Denominator == 1? Numerator : (int)Math.Ceiling(Numerator / (double)Denominator);
+    bool Equals(Rational other) => Numerator == other.Numerator && Denominator == other.Denominator;
 
     public static bool operator ==
         (Rational a, Rational b) => Equals(a, b) ||

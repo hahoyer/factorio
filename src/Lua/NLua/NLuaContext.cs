@@ -10,14 +10,14 @@ namespace Lua.NLua;
 
 public sealed class NLuaContext : DumpableObject, IContext
 {
-    class SimpleValue : IData
+    sealed class SimpleValue : IData
     {
         readonly object Value;
         public SimpleValue(object value) => Value = value;
         IDictionary<object, object> IData.TableAsDictionary => null;
     }
 
-    class Table : IData
+    sealed class Table : IData
     {
         readonly LuaTable Value;
         public Table(LuaTable value) => Value = value;
@@ -72,8 +72,6 @@ public sealed class NLuaContext : DumpableObject, IContext
     object IContext.Run(SmbFile value) => ExceptionGuard(() => Data.DoFile(value.FullName));
 
     object IContext.ToItem(IData value) => throw new NotImplementedException();
-
-    ~NLuaContext() { }
 
     public static IContext Instance => new NLuaContext();
 

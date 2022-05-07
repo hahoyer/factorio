@@ -47,7 +47,7 @@ static class Extension
         => Tracer.Dump(value.GetTableAsDictionary());
 
     static IDictionary<object, object> GetTableAsDictionary(this object target)
-        => (target as LuaTable)?.GetTableAsDictionary() ?? null;
+        => (target as LuaTable)?.GetTableAsDictionary();
 
     public static IDictionary<object, object> GetTableAsDictionary(this LuaTable luaTable)
     {
