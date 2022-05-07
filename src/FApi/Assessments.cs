@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using FactorioApi.Assessment;
 using hw.DebugFormatter;
 using hw.Helper;
@@ -26,27 +27,30 @@ sealed class Assessments
 
     Classes AssessmentArea<Classes>.IConfiguration.Default => new() { FactorioVersion = GameApi.Version };
 
-    Classes AssessmentArea<Classes>.IConfiguration.GetNewValue(Classes classes)
+    Classes AssessmentArea<Classes>.IConfiguration.GetNewValue(Classes old)
     {
-        var relevantClasses = classes.Relevant ?? new string[0];
-        var irrelevantClasses = classes.Irrelevant ?? new string[0];
-        var knownClasses = relevantClasses.Concat(irrelevantClasses).ToArray();
+        var known = T(
+                old.Irrelevant,
+                old.Relevant
+            )
+            .ConcatMany()
+            .ToArray();
 
-        var newClasses = GameApi
+        var @new = GameApi
             .Classes
-            .Where(c => !c.Name.In(knownClasses))
+            .Where(c => !c.Name.In(known))
             .Select(c => c.Name)
             .ToArray();
 
-        if(!newClasses.Any())
+        if(!@new.Any())
             return null;
 
         var result = new Classes
         {
             FactorioVersion = GameApi.Version
-            , Irrelevant = irrelevantClasses
-            , Relevant = relevantClasses
-            , New = newClasses
+            , Irrelevant = old.Irrelevant ?? new string[0]
+            , Relevant = old.Relevant ?? new string[0]
+            , New = @new
         };
         return result;
     }
@@ -73,10 +77,39 @@ sealed class Assessments
             FactorioVersion = GameApi.Version
         };
 
-    Members AssessmentArea<Members>.IConfiguration.GetNewValue(Members members)
+    Members AssessmentArea<Members>.IConfiguration.GetNewValue(Members old)
     {
-        NotImplementedMethod(members);
-        return default;
+        var known = T(
+                old.AlwaysIrrelevant,
+                old.AlwaysRelevant,
+                old.OtherwiseIrrelevant,
+                old.OtherwiseRelevant
+            )
+            .ConcatMany()
+            .ToArray();
+
+        var @new = GameApi
+            .Classes
+            .SelectMany(GetMemberNames)
+            .OrderBy(name => name)
+            .Distinct()
+            .Where(name => !name.In(known))
+            .ToArray();
+
+        if(!@new.Any())
+            return null;
+
+        var result = new Members
+        {
+            FactorioVersion = GameApi.Version
+            , AlwaysIrrelevant = old.AlwaysIrrelevant ?? new string[0]
+            , AlwaysRelevant = old.AlwaysRelevant ?? new string[0]
+            , OtherwiseIrrelevant = old.OtherwiseIrrelevant ?? new string[0]
+            , OtherwiseRelevant = old.OtherwiseRelevant ?? new string[0]
+            , Specific = old.Specific ?? new ClassMembers[0]
+            , New = @new
+        };
+        return result;
     }
 
     string AssessmentArea<Members>.IConfiguration.JsonPath => JsonPath;
@@ -85,20 +118,23 @@ sealed class Assessments
     {
         "------------------------".Log();
         "New members: ".Log();
-        var newClasses = result.New;
-        newClasses.Stringify("\n").Log();
-        "------------------------".Log();
-        $"  Members: {result.Irrelevant.Length + result.Relevant.Length}".Log();
-        $"    relevant: {result.Relevant.Length}".Log();
-        $"    irrelevant: {result.Irrelevant.Length}".Log();
-        $"    new: {newClasses.Length}".Log();
+        var @new = result.New;
+        @new.Stringify("\n").Log();
         "------------------------".Log();
     }
+
+    static IEnumerable<string> GetMemberNames(Class arg)
+        => arg.Attributes.Select(item => item.Name);
 
     public bool IsRelevant(Class arg) => arg.Name.In(Classes.Current.Relevant);
 
     public bool IsRelevant(Class argClass, Field argField)
     {
+        if(argField.Name.In(Members.Current.AlwaysRelevant))
+            return true;
+        if(argField.Name.In(Members.Current.AlwaysIrrelevant))
+            return false;
+
         var specific = Members.Current.Specific.SingleOrDefault(s => s.ClassName == argClass.Name);
         if(specific != null)
         {
@@ -108,6 +144,6 @@ sealed class Assessments
                 return false;
         }
 
-        return argField.Name.In(Members.Current.Relevant);
+        return argField.Name.In(Members.Current.OtherwiseRelevant);
     }
 }

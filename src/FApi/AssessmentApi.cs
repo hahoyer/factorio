@@ -41,10 +41,16 @@ sealed class Members
     public ClassMembers[] Specific;
 
     [JsonProperty]
-    public string[] Relevant;
+    public string[] AlwaysRelevant;
 
     [JsonProperty]
-    public string[] Irrelevant;
+    public string[] OtherwiseRelevant;
+
+    [JsonProperty]
+    public string[] AlwaysIrrelevant;
+
+    [JsonProperty]
+    public string[] OtherwiseIrrelevant;
 
     [JsonProperty]
     public string[] New;

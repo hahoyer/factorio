@@ -5,6 +5,7 @@ using HWBase;
 namespace FactorioApi;
 
 sealed class AssessmentArea<T> : DumpableObject
+    where T : class
 {
     internal interface IConfiguration
     {
@@ -24,12 +25,14 @@ sealed class AssessmentArea<T> : DumpableObject
     {
         Configuration = configuration;
         OldCache = new(GetOldValue);
-        NewCache = new(() => Configuration.GetNewValue(OldCache.Value));
+        NewCache = new(GetNewValue);
         CurrentCache = new(GetCurrentValue);
         File = new(GetFile);
     }
 
     internal T Current => CurrentCache.Value;
+
+    T GetNewValue() => Configuration.GetNewValue(OldCache.Value);
 
     T GetCurrentValue()
     {
