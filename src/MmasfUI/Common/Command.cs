@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Input;
@@ -18,7 +17,8 @@ namespace MmasfUI.Common
         (
             CommandManager parent,
             MethodInfo[] executes,
-            PropertyInfo canExecute)
+            PropertyInfo canExecute
+        )
         {
             Parent = parent;
             Executes = executes;
@@ -29,6 +29,18 @@ namespace MmasfUI.Common
         {
             var execute = FindExecutor(parameter);
             return Parent.CanExecute(execute, CanExecute);
+        }
+
+        event EventHandler ICommand.CanExecuteChanged
+        {
+            add => System.Windows.Input.CommandManager.RequerySuggested += value;
+            remove => System.Windows.Input.CommandManager.RequerySuggested -= value;
+        }
+
+        void ICommand.Execute(object parameter)
+        {
+            var execute = FindExecutor(parameter);
+            Parent.Execute(execute, parameter);
         }
 
         MethodInfo FindExecutor(object parameter)
@@ -46,18 +58,6 @@ namespace MmasfUI.Common
                     Tracer.ConditionalBreak(true);
                     return false;
             }
-        }
-
-        void ICommand.Execute(object parameter)
-        {
-            var execute = FindExecutor(parameter);
-            Parent.Execute(execute, parameter);
-        }
-
-        event EventHandler ICommand.CanExecuteChanged
-        {
-            add => System.Windows.Input.CommandManager.RequerySuggested += value;
-            remove => System.Windows.Input.CommandManager.RequerySuggested -= value;
         }
     }
 }

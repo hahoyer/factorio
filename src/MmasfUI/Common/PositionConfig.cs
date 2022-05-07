@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows;
@@ -13,9 +12,9 @@ namespace MmasfUI.Common
 {
     public sealed class PositionConfig : IDisposable
     {
+        readonly Func<string> GetFileNameFunction;
         Window TargetValue;
         bool LoadPositionCalled;
-        readonly Func<string> GetFileNameFunction;
 
         /// <summary>
         ///     Ctor
@@ -25,10 +24,11 @@ namespace MmasfUI.Common
         ///     <para>It will be called each time the name is required. </para>
         ///     <para>Default: Target.Name</para>
         /// </param>
-        public PositionConfig(Func<string> getFileName = null)
-        {
-            GetFileNameFunction = getFileName ?? (() => TargetValue?.Name.ToValidFileName());
-        }
+        public PositionConfig
+            (Func<string> getFileName = null)
+            => GetFileNameFunction = getFileName ?? (() => TargetValue?.Name.ToValidFileName());
+
+        void IDisposable.Dispose() => Disconnect();
 
         /// <summary>
         ///     Form that will be controlled by this instance
@@ -36,7 +36,7 @@ namespace MmasfUI.Common
         public Window Target
         {
             [UsedImplicitly]
-            get {return TargetValue;}
+            get => TargetValue;
             set
             {
                 Disconnect();
@@ -50,7 +50,21 @@ namespace MmasfUI.Common
         /// </summary>
         public string FileName => GetFileNameFunction();
 
-        void IDisposable.Dispose() => Disconnect();
+        Rect? Position
+        {
+            get => Convert(0, null, s => s.FromJson<Rect?>());
+            set => Save(value, WindowState);
+        }
+
+        string[] ParameterStrings => TargetValue == null? null : FileHandle.String?.Split('\n');
+
+        SmbFile FileHandle => FileName.ToSmbFile();
+
+        WindowState WindowState
+        {
+            get => Convert(1, WindowState.Normal, s => s.Parse<WindowState>());
+            set => Save(Position, value);
+        }
 
         void Disconnect()
         {
@@ -94,45 +108,32 @@ namespace MmasfUI.Common
             LoadPosition();
         }
 
-        Rect? Position {get => Convert(0, null, s => s.FromJson<Rect?>()); set => Save(value, WindowState);}
-
-        string[] ParameterStrings => TargetValue == null ? null : FileHandle.String?.Split('\n');
-
-        SmbFile FileHandle => FileName.ToSmbFile();
-
         void Save(Rect? position, WindowState state)
         {
             var fileHandle = FileHandle;
-            Tracer.Assert(fileHandle != null);
+            (fileHandle != null).Assert();
             fileHandle.String = "{0}\n{1}"
                 .ReplaceArgs
                 (
-                    position == null ? "" : position.Value.ToJSon(),
+                    position == null? "" : position.Value.ToJSon(),
                     state
                 );
         }
 
-        WindowState WindowState
-        {
-            get {return Convert(1, WindowState.Normal, s => s.Parse<WindowState>());}
-            set {Save(Position, value);}
-        }
-
-        T Convert<T>(int position, T defaultValue, Func<string, T> converter)
-        {
-            return ParameterStrings == null || ParameterStrings.Length <= position
+        T Convert<T>
+            (int position, T defaultValue, Func<string, T> converter)
+            => ParameterStrings == null || ParameterStrings.Length <= position
                 ? defaultValue
                 : converter(ParameterStrings[position]);
-        }
 
         void LoadPosition()
         {
             var fileHandle = FileHandle;
-            Tracer.Assert(fileHandle != null);
+            (fileHandle != null).Assert();
             if(fileHandle.String != null)
             {
                 var position = Position;
-                Tracer.Assert(position != null);
+                (position != null).Assert();
                 //TargetValue.SuspendLayout();
                 TargetValue.WindowStartupLocation = WindowStartupLocation.Manual;
                 var rect = EnsureVisible(position.Value);
@@ -153,9 +154,7 @@ namespace MmasfUI.Common
                 return;
 
             if(TargetValue.WindowState == WindowState.Normal)
-            {
                 Position = TargetValue.RestoreBounds;
-            }
 
             WindowState = TargetValue.WindowState;
         }
@@ -174,15 +173,15 @@ namespace MmasfUI.Common
             var rightDistance = value.Right - closestScreen.Bounds.Left;
 
             if(leftDistance > 0 && rightDistance > 0)
-                result.X += leftDistance < rightDistance ? -(leftDistance + 10) : rightDistance + 10;
+                result.X += leftDistance < rightDistance? -(leftDistance + 10) : rightDistance + 10;
 
             var topDistance = value.Top - closestScreen.Bounds.Bottom;
             var bottomDistance = value.Bottom - closestScreen.Bounds.Top;
 
             if(topDistance > 0 && bottomDistance > 0)
-                result.Y += topDistance < bottomDistance ? -(topDistance + 10) : bottomDistance + 10;
+                result.Y += topDistance < bottomDistance? -(topDistance + 10) : bottomDistance + 10;
 
-            Tracer.Assert(closestScreen.Bounds.IntersectsWith(result));
+            closestScreen.Bounds.IntersectsWith(result).Assert();
             return result;
         }
     }

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
@@ -17,9 +15,6 @@ namespace MmasfUI
     {
         readonly SaveFileClusterProxy[] Data;
         readonly StatusBar StatusBar = new StatusBar();
-
-        Window ViewConfiguration.IWindow.Window => this;
-        void ViewConfiguration.IWindow.Refresh() => RefreshData();
 
         internal SavesView(ViewConfiguration viewConfiguration)
         {
@@ -52,6 +47,10 @@ namespace MmasfUI
             this.InstallMainMenu(CreateMenu());
             this.InstallStatusLine(StatusBar);
         }
+
+        void ViewConfiguration.IWindow.Refresh() => RefreshData();
+
+        Window ViewConfiguration.IWindow.Window => this;
 
         static DataGrid CreateGrid(SaveFileClusterProxy[] data)
         {
@@ -114,16 +113,14 @@ namespace MmasfUI
                 {
                     new MenuItem
                     {
-                        Header = "_File",
-                        Items =
+                        Header = "_File", Items =
                         {
                             "_Exit".MenuItem("Exit")
                         }
-                    },
-                    new MenuItem
+                    }
+                    , new MenuItem
                     {
-                        Header = "_View",
-                        Items =
+                        Header = "_View", Items =
                         {
                             "View _Conflicts".MenuItem(SaveFileClusterProxy.Command.ViewConflicts)
                         }

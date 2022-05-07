@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
@@ -11,15 +10,15 @@ namespace MmasfUI
         [EnableDump]
         readonly string FileName;
 
-        protected FilePersistenceHandler(string fileName) { FileName = fileName; }
+        protected FilePersistenceHandler(string fileName) => FileName = fileName;
 
         protected object Get(Type type, string name)
         {
             var text = FileHandle(name).String;
-            if (text == null)
+            if(text == null)
                 return null;
 
-            if (type == typeof(Tuple<int, int>))
+            if(type == typeof(Tuple<int, int>))
             {
                 var values = text
                     .Substring(1, text.Length - 2)

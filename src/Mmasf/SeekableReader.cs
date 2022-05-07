@@ -1,92 +1,90 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using hw.DebugFormatter;
 
-namespace ManageModsAndSaveFiles
+namespace ManageModsAndSaveFiles;
+
+public sealed class SeekableReader : Stream
 {
-    public sealed class SeekableReader : Stream
+    readonly Stream Stream;
+    readonly long? PredefinedLength;
+    readonly MemoryStream Buffer = new();
+    long PositionValue;
+
+    public SeekableReader(Stream stream, long? predefinedLength = null)
     {
-        long PositionValue;
-        readonly Stream Stream;
-        readonly long? PredefinedLength;
-        readonly MemoryStream Buffer = new MemoryStream();
+        Stream = stream;
+        PredefinedLength = predefinedLength;
+        Stream.CanRead.Assert();
+    }
 
-        public SeekableReader(Stream stream, long? predefinedLength = null)
+    public override void Flush() => Stream.Flush();
+
+    public override long Seek(long offset, SeekOrigin origin)
+    {
+        var position = GetEffectivePosition(offset, origin);
+        Position = position;
+        return position;
+    }
+
+    public override void SetLength(long value) => Stream.SetLength(value);
+
+    public override int Read(byte[] buffer, int offset, int count)
+    {
+        AlignBuffer(Position + count);
+        Buffer.Position = Position;
+        return Buffer.Read(buffer, offset, count);
+    }
+
+    public override void Write(byte[] buffer, int offset, int count) => throw new NotImplementedException();
+    public override bool CanRead => true;
+    public override bool CanSeek => true;
+    public override bool CanWrite => false;
+    public override long Length => PredefinedLength ?? Stream.Length;
+
+    public override long Position
+    {
+        get => PositionValue;
+        set
         {
-            Stream = stream;
-            PredefinedLength = predefinedLength;
-            Tracer.Assert(Stream.CanRead);
+            AlignBuffer(value);
+            PositionValue = value;
         }
+    }
 
-        public override void Flush() => Stream.Flush();
+    protected override void Dispose(bool disposing)
+    {
+        if(disposing)
+            Buffer.Dispose();
+        base.Dispose(disposing);
+    }
 
-        public override long Seek(long offset, SeekOrigin origin)
+    long GetEffectivePosition(long offset, SeekOrigin origin)
+    {
+        switch(origin)
         {
-            var position = GetEffectivePosition(offset, origin);
-            Position = position; 
-            return position;
+            case SeekOrigin.Begin:
+                return offset;
+            case SeekOrigin.Current:
+                return offset + Buffer.Position;
+            case SeekOrigin.End:
+                return offset + Buffer.Length;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(origin), origin, null);
         }
+    }
 
-        long GetEffectivePosition(long offset, SeekOrigin origin)
+    void AlignBuffer(long value)
+    {
+        while(Buffer.Length < value)
         {
-            switch(origin)
-            {
-                case SeekOrigin.Begin:
-                    return offset;
-                case SeekOrigin.Current:
-                    return offset + Buffer.Position;
-                case SeekOrigin.End:
-                    return offset + Buffer.Length;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(origin), origin, null);
-            }
-        }
-        public override void SetLength(long value) => Stream.SetLength(value);
+            Buffer.Seek(0, SeekOrigin.End);
+            var buffer = new byte[1000000];
 
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            AlignBuffer(Position + count);
-            Buffer.Position = Position;
-            return Buffer.Read(buffer, offset, count);
-        }
-
-        public override void Write(byte[] buffer, int offset, int count) { throw new NotImplementedException(); }
-        public override bool CanRead => true;
-        public override bool CanSeek => true;
-        public override bool CanWrite => false;
-        public override long Length => PredefinedLength ?? Stream.Length;
-
-        public override long Position
-        {
-            get { return PositionValue; }
-            set
-            {
-                AlignBuffer(value);
-                PositionValue = value;
-            }
-        }
-
-        void AlignBuffer(long value)
-        {
-            while(Buffer.Length < value)
-            {
-                Buffer.Seek(0, SeekOrigin.End);
-                var buffer = new byte[1000000];
-
-                var count = Stream.Read(buffer, 0, buffer.Length);
-                Buffer.Write(buffer, 0, count);
-                if(count < buffer.Length)
-                    return;
-            }
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-                Buffer.Dispose();
-            base.Dispose(disposing);
+            var count = Stream.Read(buffer, 0, buffer.Length);
+            Buffer.Write(buffer, 0, count);
+            if(count < buffer.Length)
+                return;
         }
     }
 }

@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -22,28 +20,26 @@ namespace MmasfUI
             OnPropertyChanged();
         }
 
-        [UsedImplicitly]
-        public string DisplayValue => Value.Format3Digits();
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public override string ToString() => Value.Format3Digits();
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        [UsedImplicitly]
+        public string DisplayValue => Value.Format3Digits();
 
         void OnPropertyChanged()
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
 
-        internal static void Register(DataGrid dataGrid)
-        {
-            dataGrid.AutoGeneratingColumn += (s, e) => OnAutoGeneratingColumns(e);
-        }
+        internal static void Register
+            (DataGrid dataGrid) => dataGrid.AutoGeneratingColumn += (s, e) => OnAutoGeneratingColumns(e);
 
         static void OnAutoGeneratingColumns(DataGridAutoGeneratingColumnEventArgs args)
         {
             if(args.PropertyType != typeof(TimeSpanProxy))
                 return;
 
-            var column = (DataGridTextColumn) args.Column;
-            var binding = (Binding) column.Binding;
+            var column = (DataGridTextColumn)args.Column;
+            var binding = (Binding)column.Binding;
             binding.Path.Path += ".DisplayValue";
             args.Column.CellStyle = new Style
             {

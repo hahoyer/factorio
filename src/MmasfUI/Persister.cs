@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
 
@@ -11,9 +10,9 @@ namespace MmasfUI
     {
         sealed class Member<T> : DumpableObject, IMember
         {
-            readonly string Name;
             public readonly Action<T> Load;
             public readonly Func<T> Store;
+            readonly string Name;
             readonly IPersitenceHandler<T> Handler;
 
             public Member(string name, Action<T> load, Func<T> store, IPersitenceHandler<T> handler)
@@ -27,7 +26,7 @@ namespace MmasfUI
             void IMember.Load()
             {
                 var value = Handler.Get(Name);
-                if (value != null)
+                if(value != null)
                     Load(value);
             }
 
@@ -43,10 +42,11 @@ namespace MmasfUI
         readonly IDictionary<string, IMember> Members = new ConcurrentDictionary<string, IMember>();
 
         readonly SmbFile Handle;
+
+        internal Persister(SmbFile handle) => Handle = handle;
+
         [EnableDump]
         string FileName => Handle.FullName;
-
-        internal Persister(SmbFile handle) { Handle = handle; }
 
         public void Register<T>(string name, Action<T> load, Func<T> store)
             =>
@@ -57,13 +57,13 @@ namespace MmasfUI
 
         public void Load()
         {
-            foreach (var member in Members)
+            foreach(var member in Members)
                 member.Value.Load();
         }
 
         public void Store()
         {
-            foreach (var member in Members)
+            foreach(var member in Members)
                 member.Value.Store();
         }
 

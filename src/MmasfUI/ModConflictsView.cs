@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -25,24 +24,27 @@ namespace MmasfUI
             }
 
             readonly ModConflict Data;
+
+            public Proxy(ModConflict data) => Data = data;
+            public event PropertyChangedEventHandler PropertyChanged;
             ModDescription Mod => Data.Mod;
 
-            public Proxy(ModConflict data) { Data = data; }
-            public event PropertyChangedEventHandler PropertyChanged;
+            [UsedImplicitly]
+            public string ModName => Mod.Name;
+
+            [UsedImplicitly]
+            public string SaveVersion => Data.SaveMod?.Version.ToString();
+
+            [UsedImplicitly]
+            public string GameVersion => Data.GameMod?.Version.ToString();
+
+            [UsedImplicitly]
+            public bool IsKnown => Data.IsKnown;
 
             [UsedImplicitly]
             [NotifyPropertyChangedInvocator]
             void OnPropertyChanged([CallerMemberName] string propertyName = null)
                 => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-            [UsedImplicitly]
-            public string ModName => Mod.Name;
-            [UsedImplicitly]
-            public string SaveVersion => Data.SaveMod?.Version.ToString();
-            [UsedImplicitly]
-            public string GameVersion => Data.GameMod?.Version.ToString();
-            [UsedImplicitly]
-            public bool IsKnown => Data.IsKnown;
 
             [Command(Command.ViewModDescriptions)]
             public void ViewModDescriptions()
@@ -66,22 +68,9 @@ namespace MmasfUI
             Window = CreateWindow(viewConfiguration, DataGrid);
         }
 
-        Window ViewConfiguration.IWindow.Window => Window;
         void ViewConfiguration.IWindow.Refresh() => DataGrid.ItemsSource = Data;
 
-        static Window CreateWindow(ViewConfiguration viewConfiguration, DataGrid grid)
-        {
-            var window = new Window
-            {
-                ContextMenu = CreateContextMenu(),
-                Content = grid,
-                Title = viewConfiguration.Identifier.Stringify(" of ")
-            };
-
-            window.InstallPositionPersister(viewConfiguration.PositionPath);
-            window.InstallMainMenu(CreateMenu());
-            return window;
-        }
+        Window ViewConfiguration.IWindow.Window => Window;
 
         Proxy[] Data
             => MmasfContext
@@ -93,6 +82,19 @@ namespace MmasfUI
                 .RelevantConflicts
                 .Select(s => new Proxy(s))
                 .ToArray();
+
+        static Window CreateWindow(ViewConfiguration viewConfiguration, DataGrid grid)
+        {
+            var window = new Window
+            {
+                ContextMenu = CreateContextMenu(), Content = grid
+                , Title = viewConfiguration.Identifier.Stringify(" of ")
+            };
+
+            window.InstallPositionPersister(viewConfiguration.PositionPath);
+            window.InstallMainMenu(CreateMenu());
+            return window;
+        }
 
         static ContextMenu CreateContextMenu()
             => new ContextMenu
@@ -107,8 +109,7 @@ namespace MmasfUI
         {
             var result = new DataGrid
             {
-                IsReadOnly = true,
-                SelectionMode = DataGridSelectionMode.Single
+                IsReadOnly = true, SelectionMode = DataGridSelectionMode.Single
             };
 
             result.ConfigurateDefaultColumns();
@@ -124,22 +125,19 @@ namespace MmasfUI
                 {
                     new MenuItem
                     {
-                        Header = "_File",
-                        Items =
+                        Header = "_File", Items =
                         {
                             "_Exit".MenuItem("Exit")
                         }
-                    },
-                    new MenuItem
+                    }
+                    , new MenuItem
                     {
-                        Header = "_View",
-                        Items =
+                        Header = "_View", Items =
                         {
                             "View _Mod descriptions".MenuItem(Proxy.Command.ViewModDescriptions)
                         }
                     }
                 }
             };
-
     }
 }

@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using hw.DebugFormatter;
 using hw.Helper;
@@ -11,7 +9,7 @@ namespace MmasfUI
     {
         internal interface IWindow
         {
-            Window Window{ get; }
+            Window Window { get; }
             void Refresh();
         }
 
@@ -28,15 +26,21 @@ namespace MmasfUI
 
         internal string Status
         {
-            get { return ItemFile("Status").String; }
-            private set { ItemFile("Status").String = value; }
+            get => ItemFile("Status").String;
+            private set => ItemFile("Status").String = value;
         }
 
         internal DateTime? LastUsed
         {
-            get { return FromDateTime(ItemFile("LastUsed").String); }
-            private set { ItemFile("LastUsed").String = value?.ToString("O"); }
+            get => FromDateTime(ItemFile("LastUsed").String);
+            private set => ItemFile("LastUsed").String = value?.ToString("O");
         }
+
+        [DisableDump]
+        internal IWindow View => ViewCache.Value;
+
+        [DisableDump]
+        internal string PositionPath => ItemFileName("Position");
 
         static DateTime? FromDateTime(string value)
         {
@@ -50,12 +54,9 @@ namespace MmasfUI
             return null;
         }
 
-        [DisableDump]
-        internal IWindow View => ViewCache.Value;
-
         IWindow CreateAndConnectView()
         {
-            IWindow result = CreateView();
+            var result = CreateView();
             ConnectToWindow(result.Window);
             return result;
         }
@@ -64,17 +65,17 @@ namespace MmasfUI
         {
             switch(Identifier[0])
             {
-            case "ModDictionary":
-                return new ModDictionaryView(this);
-            case "Saves":
-                return new SavesView(this);
-            case "Mods":
-                return new ModsView(this);
-            case "ModConflicts":
-                return new ModConflictsView(this);
-            default:
-                NotImplementedMethod();
-                return null;
+                case "ModDictionary":
+                    return new ModDictionaryView(this);
+                case "Saves":
+                    return new SavesView(this);
+                case "Mods":
+                    return new ModsView(this);
+                case "ModConflicts":
+                    return new ModConflictsView(this);
+                default:
+                    NotImplementedMethod();
+                    return null;
             }
         }
 
@@ -107,9 +108,6 @@ namespace MmasfUI
             LastUsed = DateTime.Now;
             MainContainer.Instance.AddViewConfiguration(this);
         }
-
-        [DisableDump]
-        internal string PositionPath => ItemFileName("Position");
 
         internal void ShowAndActivate()
         {

@@ -1,42 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using ManageModsAndSaveFiles.Mods;
+﻿using ManageModsAndSaveFiles.Mods;
 
-namespace ManageModsAndSaveFiles.Saves
+namespace ManageModsAndSaveFiles.Saves;
+
+public sealed class ModConflict
 {
-    public sealed class ModConflict
+    public FileCluster Save;
+    public ModDescription SaveMod;
+    public ModDescription GameMod;
+    public ModDescription Mod => GameMod ?? SaveMod;
+
+    internal bool IsRelevant
     {
-        public FileCluster Save;
-        public ModDescription SaveMod;
-        public ModDescription GameMod;
-        public ModDescription Mod => GameMod ?? SaveMod;
-
-        internal bool IsRelevant
+        get
         {
-            get
-            {
-                if(GameMod == null)
-                    return SaveMod.IsSaveOnlyPossible != true;
-                if(SaveMod == null)
-                    return GameMod.IsGameOnlyPossible != true;
+            if(GameMod == null)
+                return SaveMod.IsSaveOnlyPossible != true;
+            if(SaveMod == null)
+                return GameMod.IsGameOnlyPossible != true;
 
-                return !GameMod.IsCompatible(SaveMod.Version);
-            }
+            return !GameMod.IsCompatible(SaveMod.Version);
         }
+    }
 
-        public bool IsKnown
+    public bool IsKnown
+    {
+        get
         {
-            get
-            {
-                if(!Mod.HasConfiguration)
-                    return false;
-                if(GameMod == null)
-                    return Mod.IsSaveOnlyPossible != null;
-                if(SaveMod == null)
-                    return Mod.IsGameOnlyPossible != null;
+            if(!Mod.HasConfiguration)
                 return false;
-            }
+            if(GameMod == null)
+                return Mod.IsSaveOnlyPossible != null;
+            if(SaveMod == null)
+                return Mod.IsGameOnlyPossible != null;
+            return false;
         }
     }
 }

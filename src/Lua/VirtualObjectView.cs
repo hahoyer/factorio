@@ -1,23 +1,20 @@
-﻿using System;
-using System.Diagnostics;
-using hw.DebugFormatter;
+﻿using hw.DebugFormatter;
 
-namespace Lua
+namespace Lua;
+
+sealed class VirtualObjectView : TablePathObject
 {
-    sealed class VirtualObjectView : TablePathObject
-    {
-        public VirtualObjectView(HWLua parent, IRootObject rootObject, params string[] path)
-            : base(parent, rootObject, path) {}
+    public VirtualObjectView(HWLua parent, IRootObject rootObject, params string[] path)
+        : base(parent, rootObject, path) { }
 
-        [DisableDump]
-        public object Value
+    [DisableDump]
+    public object Value
+    {
+        get
         {
-            get
-            {
-                var m = Materialize();
-                NotImplementedMethod();
-                return null;
-            }
+            var m = Materialize();
+            NotImplementedMethod();
+            return null;
         }
     }
 }

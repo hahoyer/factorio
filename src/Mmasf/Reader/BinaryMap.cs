@@ -1,21 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using hw.DebugFormatter;
-using hw.Helper;
 
-namespace ManageModsAndSaveFiles.Reader
+namespace ManageModsAndSaveFiles.Reader;
+
+public sealed class BinaryMap<TTarget> : DumpableObject
 {
-    public sealed class BinaryMap<TTarget> : DumpableObject
+    long[] SizesCache;
+
+    long Offset(int fieldIndex)
     {
-        long[] SizesCache;
-
-        long Offset(int fieldIndex)
-        {
-            NotImplementedMethod(fieldIndex);
-            return 0;
-        }
-
+        NotImplementedMethod(fieldIndex);
+        return 0;
     }
 }

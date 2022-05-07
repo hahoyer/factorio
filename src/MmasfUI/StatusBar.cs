@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using hw.Helper;
 using HWBase;
-using ManageModsAndSaveFiles;
 using MmasfUI.Common;
 
 namespace MmasfUI
@@ -25,13 +21,13 @@ namespace MmasfUI
 
         internal string Text
         {
-            get { return TextValue; }
+            get => TextValue;
             set
             {
-                if (TextValue == value)
+                if(TextValue == value)
                     return;
 
-                lock (this)
+                lock(this)
                 {
                     TextValue = value;
                     IsDirty = true;
@@ -55,16 +51,16 @@ namespace MmasfUI
                 return;
 
             this.Synchronized
-                (
-                    () =>
+            (
+                () =>
+                {
+                    lock(this)
                     {
-                        lock(this)
-                        {
-                            TextBlock.Text = TextValue;
-                            IsDirty = false;
-                        }
+                        TextBlock.Text = TextValue;
+                        IsDirty = false;
                     }
-                );
+                }
+            );
         }
 
         void LateRefresh()
@@ -75,7 +71,8 @@ namespace MmasfUI
             {
                 Refresh();
                 100.MilliSeconds().Sleep();
-            } while(IsDirty);
+            }
+            while(IsDirty);
 
             IsLocked = false;
         }

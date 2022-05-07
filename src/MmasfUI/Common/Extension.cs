@@ -4,12 +4,9 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
-using hw.DebugFormatter;
-using hw.Helper;
 
 namespace MmasfUI.Common
 {
@@ -18,10 +15,7 @@ namespace MmasfUI.Common
         internal static Rectangle ToRectangle(this Rect value)
             => new Rectangle
             {
-                X = (int) value.X,
-                Y = (int) value.Y,
-                Height = (int) value.Height,
-                Width = (int) value.Width
+                X = (int)value.X, Y = (int)value.Y, Height = (int)value.Height, Width = (int)value.Width
             };
 
         public static byte[] AsciiToByteArray(this string value) => Encoding.ASCII.GetBytes(value);
@@ -72,14 +66,14 @@ namespace MmasfUI.Common
         internal static string ToValidFileChar(char c)
         {
             if(Path.GetInvalidFileNameChars().Contains(c))
-                return "%" + (int) c;
+                return "%" + (int)c;
 
             return "" + c;
         }
 
         internal static void InstallMainMenu(this Window container, Menu menu)
         {
-            var content = (UIElement) container.Content;
+            var content = (UIElement)container.Content;
             var d = new DockPanel();
             d.Children.Add(menu);
             DockPanel.SetDock(menu, Dock.Top);
@@ -93,7 +87,7 @@ namespace MmasfUI.Common
 
         internal static void InstallStatusLine(this Window container, UIElement line)
         {
-            var content = (UIElement) container.Content;
+            var content = (UIElement)container.Content;
             var d = new DockPanel();
             d.Children.Add(line);
             DockPanel.SetDock(line, Dock.Bottom);
@@ -113,10 +107,8 @@ namespace MmasfUI.Common
                     Target = main
                 };
 
-        internal static string ToValidFileName(this string value)
-        {
-            return value.Select(ToValidFileChar).Aggregate("", (c, n) => c + n);
-        }
+        internal static string ToValidFileName
+            (this string value) => value.Select(ToValidFileChar).Aggregate("", (c, n) => c + n);
 
 
         internal static void Synchronized(this DispatcherObject control, Action action)
