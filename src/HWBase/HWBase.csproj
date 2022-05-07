@@ -40,7 +40,6 @@
     <Compile Include="hw\Helper\DateTimeExtender.cs" />
     <Compile Include="hw\Helper\EnumEx.cs" />
     <Compile Include="hw\Helper\FunctionCache.cs" />
-    <Compile Include="hw\Helper\IFile.cs" />
     <Compile Include="hw\Helper\IUniqueIdProvider.cs" />
     <Compile Include="hw\Helper\LinqExtension.cs" />
     <Compile Include="hw\Helper\LocationProviderAttribute.cs" />

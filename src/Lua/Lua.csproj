@@ -37,7 +37,6 @@
     <Compile Include="TablePathObject.cs" />
     <Compile Include="TableView.cs" />
     <Compile Include="VirtualObjectView.cs" />
-    <None Include="app.config" />
     <None Include="packages.config">
     </None>
     <None Include="sys.targets">

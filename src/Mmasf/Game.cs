@@ -114,7 +114,7 @@ public class Game : DumpableObject
             => Items.Top(i => i.Target == target, enableEmpty: false, enableMultiple: false).Count;
     }
 
-    class Factory : DumpableObject
+    sealed class Factory : DumpableObject
     {
         internal Stack<Receipe>[] Receipes = { };
 

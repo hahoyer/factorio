@@ -33,7 +33,6 @@
     <Compile Include="ModConfiguration.cs" />
     <Compile Include="Rational.cs" />
     <Compile Include="Reader\ArrayItem.cs" />
-    <Compile Include="Reader\BinaryMap.cs" />
     <Compile Include="Reader\BinaryRead.cs" />
     <Compile Include="CompoundCache.cs" />
     <Compile Include="Configuration.cs" />
@@ -60,7 +59,6 @@
     <Compile Include="UserConfiguration.cs" />
     <Compile Include="Compression\Microsoft\ZipArchiveHandle.cs" />
     <Compile Include="Compression\Microsoft\ZipFileHandle.cs" />
-    <None Include="app.config" />
     <None Include="GameLoader.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

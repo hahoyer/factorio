@@ -1,11 +1,10 @@
 ﻿using System.Net;
 using System.Text;
 using hw.DebugFormatter;
-using hw.Helper;
 
 namespace FactorioApi;
 
-sealed class WebSite : DumpableObject, IFile
+sealed class WebSite : DumpableObject
 {
     readonly string Name;
 

@@ -74,7 +74,7 @@ public static class Extension
     public static RegistryItem Registry(this string fullKey) => new(fullKey.Split('\\'));
 
     public static TimeSpan MilliSeconds(this int value) => TimeSpan.FromMilliseconds(value);
-    public static void WriteFlaggedLine(this string value) => Tracer.FlaggedLine(value, stackFrameDepth: 1);
+    public static void WriteFlaggedLine(this string value) => value.FlaggedLine(stackFrameDepth: 1);
 
     public static string Left(this string target, int targetLength, string pad = " ")
     {

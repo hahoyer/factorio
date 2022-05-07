@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace ManageModsAndSaveFiles;
+namespace HWBase;
 
 /// <summary>
 ///     Handles converting JSON string values into a C# boolean data type.
@@ -33,6 +33,9 @@ public sealed class BooleanJsonConverter : JsonConverter
     public override object ReadJson
         (JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
     {
+        if(reader.Value == null)
+            return new JsonSerializer().Deserialize(reader, objectType);
+
         switch(reader.Value.ToString().ToLower().Trim())
         {
             case "true":
