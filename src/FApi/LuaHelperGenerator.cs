@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
 using HWBase;
@@ -30,14 +31,15 @@ sealed class LuaHelperGenerator : DumpableObject
     }
 
     public string GetAttributeList()
-        => "return\n" + Classes.Where(IsRelevant).Select(GetAttributeList).Stringify(",\n").Indent();
+        => @$"-- Generated {DateTime.Now:O} by FactorioApi {GetType().Assembly.GetName().Version} 
+-- see https://github.com/hahoyer/factorio/tree/master/src/FApi
+return {Classes.Where(IsRelevant).Select(GetAttributeList).Stringify(",\n").Indent().Surround("{")}";
 
     string GetAttributeList(Class luaClass)
     {
-        var attributeData = luaClass
-            .Attributes
-            .Where(field => IsRelevant(luaClass, field))
-            .Select(field => field.Name)
+        var attributeData = Assessments
+            .GetRelevantAttributes(luaClass)
+            .Select(name => $"{name} = true")
             .Stringify(",\n");
         return @$"{luaClass.Name} = 
 {{

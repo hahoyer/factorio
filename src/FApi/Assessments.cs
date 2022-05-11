@@ -47,9 +47,9 @@ sealed class Assessments
         var result = new Classes
         {
             FactorioVersion = GameApi.Version
-            , Irrelevant = UnifyStrings(old.Irrelevant)
+            , Irrelevant = UnifyStrings(old.Irrelevant, true)
             , Relevant = UnifyStrings(old.Relevant)
-            , New = UnifyStrings(@new)
+            , New = UnifyStrings(@new, true)
         };
         return result;
     }
@@ -101,9 +101,9 @@ sealed class Assessments
         var result = new Members
         {
             FactorioVersion = GameApi.Version
-            , AlwaysIrrelevant = UnifyStrings(old.AlwaysIrrelevant)
+            , AlwaysIrrelevant = UnifyStrings(old.AlwaysIrrelevant, true)
             , AlwaysRelevant = UnifyStrings(old.AlwaysRelevant)
-            , Irrelevant = UnifyStrings(old.Irrelevant)
+            , Irrelevant = UnifyStrings(old.Irrelevant, true)
             , Relevant = UnifyStrings(old.Relevant)
             , Specific = UnifyStrings(old.Specific)
             , RescanClasses = new string[0]
@@ -131,8 +131,16 @@ sealed class Assessments
         return default;
     }
 
-    static string[] UnifyStrings(string[] target)
-        => target == null? new string[0] : target.Distinct().OrderBy(item => item).ToArray();
+    static string[] UnifyStrings(string[] target, bool sort = false)
+    {
+        if(target == null)
+            return new string[0];
+
+        var enumerable = target.Distinct();
+        if(sort)
+            enumerable = enumerable.OrderBy(item => item);
+        return enumerable.ToArray();
+    }
 
     static ClassMembers GetNewClassForMembers(Class arg, string[] knownMembers)
     {
@@ -170,5 +178,13 @@ sealed class Assessments
         }
 
         return argField.Name.In(Members.Current.Relevant);
+    }
+
+    public string[] GetRelevantAttributes(Class luaClass)
+    {
+        Members.Current.Specific.AssertIsNull();
+        return Members.Current.AlwaysRelevant
+            .Where(member => luaClass.Attributes.Any(attribute => attribute.Name == member))
+            .ToArray();
     }
 }
