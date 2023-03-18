@@ -16,3 +16,4 @@ obj/
 .sync
 /src/MmasfUI/MmasfUI.csproj.DotSettings
 /src/MmasfUI/app.config
+/build/mods/apikey.txt
