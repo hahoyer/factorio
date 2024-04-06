@@ -10,11 +10,7 @@ namespace ManageModsAndSaveFiles;
 
 public sealed class MmasfContext : DumpableObject
 {
-    public static readonly MmasfContext Instance = new MmasfContext();
-
-    static FunctionCache<Version, ModDescription> CreateModDescription(string name)
-        => new FunctionCache<Version, ModDescription>
-            (version => new ModDescription(name, version));
+    public static readonly MmasfContext Instance = new();
 
     public readonly FunctionCache<string, FunctionCache<Version, ModDescription>> ModDictionary;
 
@@ -29,48 +25,9 @@ public sealed class MmasfContext : DumpableObject
     readonly CompoundCache<UserConfiguration[]> UserConfigurationsCache;
     readonly CompoundCache<SystemConfiguration> SystemConfigurationCache;
 
-    MmasfContext()
-    {
-            ConfigurationCache = new CompoundCache<Configuration>
-            (
-                () => new Configuration(),
-                ConfigurationWatcherCache
-            );
-            ConfigurationWatcherCache = new CompoundCache<DirectoryWatcher>(CreateConfigurationWatcher);
-            ModConfigurationCache = new CompoundCache<ModConfiguration>(ModConfiguration.Create);
-            ModDictionary = new FunctionCache<string, FunctionCache<Version, ModDescription>>(CreateModDescription);
-            SystemConfigurationCache = new CompoundCache<SystemConfiguration>(()=> new SystemConfiguration());
-
-            SystemConfigurationFileCache = new CompoundCache<SystemConfigurationFile>
-            (
-                () => new SystemConfigurationFile(Configuration.SystemFile),
-                ConfigurationCache
-            );
-
-            DataConfigurationCache = new CompoundCache<DataConfiguration>
-            (
-                () =>
-                    new DataConfiguration(SystemConfigurationFile.ConfigurationPath, OnExternalModification),
-                SystemConfigurationFileCache
-            );
-
-            UserConfigurationsCache = new CompoundCache<UserConfiguration[]>
-            (
-                () =>
-                    Configuration
-                        .UserConfigurationPaths
-                        .Select
-                        (
-                            item =>
-                                UserConfiguration
-                                    .Create(item, Configuration.UserConfigurationPaths, this)
-                        )
-                        .ToArray()
-            );
-        }
-
     [DisableDump]
     public SystemConfiguration SystemConfiguration => SystemConfigurationCache.Value;
+
     [DisableDump]
     public Configuration Configuration => ConfigurationCache.Value;
 
@@ -91,56 +48,91 @@ public sealed class MmasfContext : DumpableObject
     {
         get
         {
-                var result = "";
+            var result = "";
 
-                var executable = Configuration.SystemFile
-                    .DirectoryName
-                    .PathCombine("bin\\x64\\factorio.exe");
+            var executable = Configuration.SystemFile
+                .DirectoryName
+                .PathCombine(@"bin\x64\factorio.exe");
 
-                result += "Executable path: " + executable + "\n";
+            result += "Executable path: " + executable + "\n";
 
-                var versionInfo = FileVersionInfo.GetVersionInfo(executable);
-                var version = versionInfo.FileVersion;
+            var versionInfo = FileVersionInfo.GetVersionInfo(executable);
+            var version = versionInfo.FileVersion;
 
-                result += "Version: " + version + "\n";
-                return result;
-            }
+            result += "Version: " + version + "\n";
+            return result;
+        }
     }
 
+    MmasfContext()
+    {
+        ConfigurationCache = new(() => new(), ConfigurationWatcherCache);
+        ConfigurationWatcherCache = new(CreateConfigurationWatcher);
+        ModConfigurationCache = new(ModConfiguration.Create);
+        ModDictionary = new(CreateModDescription);
+        SystemConfigurationCache = new(() => new());
+
+        SystemConfigurationFileCache = new(
+            () => new(Configuration.SystemFile),
+            ConfigurationCache
+        );
+
+        DataConfigurationCache = new(
+            () => new(SystemConfigurationFile.ConfigurationPath, OnExternalModification),
+            SystemConfigurationFileCache
+        );
+
+        UserConfigurationsCache = new(
+            () =>
+                Configuration
+                    .UserConfigurationPaths
+                    .Select
+                    (
+                        item =>
+                            UserConfiguration
+                                .Create(item, Configuration.UserConfigurationPaths, this)
+                    )
+                    .ToArray()
+        );
+    }
+
+    static FunctionCache<Version, ModDescription> CreateModDescription(string name)
+        => new(version => new(name, version));
+
     DirectoryWatcher CreateConfigurationWatcher()
-        => new DirectoryWatcher(Configuration.UserConfigurationRootPaths, Configuration.Exceptions)
+        => new(Configuration.UserConfigurationRootPaths, Configuration.Exceptions)
         {
             OnExternalModification = OnModificationOnConfigPaths
         };
 
     public void RenewUserConfigurationPaths()
     {
-            Configuration.RenewUserConfigurationPaths();
-            ConfigurationCache.IsValid = false;
-            UserConfigurationsCache.IsValid = false;
-        }
+        Configuration.RenewUserConfigurationPaths();
+        ConfigurationCache.IsValid = false;
+        UserConfigurationsCache.IsValid = false;
+    }
 
     internal ModDescription CreateModReferenceBefore014(int i, BinaryRead reader)
     {
-            var name = reader.GetNextString<int>();
+        var name = reader.GetNextString<int>();
 
-            var version = new Version
-                (reader.GetNext<short>(), reader.GetNext<short>(), reader.GetNext<short>());
-            return ModDictionary[name][version];
-        }
+        var version = new Version
+            (reader.GetNext<short>(), reader.GetNext<short>(), reader.GetNext<short>());
+        return ModDictionary[name][version];
+    }
 
     public ModDescription CreateModReference(int i, BinaryRead reader, bool isBefore01414)
     {
-            if(isBefore01414)
-                return CreateModReferenceBefore014(i, reader);
+        if(isBefore01414)
+            return CreateModReferenceBefore014(i, reader);
 
-            var name = reader.GetNextString<byte>();
-            // ReSharper disable once UnusedVariable
-            var lookAhead = reader.LookAhead();
-            var version = new Version
-                (reader.GetNext<byte>(), reader.GetNext<byte>(), reader.GetNext<byte>());
-            return ModDictionary[name][version];
-        }
+        var name = reader.GetNextString<byte>();
+        // ReSharper disable once UnusedVariable
+        var lookAhead = reader.LookAhead();
+        var version = new Version
+            (reader.GetNext<byte>(), reader.GetNext<byte>(), reader.GetNext<byte>());
+        return ModDictionary[name][version];
+    }
 
     public void ActivateWatcher() => ConfigurationWatcherCache.IsValid = true;
 }

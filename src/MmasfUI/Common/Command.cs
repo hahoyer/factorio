@@ -55,7 +55,7 @@ sealed class Command : DumpableObject, ICommand
                 case 1:
                     return parameter != null && parameter.GetType().Is(parameterInfos[0].ParameterType);
                 default:
-                    Tracer.ConditionalBreak(true);
+                    true.ConditionalBreak();
                     return false;
             }
         }
