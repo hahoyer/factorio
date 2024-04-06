@@ -13,45 +13,12 @@ public sealed class FileCluster : DumpableObject
 {
     const string LevelInitDat = "level-init.dat";
     const string LevelDat = "level.dat";
-    public readonly UserConfiguration Parent;
 
+    readonly UserConfiguration Parent;
     readonly string Path;
+    readonly ValueCache<BinaryData> DataCache;
 
-    BinaryData DataValue;
-
-    public FileCluster(string path, UserConfiguration parent)
-    {
-        Path = path;
-        Parent = parent;
-        Path.Log();
-    }
-
-    public override string ToString()
-        => Name.Quote() +
-            "  " +
-            Version +
-            "  " +
-            Data.MapName.Quote() +
-            "  " +
-            Data.ScenarioName.Quote() +
-            "  " +
-            Data.CampaignName.Quote() +
-            "  " +
-            Data.Difficulty +
-            "  " +
-            Duration.Format3Digits();
-
-    protected override string GetNodeDump() => Name;
-
-    BinaryData Data
-    {
-        get
-        {
-            EnsureDataRead();
-            return DataValue;
-        }
-    }
-
+    BinaryData Data => DataCache.Value;
     public string Name => Path.ToSmbFile().Name;
     public DateTime Created => Path.ToSmbFile().ModifiedDate;
     public Version Version => Data.Version;
@@ -60,18 +27,6 @@ public sealed class FileCluster : DumpableObject
     public string CampaignName => Data.CampaignName;
     public TimeSpan Duration => Data.Duration;
     public ModDescription[] Mods => Data.Mods;
-
-    public bool IsDataRead
-    {
-        get => DataValue != null;
-        set
-        {
-            if(value)
-                EnsureDataRead();
-            else
-                DataValue = null;
-        }
-    }
 
     [DisableDump]
     public BinaryRead LevelDatReader => BinaryRead(LevelDat);
@@ -91,7 +46,46 @@ public sealed class FileCluster : DumpableObject
     public IEnumerable<ModConflict> RelevantConflicts
         => Conflicts.Where(c => c.IsRelevant);
 
-    public bool IsValidData => IsDataRead && Data.IsValid;
+    public bool IsValidData => DataCache.IsValid && Data.IsValid;
+
+    public FileCluster(string path, UserConfiguration parent)
+    {
+        Path = path;
+        Parent = parent;
+        DataCache = new(GetData);
+        Path.Log();
+    }
+
+    public override string ToString()
+        => Name.Quote()
+            + "  "
+            + Version
+            + "  "
+            + Data.MapName.Quote()
+            + "  "
+            + Data.ScenarioName.Quote()
+            + "  "
+            + Data.CampaignName.Quote()
+            + "  "
+            + Data.Difficulty
+            + "  "
+            + Duration.Format3Digits();
+
+    protected override string GetNodeDump() => Name;
+
+    BinaryData GetData()
+    {
+        try
+        {
+            var reader = Profiler.Measure(() => LevelDatReader);
+            reader.UserContext = new UserContext();
+            return reader.GetNext<BinaryData>();
+        }
+        catch(Exception)
+        {
+            return new(false);
+        }
+    }
 
     ModConflict CreateConflict(ModDescription saveMod, Mods.FileCluster gameMod)
     {
@@ -103,23 +97,6 @@ public sealed class FileCluster : DumpableObject
             {
                 Save = this, SaveMod = saveMod, GameMod = gameMod?.Description
             };
-    }
-
-    void EnsureDataRead()
-    {
-        if(IsDataRead)
-            return;
-
-        try
-        {
-            var reader = Profiler.Measure(() => LevelDatReader);
-            reader.UserContext = new UserContext();
-            DataValue = reader.GetNext<BinaryData>();
-        }
-        catch(Exception)
-        {
-            DataValue = new(false);
-        }
     }
 
 
@@ -139,4 +116,6 @@ public sealed class FileCluster : DumpableObject
             (() => zipFileHandles.Where(item => item.ItemName == name && item.Depth == 2));
         return Profiler.Measure(() => zipFileHandle.Single());
     }
+
+    public void Refresh() => DataCache.IsValid = false;
 }
