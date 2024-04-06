@@ -15,11 +15,11 @@ public sealed class ZipArchiveHandle : DumpableObject, IZipArchiveHandle
 
     internal ZipArchiveHandle(string path) => Path = path;
 
-    IEnumerable<IZipFileHandle> IZipArchiveHandle.Items => ItemsValue ?? (ItemsValue = GetItems());
+    IEnumerable<IZipFileHandle> IZipArchiveHandle.Items => ItemsValue ??= GetItems();
 
     protected override string GetNodeDump() => Path;
 
-    internal ZipFile ZipArchive => ZipArchiveValue ?? (ZipArchiveValue = GetZipArchive());
+    internal ZipFile ZipArchive => ZipArchiveValue ??= GetZipArchive();
 
     IEnumerable<IZipFileHandle> GetItems() => ZipArchive
         .Cast<ZipEntry>()

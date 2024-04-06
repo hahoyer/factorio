@@ -10,7 +10,7 @@ using hw.Helper;
 
 namespace ManageModsAndSaveFiles.Reader;
 
-public sealed class BinaryRead : DumpableObject
+public sealed class BinaryRead(Stream reader) : DumpableObject
 {
     public interface IContext
     {
@@ -39,25 +39,14 @@ public sealed class BinaryRead : DumpableObject
             : base(message) { }
     }
 
-    sealed class InvalidException : Exception
-    {
-        public InvalidException(string message)
-            : base(message) { }
-    }
+    sealed class InvalidException(string message) : Exception(message);
 
-    sealed class InvalidArrayException : System.Exception
-    {
-        public InvalidArrayException(string message)
-            : base(message) { }
-    }
+    sealed class InvalidArrayException(string message) : System.Exception(message);
 
     public long Position;
     public IContext UserContext;
-    readonly Stream Reader;
 
-    public BinaryRead(Stream reader) => Reader = reader;
-
-    public bool IsEnd => Position >= Reader.Length;
+    public bool IsEnd => Position >= reader.Length;
 
     byte[] GetNextBytes(int count)
     {
@@ -70,8 +59,8 @@ public sealed class BinaryRead : DumpableObject
     {
         (count < 10000).Assert();
         var result = new byte[count];
-        Reader.Position = Position;
-        var read = Reader.Read(result, 0, count);
+        reader.Position = Position;
+        var read = reader.Read(result, 0, count);
         (read == count).Assert();
         return result;
     }
