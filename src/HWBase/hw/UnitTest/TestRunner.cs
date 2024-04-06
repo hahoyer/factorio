@@ -37,23 +37,13 @@ public sealed class TestRunner : Dumpable
     string CurrentMethodName = "";
     string Status = "Start";
 
-    TestRunner(IEnumerable<TestType> testTypes)
-    {
-        TestLevels = new Func<Type, bool>[] { IsNormalPriority, IsLowPriority };
-        TestTypes = testTypes.ToArray();
-        TestTypes.IsCircuitFree(DependentTypes).Assert
-            (() => Tracer.Dump(TestTypes.Circuits(DependentTypes).ToArray()));
-        if(Configuration.SkipSuccessfulMethods)
-            LoadConfiguration();
-    }
-
     bool AllIsFine => TestTypes.All(t => !t.IsStarted || t.IsSuccessful);
 
     string ConfigurationString
     {
-        get => HeaderText +
-            "\n" +
-            TestTypes.OrderBy(testType => testType.ConfigurationModePriority)
+        get => HeaderText
+            + "\n"
+            + TestTypes.OrderBy(testType => testType.ConfigurationModePriority)
                 .Aggregate("", (current, testType) => current + testType.ConfigurationString);
         set
         {
@@ -79,14 +69,13 @@ public sealed class TestRunner : Dumpable
         => $@"//{HeaderText}
 
 // ReSharper disable once CheckNamespace
-namespace hw.UnitTest
+namespace hw.UnitTest;
+public static class PendingTests
 {{
-    public static class PendingTests
+    public static void Run()
     {{
-        public static void Run()
-        {{
-        {GeneratedTestCalls}
-}}}}}}
+    {GeneratedTestCalls}
+}}}}
 ";
 
     string GeneratedTestCalls
@@ -110,9 +99,19 @@ namespace hw.UnitTest
         }
     }
 
+    TestRunner(IEnumerable<TestType> testTypes)
+    {
+        TestLevels = new[] { IsNormalPriority, IsLowPriority };
+        TestTypes = testTypes.ToArray();
+        TestTypes.IsCircuitFree(DependentTypes).Assert
+            (() => Tracer.Dump(TestTypes.Circuits(DependentTypes).ToArray()));
+        if(Configuration.SkipSuccessfulMethods)
+            LoadConfiguration();
+    }
+
     string GeneratedTestCallsForMode(IGrouping<string, (TestType type, TestMethod method)> group)
-        => $"\n// {group.Key} \n\n" +
-            group
+        => $"\n// {group.Key} \n\n"
+            + group
                 .Select(testType => $"{testType.method.RunString};")
                 .Stringify("\n");
 
@@ -240,14 +239,14 @@ namespace hw.UnitTest
         ConfigFileMessage("Configuration loaded");
     }
 
-    static IEnumerable<TestType> GetUnitTestTypes(Assembly rootAssembly) => rootAssembly
+    internal static IEnumerable<TestType> GetUnitTestTypes(Assembly rootAssembly) => rootAssembly
         .GetReferencedTypes()
         .Where(IsUnitTestType)
         .Select(type => new TestType(type));
 
-    static bool IsUnitTestType(Type type)
+    internal static bool IsUnitTestType(Type type)
     {
-        if(!type.IsSealed)
+        if(type.IsAbstract && !type.IsSealed)
             return false;
         if(type.GetAttribute<UnitTestAttribute>(true) != null)
             return true;
