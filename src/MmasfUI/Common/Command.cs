@@ -5,49 +5,49 @@ using System.Windows.Input;
 using hw.DebugFormatter;
 using hw.Helper;
 
-namespace MmasfUI.Common
-{
-    sealed class Command : DumpableObject, ICommand
-    {
-        readonly CommandManager Parent;
-        readonly MethodInfo[] Executes;
-        readonly PropertyInfo CanExecute;
+namespace MmasfUI.Common;
 
-        internal Command
-        (
-            CommandManager parent,
-            MethodInfo[] executes,
-            PropertyInfo canExecute
-        )
-        {
+sealed class Command : DumpableObject, ICommand
+{
+    readonly CommandManager Parent;
+    readonly MethodInfo[] Executes;
+    readonly PropertyInfo CanExecute;
+
+    internal Command
+    (
+        CommandManager parent,
+        MethodInfo[] executes,
+        PropertyInfo canExecute
+    )
+    {
             Parent = parent;
             Executes = executes;
             CanExecute = canExecute;
         }
 
-        bool ICommand.CanExecute(object parameter)
-        {
+    bool ICommand.CanExecute(object parameter)
+    {
             var execute = FindExecutor(parameter);
             return Parent.CanExecute(execute, CanExecute);
         }
 
-        event EventHandler ICommand.CanExecuteChanged
-        {
-            add => System.Windows.Input.CommandManager.RequerySuggested += value;
-            remove => System.Windows.Input.CommandManager.RequerySuggested -= value;
-        }
+    event EventHandler ICommand.CanExecuteChanged
+    {
+        add => System.Windows.Input.CommandManager.RequerySuggested += value;
+        remove => System.Windows.Input.CommandManager.RequerySuggested -= value;
+    }
 
-        void ICommand.Execute(object parameter)
-        {
+    void ICommand.Execute(object parameter)
+    {
             var execute = FindExecutor(parameter);
             Parent.Execute(execute, parameter);
         }
 
-        MethodInfo FindExecutor(object parameter)
-            => Executes.Single(x => IsMatch(parameter, x.GetParameters()));
+    MethodInfo FindExecutor(object parameter)
+        => Executes.Single(x => IsMatch(parameter, x.GetParameters()));
 
-        static bool IsMatch(object parameter, ParameterInfo[] parameterInfos)
-        {
+    static bool IsMatch(object parameter, ParameterInfo[] parameterInfos)
+    {
             switch(parameterInfos.Length)
             {
                 case 0:
@@ -59,5 +59,4 @@ namespace MmasfUI.Common
                     return false;
             }
         }
-    }
 }

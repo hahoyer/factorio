@@ -4,26 +4,26 @@ using hw.Helper;
 using HWBase;
 using MmasfUI.Common;
 
-namespace MmasfUI
-{
-    sealed class StatusBar : System.Windows.Controls.Primitives.StatusBar
-    {
-        readonly TextBlock TextBlock;
-        string TextValue;
-        bool IsLocked;
-        bool IsDirty;
+namespace MmasfUI;
 
-        public StatusBar()
-        {
+sealed class StatusBar : System.Windows.Controls.Primitives.StatusBar
+{
+    readonly TextBlock TextBlock;
+    string TextValue;
+    bool IsLocked;
+    bool IsDirty;
+
+    public StatusBar()
+    {
             TextBlock = new TextBlock();
             Items.Add(TextBlock);
         }
 
-        internal string Text
+    internal string Text
+    {
+        get => TextValue;
+        set
         {
-            get => TextValue;
-            set
-            {
                 if(TextValue == value)
                     return;
 
@@ -35,18 +35,18 @@ namespace MmasfUI
                     PerformModification();
                 }
             }
-        }
+    }
 
-        void PerformModification()
-        {
+    void PerformModification()
+    {
             if(IsLocked)
                 return;
 
             Task.Factory.StartNew(LateRefresh);
         }
 
-        void Refresh()
-        {
+    void Refresh()
+    {
             if(!IsDirty)
                 return;
 
@@ -63,8 +63,8 @@ namespace MmasfUI
             );
         }
 
-        void LateRefresh()
-        {
+    void LateRefresh()
+    {
             IsLocked = true;
 
             do
@@ -76,5 +76,4 @@ namespace MmasfUI
 
             IsLocked = false;
         }
-    }
 }

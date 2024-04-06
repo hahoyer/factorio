@@ -8,66 +8,66 @@ using hw.Helper;
 using HWBase;
 using JetBrains.Annotations;
 
-namespace MmasfUI.Common
+namespace MmasfUI.Common;
+
+public sealed class PositionConfig : IDisposable
 {
-    public sealed class PositionConfig : IDisposable
+    readonly Func<string> GetFileNameFunction;
+    Window TargetValue;
+    bool LoadPositionCalled;
+
+    /// <summary>
+    ///     Ctor
+    /// </summary>
+    /// <param name="getFileName">
+    ///     function to obtain filename of configuration file.
+    ///     <para>It will be called each time the name is required. </para>
+    ///     <para>Default: Target.Name</para>
+    /// </param>
+    public PositionConfig
+        (Func<string> getFileName = null)
+        => GetFileNameFunction = getFileName ?? (() => TargetValue?.Name.ToValidFileName());
+
+    void IDisposable.Dispose() => Disconnect();
+
+    /// <summary>
+    ///     Form that will be controlled by this instance
+    /// </summary>
+    public Window Target
     {
-        readonly Func<string> GetFileNameFunction;
-        Window TargetValue;
-        bool LoadPositionCalled;
-
-        /// <summary>
-        ///     Ctor
-        /// </summary>
-        /// <param name="getFileName">
-        ///     function to obtain filename of configuration file.
-        ///     <para>It will be called each time the name is required. </para>
-        ///     <para>Default: Target.Name</para>
-        /// </param>
-        public PositionConfig
-            (Func<string> getFileName = null)
-            => GetFileNameFunction = getFileName ?? (() => TargetValue?.Name.ToValidFileName());
-
-        void IDisposable.Dispose() => Disconnect();
-
-        /// <summary>
-        ///     Form that will be controlled by this instance
-        /// </summary>
-        public Window Target
+        [UsedImplicitly]
+        get => TargetValue;
+        set
         {
-            [UsedImplicitly]
-            get => TargetValue;
-            set
-            {
                 Disconnect();
                 TargetValue = value;
                 Connect();
             }
-        }
+    }
 
-        /// <summary>
-        ///     Name that will be used as filename
-        /// </summary>
-        public string FileName => GetFileNameFunction();
+    /// <summary>
+    ///     Name that will be used as filename
+    /// </summary>
+    public string FileName => GetFileNameFunction();
 
-        Rect? Position
-        {
-            get => Convert(0, null, s => s.FromJson<Rect?>());
-            set => Save(value, WindowState);
-        }
+    Rect? Position
+    {
+        get => Convert(0, null, s => s.FromJson<Rect?>());
+        set => Save(value, WindowState);
+    }
 
-        string[] ParameterStrings => TargetValue == null? null : FileHandle.String?.Split('\n');
+    string[] ParameterStrings => TargetValue == null? null : FileHandle.String?.Split('\n');
 
-        SmbFile FileHandle => FileName.ToSmbFile();
+    SmbFile FileHandle => FileName.ToSmbFile();
 
-        WindowState WindowState
-        {
-            get => Convert(1, WindowState.Normal, s => s.Parse<WindowState>());
-            set => Save(Position, value);
-        }
+    WindowState WindowState
+    {
+        get => Convert(1, WindowState.Normal, s => s.Parse<WindowState>());
+        set => Save(Position, value);
+    }
 
-        void Disconnect()
-        {
+    void Disconnect()
+    {
             if(TargetValue == null)
                 return;
 
@@ -80,8 +80,8 @@ namespace MmasfUI.Common
             TargetValue = null;
         }
 
-        void Connect()
-        {
+    void Connect()
+    {
             if(TargetValue == null)
                 return;
             //TargetValue.SuspendLayout();
@@ -92,24 +92,24 @@ namespace MmasfUI.Common
             //TargetValue.ResumeLayout();
         }
 
-        void OnLocationChanged(object target, EventArgs e)
-        {
+    void OnLocationChanged(object target, EventArgs e)
+    {
             if(target != TargetValue)
                 return;
 
             SavePosition();
         }
 
-        void OnLoad(object target, EventArgs e)
-        {
+    void OnLoad(object target, EventArgs e)
+    {
             if(target != TargetValue)
                 return;
 
             LoadPosition();
         }
 
-        void Save(Rect? position, WindowState state)
-        {
+    void Save(Rect? position, WindowState state)
+    {
             var fileHandle = FileHandle;
             (fileHandle != null).Assert();
             fileHandle.String = "{0}\n{1}"
@@ -120,14 +120,14 @@ namespace MmasfUI.Common
                 );
         }
 
-        T Convert<T>
-            (int position, T defaultValue, Func<string, T> converter)
-            => ParameterStrings == null || ParameterStrings.Length <= position
-                ? defaultValue
-                : converter(ParameterStrings[position]);
+    T Convert<T>
+        (int position, T defaultValue, Func<string, T> converter)
+        => ParameterStrings == null || ParameterStrings.Length <= position
+            ? defaultValue
+            : converter(ParameterStrings[position]);
 
-        void LoadPosition()
-        {
+    void LoadPosition()
+    {
             var fileHandle = FileHandle;
             (fileHandle != null).Assert();
             if(fileHandle.String != null)
@@ -148,8 +148,8 @@ namespace MmasfUI.Common
             LoadPositionCalled = true;
         }
 
-        void SavePosition()
-        {
+    void SavePosition()
+    {
             if(!LoadPositionCalled)
                 return;
 
@@ -159,8 +159,8 @@ namespace MmasfUI.Common
             WindowState = TargetValue.WindowState;
         }
 
-        static Rectangle EnsureVisible(Rect valueRect)
-        {
+    static Rectangle EnsureVisible(Rect valueRect)
+    {
             var value = valueRect.ToRectangle();
             var allScreens = Screen.AllScreens;
             if(allScreens.Any(s => s.Bounds.IntersectsWith(value)))
@@ -184,5 +184,4 @@ namespace MmasfUI.Common
             closestScreen.Bounds.IntersectsWith(result).Assert();
             return result;
         }
-    }
 }

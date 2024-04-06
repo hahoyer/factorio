@@ -6,21 +6,21 @@ using hw.DebugFormatter;
 // ReSharper disable once RedundantUsingDirective
 using ManageModsAndSaveFiles.Compression.Nuget;
 
-namespace ManageModsAndSaveFiles.Compression.Microsoft
+namespace ManageModsAndSaveFiles.Compression.Microsoft;
+
+public sealed class ZipArchiveHandle : DumpableObject, IDisposable, IZipArchiveHandle
 {
-    public sealed class ZipArchiveHandle : DumpableObject, IDisposable, IZipArchiveHandle
+    IEnumerable<IZipFileHandle> ItemsValue;
+    ZipArchive ZipArchiveValue;
+
+    internal readonly string Path;
+
+    internal ZipArchiveHandle(string path) { Path = path; }
+
+    IEnumerable<IZipFileHandle> IZipArchiveHandle.Items => ItemsValue ?? (ItemsValue = GetItems());
+
+    IEnumerable<IZipFileHandle> GetItems()
     {
-        IEnumerable<IZipFileHandle> ItemsValue;
-        ZipArchive ZipArchiveValue;
-
-        internal readonly string Path;
-
-        internal ZipArchiveHandle(string path) { Path = path; }
-
-        IEnumerable<IZipFileHandle> IZipArchiveHandle.Items => ItemsValue ?? (ItemsValue = GetItems());
-
-        IEnumerable<IZipFileHandle> GetItems()
-        {
             var zipFile = ZipArchive;
             // ReSharper disable once AccessToDisposedClosure
             var readOnlyCollection = Profiler.Measure(() => zipFile.Entries);
@@ -29,16 +29,15 @@ namespace ManageModsAndSaveFiles.Compression.Microsoft
                 .ToArray();
         }
 
-        protected override string GetNodeDump() => Path;
+    protected override string GetNodeDump() => Path;
 
-        internal ZipArchiveEntry GetZipArchiveEntry(string itemPath)
-            => Profiler.Measure(() => ZipArchive.GetEntry(itemPath));
+    internal ZipArchiveEntry GetZipArchiveEntry(string itemPath)
+        => Profiler.Measure(() => ZipArchive.GetEntry(itemPath));
 
-        ZipArchive ZipArchive
-            => ZipArchiveValue ??
-                (ZipArchiveValue = Profiler.Measure(() => ZipFile.OpenRead(Path)))
-        ;
+    ZipArchive ZipArchive
+        => ZipArchiveValue ??
+            (ZipArchiveValue = Profiler.Measure(() => ZipFile.OpenRead(Path)))
+    ;
 
-        void IDisposable.Dispose() => ZipArchiveValue?.Dispose();
-    }
+    void IDisposable.Dispose() => ZipArchiveValue?.Dispose();
 }

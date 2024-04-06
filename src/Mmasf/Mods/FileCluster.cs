@@ -5,19 +5,19 @@ using hw.DebugFormatter;
 using hw.Helper;
 using HWBase;
 
-namespace ManageModsAndSaveFiles.Mods
-{
-    public sealed class FileCluster : DumpableObject
-    {
-        const string FileNameInfoJson = "info.json";
+namespace ManageModsAndSaveFiles.Mods;
 
-        public static FileCluster Create
-        (
-            SmbFile path,
-            SmbFile[] paths,
-            IDictionary<string, bool> knownMods,
-            MmasfContext parent)
-        {
+public sealed class FileCluster : DumpableObject
+{
+    const string FileNameInfoJson = "info.json";
+
+    public static FileCluster Create
+    (
+        SmbFile path,
+        SmbFile[] paths,
+        IDictionary<string, bool> knownMods,
+        MmasfContext parent)
+    {
             var infoJSon = GetInfoJSon(path);
             if(infoJSon == null)
                 return null;
@@ -39,8 +39,8 @@ namespace ManageModsAndSaveFiles.Mods
             return new FileCluster(path, isEnabled, index, description, infoJSon);
         }
 
-        static Version GetVersionFromFile(SmbFile file)
-        {
+    static Version GetVersionFromFile(SmbFile file)
+    {
             var text =
                 file.IsDirectory ? GetInfoJSonFromDirectory(file) : GetInfoJSonFromZipFile(file);
             if(text == null)
@@ -50,8 +50,8 @@ namespace ManageModsAndSaveFiles.Mods
             return new Version(info.Version);
         }
 
-        static string GetModNameFromFile(SmbFile file)
-        {
+    static string GetModNameFromFile(SmbFile file)
+    {
             var text =
                 file.IsDirectory ? GetInfoJSonFromDirectory(file) : GetInfoJSonFromZipFile(file);
             if(text == null)
@@ -61,8 +61,8 @@ namespace ManageModsAndSaveFiles.Mods
             return info.Name;
         }
 
-        static InfoJSon GetInfoJSon(SmbFile file)
-        {
+    static InfoJSon GetInfoJSon(SmbFile file)
+    {
             var text =
                 file.IsDirectory
                     ? GetInfoJSonFromDirectory(file)
@@ -71,8 +71,8 @@ namespace ManageModsAndSaveFiles.Mods
             return text?.FromJson<InfoJSon>();
         }
 
-        static string GetInfoJSonFromZipFile(SmbFile modFileFile)
-        {
+    static string GetInfoJSonFromZipFile(SmbFile modFileFile)
+    {
             try
             {
                 return GetInfoJSonFromZipFile(modFileFile, false);
@@ -83,8 +83,8 @@ namespace ManageModsAndSaveFiles.Mods
             }
         }
 
-        static string GetInfoJSonFromZipFile(SmbFile modFileFile, bool quirks)
-        {
+    static string GetInfoJSonFromZipFile(SmbFile modFileFile, bool quirks)
+    {
             var headerDir = modFileFile.Name.Substring(0, modFileFile.Name.Length - 4);
             return modFileFile
                 .FullName
@@ -94,22 +94,22 @@ namespace ManageModsAndSaveFiles.Mods
                 .String;
         }
 
-        static string GetInfoJSonFromDirectory(SmbFile file)
-            => file.FullName.PathCombine(FileNameInfoJson).ToSmbFile()
-                .String;
+    static string GetInfoJSonFromDirectory(SmbFile file)
+        => file.FullName.PathCombine(FileNameInfoJson).ToSmbFile()
+            .String;
 
-        public readonly int ConfigIndex;
-        public readonly SmbFile File;
-        public readonly ModDescription Description;
-        public readonly InfoJSon InfoJSon;
-        public readonly bool? IsEnabled;
+    public readonly int ConfigIndex;
+    public readonly SmbFile File;
+    public readonly ModDescription Description;
+    public readonly InfoJSon InfoJSon;
+    public readonly bool? IsEnabled;
 
-        public string Name =>InfoJSon.Name;
-        public string Title=> InfoJSon.Title;
-        public Version Version => new Version(InfoJSon.Version);
+    public string Name =>InfoJSon.Name;
+    public string Title=> InfoJSon.Title;
+    public Version Version => new Version(InfoJSon.Version);
 
-        FileCluster(SmbFile fileHandle, bool? isEnabled, int configIndex, ModDescription description, InfoJSon infoJSon)
-        {
+    FileCluster(SmbFile fileHandle, bool? isEnabled, int configIndex, ModDescription description, InfoJSon infoJSon)
+    {
             File = fileHandle;
             ConfigIndex = configIndex;
             Description = description;
@@ -117,6 +117,5 @@ namespace ManageModsAndSaveFiles.Mods
             IsEnabled = isEnabled;
         }
 
-        public override string ToString() => ConfigIndex + ":" + Description;
-    }
+    public override string ToString() => ConfigIndex + ":" + Description;
 }

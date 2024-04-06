@@ -1,12 +1,11 @@
 using System.IO;
 
-namespace ManageModsAndSaveFiles.Compression
+namespace ManageModsAndSaveFiles.Compression;
+
+public interface IZipFileHandle
 {
-    public interface IZipFileHandle
-    {
-        string ItemName { get; }
-        int Depth { get; }
-        string String { get; }
-        Stream Reader { get; }
-    }
+    string ItemName { get; }
+    int Depth { get; }
+    string String { get; }
+    Stream Reader { get; }
 }

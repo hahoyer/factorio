@@ -6,39 +6,39 @@ using System.Windows.Input;
 using hw.DebugFormatter;
 using ManageModsAndSaveFiles;
 
-namespace MmasfUI.Common
+namespace MmasfUI.Common;
+
+abstract partial class Selection : DumpableObject
 {
-    abstract partial class Selection : DumpableObject
+    internal interface IAcceptor
     {
-        internal interface IAcceptor
-        {
-            bool IsSelected { set; }
-        }
+        bool IsSelected { set; }
+    }
 
-        internal interface IController
-        {
-            void RegisterSelectionTrigger(Action value);
-        }
+    internal interface IController
+    {
+        void RegisterSelectionTrigger(Action value);
+    }
 
-        sealed class Item
-        {
-            [DisableDump]
-            internal readonly object Target;
-            [DisableDump]
-            internal readonly IAcceptor ItemView;
+    sealed class Item
+    {
+        [DisableDump]
+        internal readonly object Target;
+        [DisableDump]
+        internal readonly IAcceptor ItemView;
 
-            public Item(object target, IAcceptor itemView)
-            {
+        public Item(object target, IAcceptor itemView)
+        {
                 Target = target;
                 ItemView = itemView;
             }
-        }
+    }
 
-        readonly List<Item> Items = new List<Item>();
-        Item CurrentItem;
+    readonly List<Item> Items = new List<Item>();
+    Item CurrentItem;
 
-        protected void Add(int index, object target, IAcceptor itemView)
-        {
+    protected void Add(int index, object target, IAcceptor itemView)
+    {
             while(Items.Count <= index)
                 Items.Add(null);
             var item = new Item(target, itemView);
@@ -46,16 +46,16 @@ namespace MmasfUI.Common
             (itemView as IController)?.RegisterSelectionTrigger(() => CurrentTarget = target);
         }
 
-        protected void Add(object target, IController itemView)
-        {
+    protected void Add(object target, IController itemView)
+    {
             itemView.RegisterSelectionTrigger(() => CurrentTarget = target);
         }
 
-        internal object CurrentTarget
+    internal object CurrentTarget
+    {
+        get { return CurrentItem?.Target; }
+        set
         {
-            get { return CurrentItem?.Target; }
-            set
-            {
                 if(CurrentTarget == value)
                     return;
 
@@ -67,10 +67,10 @@ namespace MmasfUI.Common
                 if(CurrentItem != null)
                     CurrentItem.ItemView.IsSelected = true;
             }
-        }
+    }
 
-        static bool IsMatchingTarget(object value, Item i)
-        {
+    static bool IsMatchingTarget(object value, Item i)
+    {
             var targetTarget = i.Target as IIdentified<string>;
             var valueTarget = value as IIdentified<string>;
             if(targetTarget == null || valueTarget == null)
@@ -79,10 +79,10 @@ namespace MmasfUI.Common
             return valueTarget.Identifier == targetTarget.Identifier;
         }
 
-        internal void RegisterKeyboardHandler(Window window) { window.KeyUp += GetKey; }
+    internal void RegisterKeyboardHandler(Window window) { window.KeyUp += GetKey; }
 
-        void GetKey(object sender, KeyEventArgs e)
-        {
+    void GetKey(object sender, KeyEventArgs e)
+    {
             var index = GetIndex(e.Key);
 
             if(index == null)
@@ -92,8 +92,8 @@ namespace MmasfUI.Common
             e.Handled = true;
         }
 
-        int? GetIndex(Key key)
-        {
+    int? GetIndex(Key key)
+    {
             switch(key)
             {
                 case Key.Up:
@@ -108,17 +108,16 @@ namespace MmasfUI.Common
             return null;
         }
 
-        void SetCurrentTarget(int i)
-        {
+    void SetCurrentTarget(int i)
+    {
             CurrentTarget = Items.Any() ? Items[Math.Max(0, Math.Min(i, Items.Count - 1))].Target : null;
         }
-    }
+}
 
-    sealed class Selection<T> : Selection
-        where T : class
-    {
-        internal T Current { get { return (T) CurrentTarget; } set { CurrentTarget = value; } }
-        internal void Add(int index, T target, IAcceptor itemView) => base.Add(index, target, itemView);
-        internal void Add(T target, IController itemView) => base.Add(target, itemView);
-    }
+sealed class Selection<T> : Selection
+    where T : class
+{
+    internal T Current { get { return (T) CurrentTarget; } set { CurrentTarget = value; } }
+    internal void Add(int index, T target, IAcceptor itemView) => base.Add(index, target, itemView);
+    internal void Add(T target, IController itemView) => base.Add(target, itemView);
 }

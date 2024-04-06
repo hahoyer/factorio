@@ -4,21 +4,21 @@ using hw.Helper;
 using IniParser.Model;
 using JetBrains.Annotations;
 
-namespace ManageModsAndSaveFiles
+namespace ManageModsAndSaveFiles;
+
+sealed class IniFile
 {
-    sealed class IniFile
+    readonly ValueCache<IniData> Data;
+    readonly SmbFile Path;
+    readonly string CommentString;
+
+    readonly Action OnExternalModification;
+    [UsedImplicitly]
+    readonly FileSystemWatcher Watcher;
+
+
+    internal IniFile(SmbFile path, string commentString, Action onExternalModification)
     {
-        readonly ValueCache<IniData> Data;
-        readonly SmbFile Path;
-        readonly string CommentString;
-
-        readonly Action OnExternalModification;
-        [UsedImplicitly]
-        readonly FileSystemWatcher Watcher;
-
-
-        internal IniFile(SmbFile path, string commentString, Action onExternalModification)
-        {
             Path = path;
             CommentString = commentString;
             OnExternalModification = onExternalModification;
@@ -26,13 +26,13 @@ namespace ManageModsAndSaveFiles
             Watcher = CreateWatcher(path);
         }
 
-        internal KeyDataCollection this[string name] => Data.Value[name];
-        internal KeyDataCollection Global => Data.Value.Global;
+    internal KeyDataCollection this[string name] => Data.Value[name];
+    internal KeyDataCollection Global => Data.Value.Global;
 
-        internal void Persist() => Data.Value.SaveTo(Path, CommentString);
+    internal void Persist() => Data.Value.SaveTo(Path, CommentString);
 
-        internal void UpdateFrom(IniFile source)
-        {
+    internal void UpdateFrom(IniFile source)
+    {
             var destinationFile = Path;
             var sourceFile = source.Path;
             if(!destinationFile.Exists ||
@@ -45,8 +45,8 @@ namespace ManageModsAndSaveFiles
             Data.IsValid = false;
         }
 
-        FileSystemWatcher CreateWatcher(SmbFile path)
-        {
+    FileSystemWatcher CreateWatcher(SmbFile path)
+    {
             var result = new FileSystemWatcher(path.DirectoryName, path.Name)
             {
                 NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.LastWrite,
@@ -57,11 +57,10 @@ namespace ManageModsAndSaveFiles
             return result;
         }
 
-        void OnModification(object sender, FileSystemEventArgs e)
-        {
+    void OnModification(object sender, FileSystemEventArgs e)
+    {
             Data.IsValid = false;
             OnExternalModification?.Invoke();
         }
 
-    }
 }

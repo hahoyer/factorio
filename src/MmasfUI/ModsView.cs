@@ -10,45 +10,45 @@ using ManageModsAndSaveFiles;
 using ManageModsAndSaveFiles.Mods;
 using MmasfUI.Common;
 
-namespace MmasfUI
-{
-    sealed class ModsView : Window, ViewConfiguration.IWindow
-    {
-        sealed class FileClusterProxy : INotifyPropertyChanged
-        {
-            readonly FileCluster Data;
+namespace MmasfUI;
 
-            public FileClusterProxy(FileCluster data)
-            {
+sealed class ModsView : Window, ViewConfiguration.IWindow
+{
+    sealed class FileClusterProxy : INotifyPropertyChanged
+    {
+        readonly FileCluster Data;
+
+        public FileClusterProxy(FileCluster data)
+        {
                 Data = data;
                 OnPropertyChanged();
             }
 
-            public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
 
-            [UsedImplicitly]
-            public bool IsEnabled => Data.IsEnabled == true;
+        [UsedImplicitly]
+        public bool IsEnabled => Data.IsEnabled == true;
 
-            [UsedImplicitly]
-            public string Name => Data.Name;
+        [UsedImplicitly]
+        public string Name => Data.Name;
 
-            [UsedImplicitly]
-            public string Title => Data.Title;
+        [UsedImplicitly]
+        public string Title => Data.Title;
 
-            [UsedImplicitly]
-            public Version Version => Data.Version;
+        [UsedImplicitly]
+        public Version Version => Data.Version;
 
-            void OnPropertyChanged()
-                => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
-        }
+        void OnPropertyChanged()
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+    }
 
-        static Exception MultipleConfigurationException
-            (IEnumerable<UserConfiguration> configurations) => throw new Exception
-            ("MultipleConfiguration: " + configurations.Select(i => i.Name).Stringify(", "));
+    static Exception MultipleConfigurationException
+        (IEnumerable<UserConfiguration> configurations) => throw new Exception
+        ("MultipleConfiguration: " + configurations.Select(i => i.Name).Stringify(", "));
 
 
-        static DataGrid CreateGrid(IEnumerable<FileClusterProxy> data)
-        {
+    static DataGrid CreateGrid(IEnumerable<FileClusterProxy> data)
+    {
             var result = new DataGrid
             {
                 IsReadOnly = true
@@ -62,8 +62,8 @@ namespace MmasfUI
             return result;
         }
 
-        static void OnAutoGeneratingColumns(DataGridAutoGeneratingColumnEventArgs args)
-        {
+    static void OnAutoGeneratingColumns(DataGridAutoGeneratingColumnEventArgs args)
+    {
             if(args.PropertyName != "Created")
                 return;
 
@@ -76,28 +76,28 @@ namespace MmasfUI
         }
 
 
-        static Menu CreateMenu()
-            => new Menu
+    static Menu CreateMenu()
+        => new Menu
+        {
+            Items =
             {
-                Items =
+                new MenuItem
                 {
-                    new MenuItem
+                    Header = "_File",
+                    Items =
                     {
-                        Header = "_File",
-                        Items =
-                        {
-                            "_Exit".MenuItem("Exit")
-                        }
+                        "_Exit".MenuItem("Exit")
                     }
                 }
-            };
+            }
+        };
 
-        readonly string ConfigurationName;
-        readonly DataGrid DataGrid;
-        readonly StatusBar StatusBar = new StatusBar();
+    readonly string ConfigurationName;
+    readonly DataGrid DataGrid;
+    readonly StatusBar StatusBar = new StatusBar();
 
-        internal ModsView(ViewConfiguration viewConfiguration)
-        {
+    internal ModsView(ViewConfiguration viewConfiguration)
+    {
             ConfigurationName = viewConfiguration.Identifier[1];
             DataGrid = CreateGrid(Data);
             Content = DataGrid;
@@ -107,13 +107,13 @@ namespace MmasfUI
             this.InstallStatusLine(StatusBar);
         }
 
-        Window ViewConfiguration.IWindow.Window => this;
-        void ViewConfiguration.IWindow.Refresh() => RefreshData();
+    Window ViewConfiguration.IWindow.Window => this;
+    void ViewConfiguration.IWindow.Refresh() => RefreshData();
 
-        IEnumerable<FileClusterProxy> Data
+    IEnumerable<FileClusterProxy> Data
+    {
+        get
         {
-            get
-            {
                 return MmasfContext
                     .Instance
                     .UserConfigurations
@@ -127,20 +127,19 @@ namespace MmasfUI
                     .Select(s => new FileClusterProxy(s))
                     .ToArray();
             }
-        }
+    }
 
-        void RefreshData()
-        {
+    void RefreshData()
+    {
             var formerSelection = (FileClusterProxy) DataGrid.SelectedItem;
             DataGrid.ItemsSource = null;
             DataGrid.ItemsSource = Data;
             Select(formerSelection);
         }
 
-        void Select(FileClusterProxy item)
-        {
+    void Select(FileClusterProxy item)
+    {
             var proxyItem = item == null ? null : Data.Single(p => p.Name == item.Name);
             DataGrid.SelectedItem = proxyItem;
         }
-    }
 }

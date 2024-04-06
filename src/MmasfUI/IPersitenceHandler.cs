@@ -1,8 +1,7 @@
-namespace MmasfUI
+namespace MmasfUI;
+
+interface IPersitenceHandler<T>
 {
-    interface IPersitenceHandler<T>
-    {
-        T Get(string name);
-        void Set(string name, T value);
-    }
+    T Get(string name);
+    void Set(string name, T value);
 }

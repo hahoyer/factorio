@@ -9,123 +9,122 @@ using HWBase;
 using ManageModsAndSaveFiles;
 using MmasfUI.Common;
 
-namespace MmasfUI
+namespace MmasfUI;
+
+sealed class SavesView : Window, ViewConfiguration.IWindow
 {
-    sealed class SavesView : Window, ViewConfiguration.IWindow
+    readonly SaveFileClusterProxy[] Data;
+    readonly StatusBar StatusBar = new StatusBar();
+
+    internal SavesView(ViewConfiguration viewConfiguration)
     {
-        readonly SaveFileClusterProxy[] Data;
-        readonly StatusBar StatusBar = new StatusBar();
+        var configurationName = viewConfiguration.Identifier[1];
 
-        internal SavesView(ViewConfiguration viewConfiguration)
-        {
-            var configurationName = viewConfiguration.Identifier[1];
+        Data = MmasfContext
+            .Instance
+            .UserConfigurations
+            .Single(u => u.Name == configurationName)
+            .SaveFiles
+            .Select(s => new SaveFileClusterProxy(s, configurationName))
+            .ToArray();
 
-            Data = MmasfContext
-                .Instance
-                .UserConfigurations
-                .Single(u => u.Name == configurationName)
-                .SaveFiles
-                .Select(s => new SaveFileClusterProxy(s, configurationName))
-                .ToArray();
+        ContextMenu = CreateContextMenu();
 
-            ContextMenu = CreateContextMenu();
+        Content = CreateGrid(Data);
 
-            Content = CreateGrid(Data);
-
-            Task.Factory.StartNew
-            (
-                () =>
-                {
-                    Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
-                    100.MilliSeconds().Sleep();
-                    RefreshData();
-                }
-            );
-
-            Title = viewConfiguration.Identifier.Stringify(" of ");
-            this.InstallPositionPersister(viewConfiguration.PositionPath);
-            this.InstallMainMenu(CreateMenu());
-            this.InstallStatusLine(StatusBar);
-        }
-
-        void ViewConfiguration.IWindow.Refresh() => RefreshData();
-
-        Window ViewConfiguration.IWindow.Window => this;
-
-        static DataGrid CreateGrid(SaveFileClusterProxy[] data)
-        {
-            var result = new DataGrid
+        Task.Factory.StartNew
+        (
+            () =>
             {
-                IsReadOnly = true
-            };
+                Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
+                100.MilliSeconds().Sleep();
+                RefreshData();
+            }
+        );
 
-            result.AutoGeneratingColumn += (s, e) => OnAutoGeneratingColumns(e);
-            result.ConfigurateDefaultColumns();
-            result.ActivateSelectedItems();
-            result.ItemsSource = data;
-            return result;
-        }
-
-        static ContextMenu CreateContextMenu()
-            => new ContextMenu
-            {
-                Items =
-                {
-                    "View _Conflicts".MenuItem(SaveFileClusterProxy.Command.ViewConflicts)
-                }
-            };
-
-        static void OnAutoGeneratingColumns(DataGridAutoGeneratingColumnEventArgs args)
-        {
-            if(args.PropertyName != "Created")
-                return;
-
-            var column = args.Column as DataGridTextColumn;
-            if(column == null)
-                return;
-
-            column.SortDirection = ListSortDirection.Descending;
-            column.CanUserSort = true;
-        }
-
-        void RefreshData()
-        {
-            var count = Data.Length;
-            var current = 0;
-            Parallel.ForEach
-            (
-                Data,
-                proxy =>
-                {
-                    proxy.Refresh();
-                    current++;
-                    StatusBar.Text = current + " of " + count;
-                });
-
-            StatusBar.Text = count.ToString();
-        }
-
-
-        static Menu CreateMenu()
-            => new Menu
-            {
-                Items =
-                {
-                    new MenuItem
-                    {
-                        Header = "_File", Items =
-                        {
-                            "_Exit".MenuItem("Exit")
-                        }
-                    }
-                    , new MenuItem
-                    {
-                        Header = "_View", Items =
-                        {
-                            "View _Conflicts".MenuItem(SaveFileClusterProxy.Command.ViewConflicts)
-                        }
-                    }
-                }
-            };
+        Title = viewConfiguration.Identifier.Stringify(" of ");
+        this.InstallPositionPersister(viewConfiguration.PositionPath);
+        this.InstallMainMenu(CreateMenu());
+        this.InstallStatusLine(StatusBar);
     }
+
+    void ViewConfiguration.IWindow.Refresh() => RefreshData();
+
+    Window ViewConfiguration.IWindow.Window => this;
+
+    static DataGrid CreateGrid(SaveFileClusterProxy[] data)
+    {
+        var result = new DataGrid
+        {
+            IsReadOnly = true
+        };
+
+        result.AutoGeneratingColumn += (s, e) => OnAutoGeneratingColumns(e);
+        result.ConfigurateDefaultColumns();
+        result.ActivateSelectedItems();
+        result.ItemsSource = data;
+        return result;
+    }
+
+    static ContextMenu CreateContextMenu()
+        => new ContextMenu
+        {
+            Items =
+            {
+                "View _Conflicts".MenuItem(SaveFileClusterProxy.Command.ViewConflicts)
+            }
+        };
+
+    static void OnAutoGeneratingColumns(DataGridAutoGeneratingColumnEventArgs args)
+    {
+        if(args.PropertyName != "Created")
+            return;
+
+        var column = args.Column as DataGridTextColumn;
+        if(column == null)
+            return;
+
+        column.SortDirection = ListSortDirection.Descending;
+        column.CanUserSort = true;
+    }
+
+    void RefreshData()
+    {
+        var count = Data.Length;
+        var current = 0;
+        Parallel.ForEach
+        (
+            Data,
+            proxy =>
+            {
+                proxy.Refresh();
+                current++;
+                StatusBar.Text = current + " of " + count;
+            });
+
+        StatusBar.Text = count.ToString();
+    }
+
+
+    static Menu CreateMenu()
+        => new Menu
+        {
+            Items =
+            {
+                new MenuItem
+                {
+                    Header = "_File", Items =
+                    {
+                        "_Exit".MenuItem("Exit")
+                    }
+                }
+                , new MenuItem
+                {
+                    Header = "_View", Items =
+                    {
+                        "View _Conflicts".MenuItem(SaveFileClusterProxy.Command.ViewConflicts)
+                    }
+                }
+            }
+        };
 }

@@ -11,7 +11,7 @@
     <!-- CSharp specific settings -->
 
     <PropertyGroup>
-        <LangVersion>default</LangVersion>
+        <LangVersion>latest</LangVersion>
         <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
         <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
         <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -19,7 +19,7 @@
         <Prefer32Bit>false</Prefer32Bit>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
-        <NoWarn>649,169</NoWarn>
+        <NoWarn>649,169,414</NoWarn>
     </PropertyGroup>
 
 

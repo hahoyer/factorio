@@ -4,8 +4,6 @@
     <ProjectGuid>{E6986DBC-5120-46F5-A727-7DD6696252ED}</ProjectGuid>
     <AssemblyName>Test</AssemblyName>
     <TargetTypeEx>CSharp.Exe</TargetTypeEx>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs">
@@ -15,7 +13,6 @@
     </Compile>
     <Compile Include="ProfilerParser.cs" />
     <Compile Include="Program.cs" />
-    <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="sys.targets" />
     <Content Include="AssemblyInfo.tt">

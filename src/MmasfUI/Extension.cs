@@ -7,13 +7,13 @@ using System.Windows.Media;
 using ManageModsAndSaveFiles;
 using MmasfUI.Common;
 
-namespace MmasfUI
+namespace MmasfUI;
+
+static class Extension
 {
-    static class Extension
+    internal static StackPanel CreateTileView
+        (this UserConfiguration content, SolidColorBrush getIndicatorColor)
     {
-        internal static StackPanel CreateTileView
-            (this UserConfiguration content, SolidColorBrush getIndicatorColor)
-        {
             var data = new StackPanel
             {
                 Orientation = Orientation.Horizontal
@@ -35,18 +35,18 @@ namespace MmasfUI
             return data;
         }
 
-        internal static SolidColorBrush GetIndicatorColor(this UserConfiguration configuration)
-            => configuration.IsRoot
-                ? (configuration.IsCurrent
-                    ? Brushes.DarkBlue
-                    : Brushes.LightBlue)
-                : (configuration.IsCurrent
-                    ? Brushes.Black
-                    : Brushes.LightGray);
+    internal static SolidColorBrush GetIndicatorColor(this UserConfiguration configuration)
+        => configuration.IsRoot
+            ? (configuration.IsCurrent
+                ? Brushes.DarkBlue
+                : Brushes.LightBlue)
+            : (configuration.IsCurrent
+                ? Brushes.Black
+                : Brushes.LightGray);
 
-        internal static ScrollViewer CreateView
-            (this MmasfContext context, Selection<UserConfiguration> selection, ContextView parent)
-        {
+    internal static ScrollViewer CreateView
+        (this MmasfContext context, Selection<UserConfiguration> selection, ContextView parent)
+    {
             var result = new ScrollViewer();
             var panel = new StackPanel();
 
@@ -73,28 +73,28 @@ namespace MmasfUI
             return result;
         }
 
-        internal static MenuItem MenuItem(this string menuItemText, string commandIdentifier)
-            => new MenuItem
-            {
-                Header = menuItemText,
-                Command = MainContainer.Instance.CommandManager.ByName(commandIdentifier)
-            };
-
-        public static void ConfigurateDefaultColumns(this DataGrid target)
+    internal static MenuItem MenuItem(this string menuItemText, string commandIdentifier)
+        => new MenuItem
         {
+            Header = menuItemText,
+            Command = MainContainer.Instance.CommandManager.ByName(commandIdentifier)
+        };
+
+    public static void ConfigurateDefaultColumns(this DataGrid target)
+    {
             TimeSpanProxy.Register(target);
             target.AutoGeneratingColumn +=
                 (s, e) => OnAutoGeneratingColumnsForConfigurateDefaultColumns(e);
         }
 
-        public static void ActivateSelectedItems(this DataGrid target)
-        {
+    public static void ActivateSelectedItems(this DataGrid target)
+    {
             target.SelectionChanged += (s, e) => OnSelectionChangedForActivateSelectedItems(e);
         }
 
-        static void OnAutoGeneratingColumnsForConfigurateDefaultColumns
-            (DataGridAutoGeneratingColumnEventArgs args)
-        {
+    static void OnAutoGeneratingColumnsForConfigurateDefaultColumns
+        (DataGridAutoGeneratingColumnEventArgs args)
+    {
             if(args.PropertyType == typeof(bool?))
                 args.Column = new DataGridCheckBoxColumn
                 {
@@ -116,8 +116,8 @@ namespace MmasfUI
             }
         }
 
-        static void OnSelectionChangedForActivateSelectedItems(SelectionChangedEventArgs args)
-        {
+    static void OnSelectionChangedForActivateSelectedItems(SelectionChangedEventArgs args)
+    {
             foreach(var item in args.RemovedItems)
                 MainContainer.Instance.CommandManager[item] = false;
 
@@ -125,11 +125,10 @@ namespace MmasfUI
                 MainContainer.Instance.CommandManager[item] = true;
         }
 
-        public static void RunFactorio()
-            => MmasfContext
-                .Instance
-                .SystemConfiguration
-                .ExecutablePath
-                .InitiateExternalProgram();
-    }
+    public static void RunFactorio()
+        => MmasfContext
+            .Instance
+            .SystemConfiguration
+            .ExecutablePath
+            .InitiateExternalProgram();
 }

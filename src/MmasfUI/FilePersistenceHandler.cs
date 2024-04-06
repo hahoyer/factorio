@@ -3,17 +3,17 @@ using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
 
-namespace MmasfUI
+namespace MmasfUI;
+
+abstract class FilePersistenceHandler : DumpableObject
 {
-    abstract class FilePersistenceHandler : DumpableObject
+    [EnableDump]
+    readonly string FileName;
+
+    protected FilePersistenceHandler(string fileName) => FileName = fileName;
+
+    protected object Get(Type type, string name)
     {
-        [EnableDump]
-        readonly string FileName;
-
-        protected FilePersistenceHandler(string fileName) => FileName = fileName;
-
-        protected object Get(Type type, string name)
-        {
             var text = FileHandle(name).String;
             if(text == null)
                 return null;
@@ -33,23 +33,22 @@ namespace MmasfUI
             return null;
         }
 
-        SmbFile FileHandle(string name)
-        {
+    SmbFile FileHandle(string name)
+    {
             var result = FileName.PathCombine(name).ToSmbFile();
             result.EnsureDirectoryOfFileExists();
             return result;
         }
 
-        protected void Set(string name, object value) => FileHandle(name).String = value.ToString();
-    }
+    protected void Set(string name, object value) => FileHandle(name).String = value.ToString();
+}
 
-    sealed class FilePersistenceHandler<T> : FilePersistenceHandler, IPersitenceHandler<T>
-    {
-        public FilePersistenceHandler(string fileName)
-            : base(fileName) { }
+sealed class FilePersistenceHandler<T> : FilePersistenceHandler, IPersitenceHandler<T>
+{
+    public FilePersistenceHandler(string fileName)
+        : base(fileName) { }
 
-        T IPersitenceHandler<T>.Get(string name) => (T)Get(typeof(T), name);
+    T IPersitenceHandler<T>.Get(string name) => (T)Get(typeof(T), name);
 
-        void IPersitenceHandler<T>.Set(string name, T value) => Set(name, value);
-    }
+    void IPersitenceHandler<T>.Set(string name, T value) => Set(name, value);
 }

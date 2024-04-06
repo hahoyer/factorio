@@ -3,36 +3,36 @@ using System.Linq;
 using hw.DebugFormatter;
 using hw.Helper;
 
-namespace ManageModsAndSaveFiles
+namespace ManageModsAndSaveFiles;
+
+sealed class CompoundCache<TValue> : CompoundCache
 {
-    sealed class CompoundCache<TValue> : CompoundCache
+    readonly ValueCache<TValue> Cache;
+
+    public CompoundCache(Func<TValue> getValue, params CompoundCache[] dependsOn)
+        : base(dependsOn) => Cache = new ValueCache<TValue>(getValue);
+
+    public TValue Value => Cache.Value;
+
+    public override bool IsValid {get => Cache.IsValid; set => Cache.IsValid = value;}
+
+    public void OnChange()
     {
-        readonly ValueCache<TValue> Cache;
-
-        public CompoundCache(Func<TValue> getValue, params CompoundCache[] dependsOn)
-            : base(dependsOn) => Cache = new ValueCache<TValue>(getValue);
-
-        public TValue Value => Cache.Value;
-
-        public override bool IsValid {get => Cache.IsValid; set => Cache.IsValid = value;}
-
-        public void OnChange()
-        {
             foreach(var item in AllDependers)
                 item.IsValid = false;
         }
-    }
+}
 
-    abstract class CompoundCache : DumpableObject
+abstract class CompoundCache : DumpableObject
+{
+    readonly CompoundCache[] DependsOn;
+
+    protected CompoundCache(CompoundCache[] dependsOn) => DependsOn = dependsOn;
+
+    protected CompoundCache[] AllDependers
     {
-        readonly CompoundCache[] DependsOn;
-
-        protected CompoundCache(CompoundCache[] dependsOn) => DependsOn = dependsOn;
-
-        protected CompoundCache[] AllDependers
+        get
         {
-            get
-            {
                 var result = DependsOn;
                 while(true)
                 {
@@ -47,8 +47,7 @@ namespace ManageModsAndSaveFiles
                     result = newResult;
                 }
             }
-        }
-
-        public abstract bool IsValid {get; set;}
     }
+
+    public abstract bool IsValid {get; set;}
 }

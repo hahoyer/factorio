@@ -8,30 +8,30 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 
-namespace MmasfUI.Common
+namespace MmasfUI.Common;
+
+static class Extension
 {
-    static class Extension
-    {
-        internal static Rectangle ToRectangle(this Rect value)
-            => new Rectangle
-            {
-                X = (int)value.X, Y = (int)value.Y, Height = (int)value.Height, Width = (int)value.Width
-            };
-
-        public static byte[] AsciiToByteArray(this string value) => Encoding.ASCII.GetBytes(value);
-
-        public static string UnescapeComma(this string value)
-            => value
-                .Replace("&comma;", ",")
-                .Replace("&ampersant;", "&");
-
-        public static string EscapeComma(this string value)
-            => value
-                .Replace("&", "&ampersant;")
-                .Replace(",", "&comma;");
-
-        public static IEnumerable<T> EnsureAny<T>(this IEnumerable<T> value, Action onError)
+    internal static Rectangle ToRectangle(this Rect value)
+        => new Rectangle
         {
+            X = (int)value.X, Y = (int)value.Y, Height = (int)value.Height, Width = (int)value.Width
+        };
+
+    public static byte[] AsciiToByteArray(this string value) => Encoding.ASCII.GetBytes(value);
+
+    public static string UnescapeComma(this string value)
+        => value
+            .Replace("&comma;", ",")
+            .Replace("&ampersant;", "&");
+
+    public static string EscapeComma(this string value)
+        => value
+            .Replace("&", "&ampersant;")
+            .Replace(",", "&comma;");
+
+    public static IEnumerable<T> EnsureAny<T>(this IEnumerable<T> value, Action onError)
+    {
             var isAny = false;
             foreach(var item in value)
             {
@@ -46,8 +46,8 @@ namespace MmasfUI.Common
             onError();
         }
 
-        public static IEnumerable<T> EnsureNoDuplicate<T>(this IEnumerable<T> value, Action onError)
-        {
+    public static IEnumerable<T> EnsureNoDuplicate<T>(this IEnumerable<T> value, Action onError)
+    {
             var isAny = false;
             foreach(var item in value)
             {
@@ -63,16 +63,16 @@ namespace MmasfUI.Common
             }
         }
 
-        internal static string ToValidFileChar(char c)
-        {
+    internal static string ToValidFileChar(char c)
+    {
             if(Path.GetInvalidFileNameChars().Contains(c))
                 return "%" + (int)c;
 
             return "" + c;
         }
 
-        internal static void InstallMainMenu(this Window container, Menu menu)
-        {
+    internal static void InstallMainMenu(this Window container, Menu menu)
+    {
             var content = (UIElement)container.Content;
             var d = new DockPanel();
             d.Children.Add(menu);
@@ -85,8 +85,8 @@ namespace MmasfUI.Common
             DockPanel.SetDock(content, Dock.Bottom);
         }
 
-        internal static void InstallStatusLine(this Window container, UIElement line)
-        {
+    internal static void InstallStatusLine(this Window container, UIElement line)
+    {
             var content = (UIElement)container.Content;
             var d = new DockPanel();
             d.Children.Add(line);
@@ -99,29 +99,28 @@ namespace MmasfUI.Common
             DockPanel.SetDock(content, Dock.Top);
         }
 
-        internal static void InstallPositionPersister(this Window main, string configFileName)
-            // ReSharper disable once ObjectCreationAsStatement
-            => new PositionConfig
-                (() => configFileName)
-                {
-                    Target = main
-                };
+    internal static void InstallPositionPersister(this Window main, string configFileName)
+        // ReSharper disable once ObjectCreationAsStatement
+        => new PositionConfig
+            (() => configFileName)
+            {
+                Target = main
+            };
 
-        internal static string ToValidFileName
-            (this string value) => value.Select(ToValidFileChar).Aggregate("", (c, n) => c + n);
+    internal static string ToValidFileName
+        (this string value) => value.Select(ToValidFileChar).Aggregate("", (c, n) => c + n);
 
 
-        internal static void Synchronized(this DispatcherObject control, Action action)
-        {
+    internal static void Synchronized(this DispatcherObject control, Action action)
+    {
             if(control.Dispatcher.CheckAccess())
                 action();
             else
                 control.Dispatcher.Invoke(action);
         }
 
-        internal static T Synchronized<T>(this DispatcherObject control, Func<T> action)
-            => control.Dispatcher.CheckAccess()
-                ? action()
-                : control.Dispatcher.Invoke(action);
-    }
+    internal static T Synchronized<T>(this DispatcherObject control, Func<T> action)
+        => control.Dispatcher.CheckAccess()
+            ? action()
+            : control.Dispatcher.Invoke(action);
 }
