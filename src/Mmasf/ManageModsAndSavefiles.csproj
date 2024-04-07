@@ -11,6 +11,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AssemblyInfo.tt</DependentUpon>
     </Compile>
+    <Compile Include="ModSettings.cs" />
     <Compile Include="Compression\IZipArchiveHandle.cs" />
     <Compile Include="Compression\IZipFileHandle.cs" />
     <Compile Include="Compression\Nuget\ZipArchiveHandle.cs" />

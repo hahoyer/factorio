@@ -10,7 +10,7 @@ using hw.Helper;
 
 namespace ManageModsAndSaveFiles.Reader;
 
-public sealed class BinaryRead(Stream reader) : DumpableObject
+public sealed class BinaryRead : DumpableObject
 {
     public interface IContext
     {
@@ -26,6 +26,13 @@ public sealed class BinaryRead(Stream reader) : DumpableObject
     public interface IReaderProvider
     {
         object ReadAndAdvance(BinaryRead reader, Type type, MemberInfo member);
+    }
+
+    public sealed class Generic : DumpableObject
+    {
+        public readonly object Value;
+        public Generic(object value) => Value = value;
+        public Generic() { }
     }
 
     internal interface IAdvancer
@@ -45,8 +52,12 @@ public sealed class BinaryRead(Stream reader) : DumpableObject
 
     public long Position;
     public IContext UserContext;
+    readonly Stream Reader;
 
-    public bool IsEnd => Position >= reader.Length;
+    public bool IsEnd => Position >= Reader.Length;
+
+    byte[] Preview => GetBytes(10);
+    public BinaryRead(Stream reader) => Reader = reader;
 
     byte[] GetNextBytes(int count)
     {
@@ -55,12 +66,12 @@ public sealed class BinaryRead(Stream reader) : DumpableObject
         return result;
     }
 
-    byte[] GetBytes(int count)
+    internal byte[] GetBytes(int count)
     {
         (count < 10000).Assert();
         var result = new byte[count];
-        reader.Position = Position;
-        var read = reader.Read(result, 0, count);
+        Reader.Position = Position;
+        var read = Reader.Read(result, 0, count);
         (read == count).Assert();
         return result;
     }
@@ -76,6 +87,8 @@ public sealed class BinaryRead(Stream reader) : DumpableObject
             return BitConverter.ToInt16(GetNextBytes(Marshal.SizeOf(target)), 0);
         if(target == typeof(int))
             return BitConverter.ToInt32(GetNextBytes(Marshal.SizeOf(target)), 0);
+        if(target == typeof(double))
+            return BitConverter.ToDouble(GetNextBytes(Marshal.SizeOf(target)), 0);
 
         if(target == typeof(string))
             return GetNextString<int>();
@@ -139,10 +152,10 @@ public sealed class BinaryRead(Stream reader) : DumpableObject
             return false;
 
         var accessors = propertyInfo.GetAccessors();
-        return accessors.Length == 2 &&
-            accessors.All(a => !a.IsPrivate) &&
-            accessors.Any(a => a.ReturnType != typeof(void)) &&
-            accessors.Any(a => a.ReturnType == typeof(void));
+        return accessors.Length == 2
+            && accessors.All(a => !a.IsPrivate)
+            && accessors.Any(a => a.ReturnType != typeof(void))
+            && accessors.Any(a => a.ReturnType == typeof(void));
     }
 
 
@@ -150,6 +163,17 @@ public sealed class BinaryRead(Stream reader) : DumpableObject
         where T : new()
     {
         var length = Convert.ToInt32(GetNext<T>());
+        return GetNextString(length);
+    }
+
+    public string GetNextString()
+    {
+        if(GetNext<byte>() != 0)
+            return "";
+
+        int length = GetNext<byte>();
+        if(length == 0xff)
+            length = GetNext<int>();
         return GetNextString(length);
     }
 
@@ -194,19 +218,13 @@ public sealed class BinaryRead(Stream reader) : DumpableObject
         => GetNext(type, member, 0);
 
     object GetNext(Type type, MemberInfo member, int level)
-        => type.IsArray
-            ? GetNextArray(type, member, level)
-            : type == typeof(string)
-                ? GetNextString(member)
-                : GetNext(type);
+        => type.IsArray? GetNextArray(type, member, level) :
+            type == typeof(string)? GetNextString(member) : GetNext(type);
 
     object GetNextElement(Type readerType, Type type, MemberInfo member, int level)
         => readerType == null
-            ? type.IsArray
-                ? GetNextArray(type, member, level)
-                : type == typeof(string)
-                    ? GetNextString(member)
-                    : GetNext(type)
+            ? type.IsArray? GetNextArray(type, member, level) :
+            type == typeof(string)? GetNextString(member) : GetNext(type)
             : GetNextWithReader(readerType, type, member);
 
     string GetNextString(MemberInfo member)
@@ -264,4 +282,43 @@ public sealed class BinaryRead(Stream reader) : DumpableObject
                 : Convert.ToInt32(GetNext(arrayItem?.CountType ?? typeof(int)));
 
     internal byte[] LookAhead(int count = 100) => GetBytes(count);
+
+    public Generic GetNextGeneric()
+    {
+        var type = GetNext<short>();
+        switch(type)
+        {
+            case 0:
+                return null;
+            case 1:
+                return new(GetNext<byte>() != 0);
+            case 2:
+                return new(GetNext<double>() != 0);
+            case 3:
+                return new(GetNextString());
+            case 5:
+                return GetNextDictionary();
+            default:
+                NotImplementedMethod("type", type);
+                break;
+        }
+
+        return new();
+    }
+
+    Generic GetNextDictionary()
+    {
+        var count = GetNext<int>();
+        var result = count
+            .Select(index => (Key: GetNextString(), value: GetNextGeneric()))
+            .ToDictionary(pair => pair.Key, pair => pair.value);
+        return new(result);
+    }
+
+    string GetNextStringX()
+    {
+        var result = GetNextString();
+        result.Log();
+        return result;
+    }
 }

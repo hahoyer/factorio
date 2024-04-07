@@ -17,28 +17,10 @@ public sealed class UserConfiguration : DumpableObject, IIdentified<string>
     readonly LogfileWatcher LogfileWatcher;
 #pragma warning restore CS0169
     readonly ValueCache<IDictionary<string, bool>> ModConfigurationCache;
+    readonly ValueCache<ModSettings> ModSettingsCache;
     readonly ValueCache<Mods.FileCluster[]> ModFilesCache;
     readonly MmasfContext Parent;
     readonly ValueCache<Saves.FileCluster[]> SaveFilesCache;
-
-    UserConfiguration(SmbFile path, SmbFile[] allPaths, MmasfContext parent)
-    {
-        Path = path;
-        AllPaths = allPaths;
-        Parent = parent;
-        ModConfigurationCache = new(GetModConfiguration);
-        ModFilesCache = new(GetModFiles);
-        SaveFilesCache = new(GetSaveFiles);
-        return;
-/*
-        RunLua();
-        LogfileWatcher = new(Path);
-*/
-    }
-
-    string IIdentified<string>.Identifier => Name;
-
-    protected override string GetNodeDump() => Path.Name;
 
     public string Name => Path.Name;
     public bool IsRoot => Path.FullName == Parent.DataConfiguration.RootUserConfigurationPath;
@@ -55,8 +37,28 @@ public sealed class UserConfiguration : DumpableObject, IIdentified<string>
         => SaveFiles
             .SelectMany(save => save.Conflicts);
 
-    internal static UserConfiguration Create
-        (SmbFile item, SmbFile[] allPaths, MmasfContext parent) => new(item, allPaths, parent);
+    UserConfiguration(SmbFile path, SmbFile[] allPaths, MmasfContext parent)
+    {
+        Path = path;
+        AllPaths = allPaths;
+        Parent = parent;
+        ModConfigurationCache = new(GetModConfiguration);
+        ModFilesCache = new(GetModFiles);
+        SaveFilesCache = new(GetSaveFiles);
+        ModSettingsCache = new(GetModSettings);
+        return;
+/*
+        RunLua();
+        LogfileWatcher = new(Path);
+*/
+    }
+
+    string IIdentified<string>.Identifier => Name;
+
+    protected override string GetNodeDump() => Path.Name;
+
+    internal static UserConfiguration Create(SmbFile item, SmbFile[] allPaths, MmasfContext parent)
+        => new(item, allPaths, parent);
 
     static string FilePosition(string rawLocation)
     {
@@ -76,7 +78,7 @@ public sealed class UserConfiguration : DumpableObject, IIdentified<string>
     {
         var fileHandle = FilesPath(Constants.SaveDirectoryName);
         if(!fileHandle.Exists)
-            return new Saves.FileCluster[0];
+            return [];
 
         return fileHandle
             .Items
@@ -89,7 +91,7 @@ public sealed class UserConfiguration : DumpableObject, IIdentified<string>
     {
         var fileHandle = FilesPath(Constants.ModDirectoryName);
         if(!fileHandle.Exists)
-            return new Mods.FileCluster[0];
+            return [];
 
         return fileHandle
             .Items
@@ -112,6 +114,17 @@ public sealed class UserConfiguration : DumpableObject, IIdentified<string>
         var result = text.FromJson<ModListJSon>();
         var modConfigurationCells = result.Cells;
         return modConfigurationCells.ToDictionary(item => item.Name, item => item.IsEnabled);
+    }
+
+    ModSettings GetModSettings()
+    {
+        var fileHandle = FilesPath(Constants.ModDirectoryName)
+            .PathCombine(Constants.ModSettingsFileName);
+
+        if(!fileHandle.Exists)
+            return new(null);
+
+        return new(new(fileHandle.Reader));
     }
 
 

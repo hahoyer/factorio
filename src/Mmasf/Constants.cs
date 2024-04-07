@@ -4,6 +4,7 @@ static class Constants
 {
     internal const string LogfileName = "factorio-current.log";
     public const string ModConfigurationFileName = "mod-list.json";
+    public const string ModSettingsFileName = "mod-settings.dat";
     internal const string ModDirectoryName = "mods";
     internal const string PreviousLogfileName = "factorio-previous.log";
     const string ReadDataTag = "read-data";
